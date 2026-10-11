@@ -21,7 +21,12 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
   const reducedMotion = useReducedMotion();
   const lenisRef = useRef<Lenis | null>(null);
   const listenersRef = useRef(new Set<() => void>());
-  const [activeSection, setActiveSection] = useState<string>('');
+  const [activeSection, setActiveSection] = useState<string>(() => {
+    if (typeof window !== 'undefined' && window.location.hash) {
+      return window.location.hash.slice(1);
+    }
+    return '';
+  });
 
   const subscribe = useCallback((onStoreChange: () => void) => {
     listenersRef.current.add(onStoreChange);
@@ -159,6 +164,8 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
 
   // Section spy and initial hash handling
   useEffect(() => {
+    let initialHashHandled = typeof window === 'undefined' || !window.location.hash;
+
     const handleInitialHash = () => {
       const hash = window.location.hash;
       if (hash) {
@@ -169,6 +176,9 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
           scrollTo(element, { immediate: true });
         }
       }
+      setTimeout(() => {
+        initialHashHandled = true;
+      }, 300);
     };
 
     if (document.fonts?.ready) {
@@ -183,6 +193,7 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
 
     const observer = new IntersectionObserver(
       (entries) => {
+        if (!initialHashHandled) return;
         for (const entry of entries) {
           if (entry.isIntersecting) {
             const id = entry.target.id;

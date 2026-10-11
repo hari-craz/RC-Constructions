@@ -1,0 +1,188 @@
+.building-site-window {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 52%;
+  height: 100dvh;
+  z-index: var(--z-overlay);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: clip;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Site window becomes visible once user scrolls past hero plan view */
+.building-site-window.is-visible {
+  opacity: 1;
+}
+
+.building-svg-container {
+  position: relative;
+  width: 92%;
+  height: 90%;
+  max-width: 720px;
+  max-height: 900px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.building-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Stage Group Base Rules */
+.stage-group {
+  vector-effect: non-scaling-stroke;
+}
+
+/* Section Line Weights & Stroke Colours */
+.bldg-datum-line {
+  stroke: var(--color-formwork-dark);
+  stroke-width: 2px;
+  stroke-linecap: square;
+}
+
+.bldg-excavation-cut {
+  stroke: var(--color-steel);
+  stroke-width: 1.5px;
+  stroke-dasharray: 6 4;
+}
+
+.bldg-footing-outline {
+  stroke: var(--color-formwork-dark);
+  stroke-width: 2px;
+  fill: url('#hatch-steel');
+}
+
+.bldg-tie-beam {
+  stroke: var(--color-formwork-dark);
+  stroke-width: 2px;
+  fill: var(--color-concrete);
+}
+
+.bldg-slab-cut {
+  stroke: var(--color-formwork-dark);
+  stroke-width: 2.5px;
+  fill: var(--color-concrete);
+}
+
+.bldg-column-stroke {
+  stroke: var(--color-formwork-dark);
+  stroke-width: 2px;
+  fill: var(--color-formwork-dark);
+}
+
+.bldg-stair-core {
+  stroke: var(--color-steel);
+  stroke-width: 1.5px;
+  fill: none;
+}
+
+.bldg-wall-infill {
+  stroke: var(--color-formwork-dark);
+  stroke-width: 1.5px;
+  fill: var(--color-limewash);
+}
+
+.bldg-window-opening {
+  stroke: var(--color-formwork-dark);
+  stroke-width: 1.5px;
+  fill: var(--color-surface);
+}
+
+.bldg-window-mullion {
+  stroke: var(--color-steel);
+  stroke-width: 1px;
+}
+
+.bldg-symbol-glass {
+  fill: var(--color-window-glass, transparent);
+  transition: fill 0.4s ease;
+}
+
+.bldg-window-glass {
+  --color-window-glass: transparent;
+
+  fill: var(--color-window-glass, transparent);
+  transition: fill 0.4s ease;
+}
+
+.building-site-window[data-stage='completion'] .bldg-symbol-glass,
+.building-site-window[data-stage='completion'] .bldg-window-glass,
+.bldg-window-glass.is-lit {
+  --color-window-glass: var(--color-accent);
+
+  fill: var(--color-accent);
+}
+
+.bldg-dimension-line {
+  stroke: var(--color-accent);
+  stroke-width: 1.2px;
+}
+
+.bldg-dimension-tick {
+  stroke: var(--color-accent);
+  stroke-width: 1.5px;
+}
+
+.bldg-dimension-text {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  fill: var(--color-accent);
+  letter-spacing: 0.02em;
+}
+
+.bldg-nameplate {
+  font-family: var(--font-headline);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  fill: var(--color-formwork-dark);
+  text-transform: uppercase;
+}
+
+/* Reduced Motion Fallback: Show complete building statically */
+@media (prefers-reduced-motion: reduce) {
+  .building-site-window {
+    opacity: 1 !important;
+  }
+
+  .stage-group {
+    opacity: 1 !important;
+    transform: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+
+  .bldg-window-glass,
+  .bldg-symbol-glass {
+    fill: var(--color-accent) !important;
+  }
+}
+
+/* Mobile & Tablet Layout (< 1024px) */
+@media (width < 1024px) {
+  .building-site-window {
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 34svh;
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-line);
+    padding: var(--space-2);
+  }
+
+  .building-svg-container {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+  }
+}

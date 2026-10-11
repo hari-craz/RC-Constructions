@@ -1,0 +1,151 @@
+import AxeBuilder from '@axe-core/playwright';
+import { expect, test } from '@playwright/test';
+
+test.describe('Phase 6 — Evolving Building Scroll Construction', () => {
+  test('progressively constructs building across stages and updates data-stage attribute', async ({
+    page,
+  }, testInfo) => {
+    if (testInfo.project.use?.contextOptions?.reducedMotion === 'reduce') {
+      test.skip();
+    }
+
+    const consoleErrors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        consoleErrors.push(msg.text());
+      }
+    });
+
+    await page.goto('/');
+
+    // Wait for Hero intro and lazy Building mount
+    await page.waitForTimeout(2000);
+
+    const siteWindow = page.locator('.building-site-window');
+    await expect(siteWindow).toBeAttached();
+
+    // 1. Initial State on Hero
+    await expect(siteWindow).toHaveAttribute('data-stage', /survey|foundation/);
+
+    // 2. Scroll to Foundation
+    const foundation = page.locator('#foundation');
+    await foundation.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    await expect(siteWindow).toHaveAttribute('data-stage', 'foundation');
+
+    // 3. Scroll to Structure — record scrollY for reverse test
+    const structure = page.locator('#structure');
+    await structure.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    await expect(siteWindow).toHaveAttribute('data-stage', 'structure');
+    const structureScrollY = await page.evaluate(() => window.scrollY);
+
+    // 4. Scroll to Envelope
+    const envelope = page.locator('#envelope');
+    await envelope.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    await expect(siteWindow).toHaveAttribute('data-stage', 'envelope');
+
+    // 5. Scroll to Fit-out
+    const fitout = page.locator('#fitout');
+    await fitout.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    await expect(siteWindow).toHaveAttribute('data-stage', 'fitout');
+
+    // 6. Scroll to Completion
+    const completion = page.locator('#completion');
+    await completion.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    await expect(siteWindow).toHaveAttribute('data-stage', 'completion');
+
+    // Verify lit windows and dimension callout in Completion stage
+    const litWindows = page.locator('.bldg-window-glass');
+    await expect(litWindows.first()).toBeVisible();
+
+    const dimensionText = page.locator('.bldg-dimension-text');
+    await expect(dimensionText).toHaveText('15.40 m');
+
+    // 7. Reverse Scroll: Scroll back to Structure using lenis.scrollTo with recorded scroll position.
+    await page.evaluate((targetY) => {
+      const lenis = (
+        window as unknown as {
+          __lenis?: { scrollTo: (t: number, opts?: { immediate?: boolean }) => void };
+        }
+      ).__lenis;
+      if (lenis) {
+        lenis.scrollTo(targetY, { immediate: true });
+      } else {
+        window.scrollTo(0, targetY);
+      }
+    }, structureScrollY);
+    await page.waitForTimeout(800);
+    await expect(siteWindow).toHaveAttribute('data-stage', 'structure');
+
+    // 8. Reversible un-build: Scroll back to Hero
+    await page.evaluate((target) => {
+      const lenis = (
+        window as unknown as {
+          __lenis?: { scrollTo: (t: string | number, opts?: { immediate?: boolean }) => void };
+        }
+      ).__lenis;
+      if (lenis) {
+        lenis.scrollTo(target, { immediate: true });
+      } else {
+        window.scrollTo(0, 0);
+      }
+    }, 0);
+    await page.waitForTimeout(800);
+    await expect(siteWindow).toHaveAttribute('data-stage', /survey|hero/);
+
+    expect(consoleErrors).toEqual([]);
+  });
+
+  test('anchor jump to #completion seeks timeline immediately', async ({ page }) => {
+    await page.goto('/#completion');
+    await page.waitForTimeout(1500);
+
+    const siteWindow = page.locator('.building-site-window');
+    await expect(siteWindow).toBeAttached();
+    await expect(siteWindow).toHaveAttribute('data-stage', 'completion');
+  });
+
+  test('passes axe accessibility audit across building scroll stages', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForTimeout(1500);
+
+    // Axe at Hero
+    const heroAxe = await new AxeBuilder({ page }).analyze();
+    expect(heroAxe.violations).toEqual([]);
+
+    // Scroll to Structure and scan
+    const structure = page.locator('#structure');
+    await structure.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    const structureAxe = await new AxeBuilder({ page }).analyze();
+    expect(structureAxe.violations).toEqual([]);
+
+    // Scroll to Completion and scan
+    const completion = page.locator('#completion');
+    await completion.scrollIntoViewIfNeeded();
+    await page.waitForTimeout(400);
+    const completionAxe = await new AxeBuilder({ page }).analyze();
+    expect(completionAxe.violations).toEqual([]);
+  });
+
+  test('displays completed building statically in reduced-motion mode', async ({
+    page,
+  }, testInfo) => {
+    if (testInfo.project.use?.contextOptions?.reducedMotion !== 'reduce') {
+      test.skip();
+    }
+
+    await page.goto('/');
+    await page.waitForTimeout(1500);
+
+    const siteWindow = page.locator('.building-site-window');
+    await expect(siteWindow).toBeAttached();
+
+    const stageGroups = page.locator('.stage-group');
+    await expect(stageGroups.first()).toBeAttached();
+  });
+});

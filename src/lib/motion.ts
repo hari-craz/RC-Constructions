@@ -45,4 +45,18 @@ export const MOTION = {
       ease: 'none',
     },
   },
+  building: {
+    strokeEase: 'power2.out',
+    fillEase: 'power1.inOut',
+    foundationDrawDuration: 0.8,
+    columnRiseDuration: 0.7,
+    columnRiseStagger: 0.08,
+    slabDrawDuration: 0.6,
+    slabDrawStagger: 0.1,
+    wallFillDuration: 0.6,
+    windowLitDuration: 0.4,
+    windowLitStagger: 0.05,
+    dimensionDrawDuration: 0.5,
+    heroHandOffDuration: 0.5,
+  },
 } as const;

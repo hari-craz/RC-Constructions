@@ -24,4 +24,12 @@ describe('motion constants', () => {
     expect(MOTION.hero.headlineStart).toBe(0.5);
     expect(MOTION.hero.headlineDuration).toBe(0.9);
   });
+
+  it('defines building elevation motion constants with non-zero durations', () => {
+    expect(MOTION.building.foundationDrawDuration).toBeGreaterThan(0);
+    expect(MOTION.building.columnRiseDuration).toBeGreaterThan(0);
+    expect(MOTION.building.slabDrawDuration).toBeGreaterThan(0);
+    expect(MOTION.building.wallFillDuration).toBeGreaterThan(0);
+    expect(MOTION.building.windowLitDuration).toBeGreaterThan(0);
+  });
 });

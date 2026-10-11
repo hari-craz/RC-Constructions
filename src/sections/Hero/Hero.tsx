@@ -182,7 +182,8 @@ export function Hero() {
       window.addEventListener('scroll', handleScrollInterrupt, { passive: true, once: true });
 
       // 2. Scroll-Linked Scrub Layer: Footprint fills with limewash and grid crosses grow
-      const aboutTrigger = document.getElementById('about');
+      const aboutTrigger =
+        document.getElementById('foundation') || document.getElementById('about');
       if (aboutTrigger) {
         if (plot?.footprintPath) {
           const limewash =
