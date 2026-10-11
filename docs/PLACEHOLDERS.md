@@ -21,10 +21,9 @@ Every item listed here must be replaced with verified client material before fin
 
 ## 2. Temporary Section Stubs (`src/sections/_stubs/` & `src/sections/_stages/`)
 
-| Component / Section                                            | Purpose                                                        | Replacement Phase                       |
-| :------------------------------------------------------------- | :------------------------------------------------------------- | :-------------------------------------- |
-| `ContactStub` (`src/sections/_stubs/ContactStub.tsx`)          | Minimal interim sheet to resolve `#contact` navigation anchor. | Phase 8 (`Contact` with Formspree)      |
-| `CompletionStage` (`src/sections/_stages/CompletionStage.tsx`) | Interim sheet for commissioned handover.                       | Phase 7C (`Completion Stats & Founder`) |
+| Component / Section                                   | Purpose                                                        | Replacement Phase                  |
+| :---------------------------------------------------- | :------------------------------------------------------------- | :--------------------------------- |
+| `ContactStub` (`src/sections/_stubs/ContactStub.tsx`) | Minimal interim sheet to resolve `#contact` navigation anchor. | Phase 8 (`Contact` with Formspree) |
 
 ---
 
@@ -55,3 +54,26 @@ Every item listed here must be replaced with verified client material before fin
 | :----------------------------- | :------------------------------------------- | :------------------------ | :-------------------------------------------------- |
 | `PROJECTS_CONTENT.projects[*]` | Location, year ("20XX"), built area, outcome | `src/content/projects.ts` | Verified portfolio project records and photography. |
 | `Projects.preview-slot`        | Elevation drawing preview slot (1200×675)    | `src/sections/Projects`   | High-resolution CAD elevation rendering or photo.   |
+
+---
+
+## 6. Phase 7C Completion Placeholders (`src/content/completion.ts`)
+
+| Key                           | Current Placeholder Value | Source File                 | Replacement Target / Action                          |
+| :---------------------------- | :------------------------ | :-------------------------- | :--------------------------------------------------- |
+| `COMPLETION_CONTENT.stats[0]` | `"XX"`                    | `src/content/completion.ts` | Verified total projects completed.                   |
+| `COMPLETION_CONTENT.stats[1]` | `"XX"`                    | `src/content/completion.ts` | Verified years of practice in regional construction. |
+| `COMPLETION_CONTENT.stats[2]` | `"XX"`                    | `src/content/completion.ts` | Verified gross square feet built.                    |
+| `COMPLETION_CONTENT.stats[3]` | `"XX"`                    | `src/content/completion.ts` | Verified audited on-time handover rate percentage.   |
+
+---
+
+## 7. Phase 7C Founder Placeholders (`src/content/founder.ts`)
+
+| Key                                | Current Placeholder Value                      | Source File              | Replacement Target / Action                                                        |
+| :--------------------------------- | :--------------------------------------------- | :----------------------- | :--------------------------------------------------------------------------------- |
+| `FOUNDER_CONTENT.name`             | `"Gokul"`                                      | `src/content/founder.ts` | Full legal name and verified titles.                                               |
+| `FOUNDER_CONTENT.bioParagraphs[0]` | `"founded RC Constructions in 20XX"`           | `src/content/founder.ts` | Verified incorporation year.                                                       |
+| `FOUNDER_CONTENT.facts[0]`         | `"Site practice since 20XX"`                   | `src/content/founder.ts` | Verified career start year.                                                        |
+| `FOUNDER_CONTENT.facts[2]`         | `"Registered body to come (Licence ref 20XX)"` | `src/content/founder.ts` | Verified contractor registration body and licence serial.                          |
+| `Founder.portrait-slot`            | 1200 × 1500 px (4:5 ratio) WebP / JPEG         | `src/sections/Founder`   | Supply professional portrait photo (WebP and JPEG, 1200×1500 px, monochrome/tint). |

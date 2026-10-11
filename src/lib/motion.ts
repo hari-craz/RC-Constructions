@@ -59,4 +59,12 @@ export const MOTION = {
     dimensionDrawDuration: 0.5,
     heroHandOffDuration: 0.5,
   },
+  stats: {
+    countDuration: 1.6,
+    ease: 'power2.out',
+  },
+  founder: {
+    revealDuration: 0.9,
+    ease: 'power2.out',
+  },
 } as const;

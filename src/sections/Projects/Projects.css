@@ -40,7 +40,7 @@
   font-family: var(--font-headline);
   font-size: var(--font-size-xs);
   letter-spacing: var(--tracking-wide);
-  color: var(--color-steel);
+  color: var(--color-ink-muted);
 }
 
 .projects-title {

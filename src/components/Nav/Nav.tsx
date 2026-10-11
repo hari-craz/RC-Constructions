@@ -1,4 +1,4 @@
-import { getStageBySectionId } from '../../data/stages';
+import { getSectionById } from '../../data/stages';
 import { useActiveSection } from '../../hooks/useActiveSection';
 import { useScroll } from '../../hooks/useScroll';
 import { Logo } from '../Logo';
@@ -12,14 +12,13 @@ export function Nav({ className = '' }: NavProps) {
   const activeSection = useActiveSection();
   const { scrollTo } = useScroll();
 
-  // Hero, Contact, and concrete/light stages are light sheets (dark ink); dark stages need light ink.
-  const stage = getStageBySectionId(activeSection);
+  // Hero, Contact, Founder, and concrete/light stages are light sheets (dark ink); dark stages need light ink.
+  const section = getSectionById(activeSection);
   const isLightSheet =
     !activeSection ||
     activeSection === 'hero' ||
-    activeSection === 'contact' ||
-    stage?.tone === 'concrete' ||
-    stage?.tone === 'light';
+    section?.tone === 'concrete' ||
+    section?.tone === 'light';
   const toneClass = isLightSheet ? 'nav-tone-dark' : 'nav-tone-light';
 
   const handleEnquireClick = (e: React.MouseEvent<HTMLAnchorElement>) => {

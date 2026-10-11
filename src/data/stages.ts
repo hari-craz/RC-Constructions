@@ -120,7 +120,7 @@ export const FITOUT_STAGE: StageConfig = {
   },
 };
 
-export const COMPLETION_STAGE: StageConfig = {
+const COMPLETION_STAGE: StageConfig = {
   id: 'completion',
   sectionId: 'completion',
   name: 'Completion',
@@ -164,4 +164,35 @@ export function getStageByProgress(progress: number): StageConfig {
 
 export function getStageBySectionId(sectionId: string): StageConfig | undefined {
   return STAGES.find((s) => s.sectionId === sectionId);
+}
+
+export interface SectionConfig {
+  id: string;
+  sectionId: string;
+  name: string;
+  tone: 'dark' | 'light' | 'concrete' | 'raised';
+}
+
+const FOUNDER_SECTION: SectionConfig = {
+  id: 'founder',
+  sectionId: 'founder',
+  name: 'Founder',
+  tone: 'concrete',
+};
+
+const CONTACT_SECTION: SectionConfig = {
+  id: 'contact',
+  sectionId: 'contact',
+  name: 'Contact',
+  tone: 'light',
+};
+
+const ALL_SECTIONS: readonly (StageConfig | SectionConfig)[] = [
+  ...STAGES,
+  FOUNDER_SECTION,
+  CONTACT_SECTION,
+];
+
+export function getSectionById(sectionId: string): StageConfig | SectionConfig | undefined {
+  return ALL_SECTIONS.find((s) => s.sectionId === sectionId);
 }

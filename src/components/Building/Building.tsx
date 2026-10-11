@@ -20,7 +20,7 @@ export function Building({ className = '' }: BuildingProps) {
   const stageFromSection = getStageBySectionId(activeSection);
   const activeStage: StageId = stageFromSection
     ? stageFromSection.id
-    : activeSection === 'contact'
+    : activeSection === 'contact' || activeSection === 'founder'
       ? 'completion'
       : 'survey';
 

@@ -99,3 +99,13 @@ To retime a stage or adjust the building's structural levels for a specific clie
 1. Update `range: [start, end]` in `src/data/stages.ts`.
 2. Update animation timings in `src/lib/motion.ts` under `MOTION.building`.
 3. Modify grid bay pitch or floor count in `Building.tsx` symbols. All GSAP ScrollTrigger timeline bounds recalculate automatically.
+
+---
+
+## 5. Post-Completion Transition & Founder Hand-off
+
+Outside the 6 building stages (`survey` through `completion`), the building elevation remains in its completed, fully illuminated state (`data-stage="completion"`). When the visitor scrolls into `#founder`:
+
+- The editorial monograph sheet stacks at `z-index: calc(var(--z-overlay) + 5)`, smoothly handing the full viewport width to the Founder monograph spread (large display typography, pull quote, bio, 3 ruled facts, and the 4:5 portrait reserved slot).
+- The transition is completely clean: no sudden layout shifts or DOM unmounting occur.
+- When the visitor scrolls back up to `#completion`, the Founder sheet uncovers, revealing the lit building elevation in its completed state.

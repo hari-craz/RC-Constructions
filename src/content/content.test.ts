@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ABOUT_CONTENT } from './about';
+import { COMPLETION_CONTENT } from './completion';
+import { FOUNDER_CONTENT } from './founder';
 import { PROCESS_CONTENT } from './process';
 import { PROJECTS_CONTENT } from './projects';
 import { SERVICES_CONTENT } from './services';
@@ -162,5 +164,76 @@ describe('Process content model', () => {
 
     expect(checkBannedWords(fullProcessText)).toEqual([]);
     expect(hasExclamationMark(fullProcessText)).toBe(false);
+  });
+});
+
+describe('Completion content model', () => {
+  it('contains exactly four completion stats with non-empty values and captions', () => {
+    expect(COMPLETION_CONTENT.stats).toHaveLength(4);
+
+    const ids = new Set<string>();
+    COMPLETION_CONTENT.stats.forEach((stat) => {
+      expect(stat.id.trim()).not.toBe('');
+      expect(ids.has(stat.id)).toBe(false);
+      ids.add(stat.id);
+
+      expect(stat.value.trim()).not.toBe('');
+      expect(stat.caption.trim()).not.toBe('');
+    });
+  });
+
+  it('contains no banned marketing words and no exclamation marks', () => {
+    const fullCompletionText = [
+      COMPLETION_CONTENT.title,
+      COMPLETION_CONTENT.lead,
+      ...COMPLETION_CONTENT.stats.flatMap((s) => [s.value, s.caption]),
+    ].join(' ');
+
+    expect(checkBannedWords(fullCompletionText)).toEqual([]);
+    expect(hasExclamationMark(fullCompletionText)).toBe(false);
+  });
+});
+
+describe('Founder content model', () => {
+  it('contains name, role, 3-sentence bio, pull quote, and exactly 3 facts', () => {
+    expect(FOUNDER_CONTENT.name.trim()).not.toBe('');
+    expect(FOUNDER_CONTENT.role.trim()).not.toBe('');
+    expect(FOUNDER_CONTENT.bioParagraphs).toHaveLength(3);
+    FOUNDER_CONTENT.bioParagraphs.forEach((sentence) => {
+      expect(sentence.trim()).not.toBe('');
+    });
+    expect(FOUNDER_CONTENT.pullQuote.trim()).not.toBe('');
+    expect(FOUNDER_CONTENT.facts).toHaveLength(3);
+
+    const factIds = new Set<string>();
+    FOUNDER_CONTENT.facts.forEach((fact) => {
+      expect(fact.id.trim()).not.toBe('');
+      expect(factIds.has(fact.id)).toBe(false);
+      factIds.add(fact.id);
+
+      expect(fact.label.trim()).not.toBe('');
+      expect(fact.value.trim()).not.toBe('');
+    });
+
+    expect(FOUNDER_CONTENT.portraitAlt).toBe('Portrait of Gokul, founder of RC Constructions');
+  });
+
+  it('contains obvious placeholders and no invented specific credentials', () => {
+    expect(FOUNDER_CONTENT.bioParagraphs[0]).toContain('20XX');
+    const licenceFact = FOUNDER_CONTENT.facts.find((f) => f.id === 'fact-licence');
+    expect(licenceFact?.value).toContain('Registered body to come');
+  });
+
+  it('contains no banned marketing words and no exclamation marks', () => {
+    const fullFounderText = [
+      FOUNDER_CONTENT.name,
+      FOUNDER_CONTENT.role,
+      ...FOUNDER_CONTENT.bioParagraphs,
+      FOUNDER_CONTENT.pullQuote,
+      ...FOUNDER_CONTENT.facts.flatMap((f) => [f.label, f.value]),
+    ].join(' ');
+
+    expect(checkBannedWords(fullFounderText)).toEqual([]);
+    expect(hasExclamationMark(fullFounderText)).toBe(false);
   });
 });

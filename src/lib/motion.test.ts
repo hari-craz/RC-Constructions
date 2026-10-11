@@ -32,4 +32,9 @@ describe('motion constants', () => {
     expect(MOTION.building.wallFillDuration).toBeGreaterThan(0);
     expect(MOTION.building.windowLitDuration).toBeGreaterThan(0);
   });
+
+  it('defines stats and founder motion tokens with positive durations', () => {
+    expect(MOTION.stats.countDuration).toBeGreaterThan(0);
+    expect(MOTION.founder.revealDuration).toBeGreaterThan(0);
+  });
 });

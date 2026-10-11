@@ -41,7 +41,7 @@
 - [ ] **Phase 7: Real Page Content**
   - [x] **7A done**: About and Services replacing Foundation and Structure stubs with typed contractor content and drawing schedule table.
   - [x] **7B done**: Projects and Process replacing Envelope and Fit-out stubs with register index and ordered sequence.
-  - [ ] **7C**: Completion stats and Founder.
+  - [x] **7C done**: Completion stats with ruled title-block grid and count-up helper, and Founder monograph section with 4:5 reserved portrait slot.
   - [ ] **7D**: Contact.
 
 - [ ] **Phase 8: Section 05 — Contact Form & Survey Marker**
