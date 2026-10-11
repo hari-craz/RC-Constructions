@@ -166,8 +166,8 @@ export function Hero() {
           {
             opacity: 1,
             scale: 1,
-            duration: 0.4,
-            stagger: 0.1,
+            duration: MOTION.hero.dimensionLabelsDuration,
+            stagger: MOTION.hero.dimensionLabelsStagger,
           },
           MOTION.hero.dimensionsStart + MOTION.hero.dimensionLabelsDelay,
         );
@@ -185,8 +185,13 @@ export function Hero() {
       const aboutTrigger = document.getElementById('about');
       if (aboutTrigger) {
         if (plot?.footprintPath) {
+          const limewash =
+            getComputedStyle(document.documentElement)
+              .getPropertyValue('--color-limewash')
+              .trim() || 'var(--color-limewash)';
+
           gsap.to(plot.footprintPath, {
-            fill: '#e9e7df', // --color-limewash
+            fill: limewash,
             scrollTrigger: {
               trigger: aboutTrigger,
               start: 'top bottom',
@@ -220,7 +225,12 @@ export function Hero() {
   );
 
   return (
-    <Sheet id="hero" label="Section 01 — Site Survey & Excavation" tone="concrete">
+    <Sheet
+      id="hero"
+      label="Section 01 — Site Survey & Excavation"
+      tone="concrete"
+      headingTag="span"
+    >
       <div ref={containerRef} className="hero-sheet-inner">
         <HeroPlot ref={plotRef} />
 

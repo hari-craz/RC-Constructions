@@ -4,11 +4,19 @@ export interface SheetProps {
   id: string;
   label: string;
   tone?: 'dark' | 'light' | 'concrete' | 'raised';
+  headingTag?: 'h1' | 'h2' | 'span';
   children: ReactNode;
   className?: string;
 }
 
-export function Sheet({ id, label, tone = 'dark', children, className = '' }: SheetProps) {
+export function Sheet({
+  id,
+  label,
+  tone = 'dark',
+  headingTag: HeadingTag = 'h2',
+  children,
+  className = '',
+}: SheetProps) {
   const headingId = `${id}-heading`;
 
   return (
@@ -21,9 +29,9 @@ export function Sheet({ id, label, tone = 'dark', children, className = '' }: Sh
       <div className="sheet-dim-overlay" aria-hidden="true" />
       <div className="sheet-inner">
         <header className="sheet-header">
-          <h2 id={headingId} className="sheet-label">
+          <HeadingTag id={headingId} className="sheet-label">
             {label}
-          </h2>
+          </HeadingTag>
         </header>
         <div className="sheet-content">{children}</div>
       </div>

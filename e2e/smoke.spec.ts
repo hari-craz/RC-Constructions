@@ -40,4 +40,53 @@ test.describe('Smoke, Accessibility, and Security Policy', () => {
     const scanResults = await new AxeBuilder({ page }).analyze();
     expect(scanResults.violations).toEqual([]);
   });
+
+  test('records zero long tasks over 50ms attributable to intro animation and first transition', async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      const globalStore = window as unknown as {
+        __longtasks?: { duration: number; startTime: number }[];
+      };
+      globalStore.__longtasks = [];
+      try {
+        const observer = new PerformanceObserver((list) => {
+          for (const entry of list.getEntries()) {
+            if (entry.duration > 50) {
+              globalStore.__longtasks?.push({
+                duration: Math.round(entry.duration),
+                startTime: Math.round(entry.startTime),
+              });
+            }
+          }
+        });
+        observer.observe({ entryTypes: ['longtask'] });
+      } catch {
+        // PerformanceObserver longtask may not be available in all browsers
+      }
+    });
+
+    await page.goto('/');
+    await page.waitForLoadState('load');
+
+    // Clear initial page-load script evaluation tasks, monitor animation and scrub
+    const startAnimationTime = await page.evaluate(() => performance.now());
+
+    await page.waitForTimeout(3000);
+
+    await page.evaluate(() => {
+      window.scrollTo(0, window.innerHeight * 0.5);
+    });
+    await page.waitForTimeout(500);
+
+    const tasksDuringAnimation = await page.evaluate((startTime) => {
+      const globalStore = window as unknown as {
+        __longtasks?: { duration: number; startTime: number }[];
+      };
+      return (globalStore.__longtasks || []).filter((t) => t.startTime >= startTime);
+    }, startAnimationTime);
+
+    // Verify no long tasks over 50ms occurred during the intro animation or scroll transition
+    expect(tasksDuringAnimation).toEqual([]);
+  });
 });

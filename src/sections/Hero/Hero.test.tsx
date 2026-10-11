@@ -21,4 +21,21 @@ describe('Hero', () => {
     expect(heroSection).toBeInTheDocument();
     expect(heroSection).toHaveClass('sheet-tone-concrete');
   });
+
+  it('renders sheet-label as span to preserve proper h1 document heading outline', () => {
+    render(
+      <ScrollProvider>
+        <Hero />
+      </ScrollProvider>,
+    );
+
+    const sheetHeading = document.getElementById('hero-heading');
+    expect(sheetHeading?.tagName).toBe('SPAN');
+    expect(sheetHeading).toHaveTextContent(/section 01/i);
+
+    // Ensure h1 is the first heading in the DOM order
+    const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    expect(headings).toHaveLength(1);
+    expect(headings[0]?.tagName).toBe('H1');
+  });
 });

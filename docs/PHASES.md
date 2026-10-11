@@ -28,8 +28,11 @@
   - Orchestrated load sequence and scroll-linked footprint fill in `MOTION.hero`.
   - Placeholder audit catalogued in `docs/PLACEHOLDERS.md`.
 
-- [ ] **Phase 5: Building Foundation & Excavation Footprint**
-  - Initial brand arrival, headline choreography, coordinate markers, and foundation reveal.
+- [x] **Phase 5: Independent Review & Pre-Launch Audit (Checkpoint)**
+  - Local audit across code correctness, security, WCAG 2.1 AA accessibility, design system law, mobile Lighthouse, and repo hygiene.
+  - Heading hierarchy outline corrected with `headingTag` prop; touch targets expanded to 44px min-height; design tokens and motion constants strictly enforced.
+  - Multi-viewport visual verification screenshots captured across 5 resolutions (intro-complete and mid-transition).
+  - Launch checklist (`docs/LAUNCH-CHECKLIST.md`), physical device QA matrix (`docs/QA-DEVICES.md`), and review log (`docs/REVIEW-phase-5.md`) authored.
 
 - [ ] **Phase 6: Sections 02 & 03 — Framing & Engineering Metrics**
   - Structural column assembly scroll animation.

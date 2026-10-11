@@ -1,6 +1,7 @@
 .logo {
   display: inline-flex;
   align-items: center;
+  min-height: 44px;
   gap: var(--space-3);
   text-decoration: none;
   color: inherit;

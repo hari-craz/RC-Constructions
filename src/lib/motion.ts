@@ -33,6 +33,8 @@ export const MOTION = {
     dimensionsStart: 1.8,
     dimensionsDuration: 0.8,
     dimensionLabelsDelay: 0.4,
+    dimensionLabelsDuration: 0.4,
+    dimensionLabelsStagger: 0.1,
     headlineStart: 0.5,
     headlineDuration: 0.9,
     headlineStagger: 0.12,

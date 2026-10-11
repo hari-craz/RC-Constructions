@@ -1,3 +1,11 @@
+#hero .sheet-header {
+  position: absolute;
+  top: var(--space-8);
+  left: var(--page-gutter);
+  margin-bottom: 0;
+  z-index: 3;
+}
+
 .hero-sheet-inner {
   position: relative;
   width: 100%;
