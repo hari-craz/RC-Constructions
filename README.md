@@ -40,7 +40,7 @@ Open `http://localhost:5173` to view the application.
 pnpm docker:dev
 # or: docker compose --profile dev up
 
-# Build production unprivileged container
+# Build production unprivileged container (optionally pass --build-arg VITE_FORMSPREE_ID=your_id)
 pnpm docker:build
 
 # Run production container locally on port 8080

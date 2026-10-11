@@ -32,5 +32,12 @@ describe('App', () => {
       screen.getByRole('heading', { level: 2, name: /commissioned delivery & site records/i }),
     ).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: /gokul/i })).toBeInTheDocument();
+
+    // Verify Phase 7D Contact heading and footer
+    expect(
+      screen.getByRole('heading', { level: 2, name: /tell us what you want to build/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /send enquiry/i })).toBeInTheDocument();
+    expect(screen.getByText(/built by unitaryx/i)).toBeInTheDocument();
   });
 });

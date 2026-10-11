@@ -38,11 +38,11 @@
   - Signature building constructed across scroll stages (Foundation, Structure, Envelope, Fit-out, Completion).
   - Synchronized elevation drawing canvas with technical hatching and dimension badges.
 
-- [ ] **Phase 7: Real Page Content**
+- [x] **Phase 7: Real Page Content**
   - [x] **7A done**: About and Services replacing Foundation and Structure stubs with typed contractor content and drawing schedule table.
   - [x] **7B done**: Projects and Process replacing Envelope and Fit-out stubs with register index and ordered sequence.
   - [x] **7C done**: Completion stats with ruled title-block grid and count-up helper, and Founder monograph section with 4:5 reserved portrait slot.
-  - [ ] **7D**: Contact.
+  - [x] **7D done**: Real Contact section wired to Formspree, full validation, honeypot, rate guard, and minimal footer. Every section on the page is now real content.
 
 - [ ] **Phase 8: Section 05 — Contact Form & Survey Marker**
   - Formspree integration with typed validation and accessible form controls.

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ABOUT_CONTENT } from './about';
 import { COMPLETION_CONTENT } from './completion';
+import { CONTACT_CONTENT } from './contact';
 import { FOUNDER_CONTENT } from './founder';
 import { PROCESS_CONTENT } from './process';
 import { PROJECTS_CONTENT } from './projects';
@@ -235,5 +236,48 @@ describe('Founder content model', () => {
 
     expect(checkBannedWords(fullFounderText)).toEqual([]);
     expect(hasExclamationMark(fullFounderText)).toBe(false);
+  });
+});
+
+describe('Contact content model', () => {
+  it('contains headline, subhead, channels, privacy notice, and footer', () => {
+    expect(CONTACT_CONTENT.headline.trim()).not.toBe('');
+    expect(CONTACT_CONTENT.subhead.trim()).not.toBe('');
+    expect(CONTACT_CONTENT.privacyNotice.trim()).not.toBe('');
+    expect(CONTACT_CONTENT.footer.companyName.trim()).not.toBe('');
+    expect(CONTACT_CONTENT.footer.builtBy).toBe('Built by UnitaryX');
+    expect(CONTACT_CONTENT.footer.backToTopLabel.trim()).not.toBe('');
+
+    expect(CONTACT_CONTENT.channels.length).toBeGreaterThanOrEqual(4);
+    CONTACT_CONTENT.channels.forEach((channel) => {
+      expect(channel.id.trim()).not.toBe('');
+      expect(channel.label.trim()).not.toBe('');
+      expect(channel.value.trim()).not.toBe('');
+    });
+  });
+
+  it('builds valid tel, mailto, and wa.me links', () => {
+    const phoneChannel = CONTACT_CONTENT.channels.find((c) => c.id === 'phone');
+    expect(phoneChannel?.href).toMatch(/^tel:\+/);
+
+    const waChannel = CONTACT_CONTENT.channels.find((c) => c.id === 'whatsapp');
+    expect(waChannel?.href).toMatch(/^https:\/\/wa\.me\/\d+/);
+
+    const emailChannel = CONTACT_CONTENT.channels.find((c) => c.id === 'email');
+    expect(emailChannel?.href).toMatch(/^mailto:.+@.+/);
+  });
+
+  it('contains no banned marketing words and no exclamation marks', () => {
+    const fullContactText = [
+      CONTACT_CONTENT.headline,
+      CONTACT_CONTENT.subhead,
+      CONTACT_CONTENT.privacyNotice,
+      CONTACT_CONTENT.footer.companyName,
+      CONTACT_CONTENT.footer.builtBy,
+      ...CONTACT_CONTENT.channels.flatMap((c) => [c.label, c.value]),
+    ].join(' ');
+
+    expect(checkBannedWords(fullContactText)).toEqual([]);
+    expect(hasExclamationMark(fullContactText)).toBe(false);
   });
 });

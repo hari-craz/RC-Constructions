@@ -89,9 +89,11 @@ In the GitHub repository settings (**Settings > Branches > Add branch protection
 
 Docker images are automatically published to GitHub Container Registry (GHCR) on pushes to `main` and on version tags (`v*`).
 
-### Pull & Run via CLI
+### Build & Run via CLI
 
 ```bash
+docker build --build-arg VITE_FORMSPREE_ID=your_form_id -t rc-constructions:latest .
+
 docker pull ghcr.io/hari-craz/rc-constructions:latest
 
 docker run -d \

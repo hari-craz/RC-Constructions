@@ -19,11 +19,9 @@ Every item listed here must be replaced with verified client material before fin
 
 ---
 
-## 2. Temporary Section Stubs (`src/sections/_stubs/` & `src/sections/_stages/`)
+## 2. Section Stubs Status
 
-| Component / Section                                   | Purpose                                                        | Replacement Phase                  |
-| :---------------------------------------------------- | :------------------------------------------------------------- | :--------------------------------- |
-| `ContactStub` (`src/sections/_stubs/ContactStub.tsx`) | Minimal interim sheet to resolve `#contact` navigation anchor. | Phase 8 (`Contact` with Formspree) |
+All temporary section stubs have been completely replaced with real content as of Phase 7D (`About`, `Services`, `Projects`, `Process`, `Completion`, `Founder`, `Contact`). Zero stub sections remain in the repository.
 
 ---
 
@@ -77,3 +75,16 @@ Every item listed here must be replaced with verified client material before fin
 | `FOUNDER_CONTENT.facts[0]`         | `"Site practice since 20XX"`                   | `src/content/founder.ts` | Verified career start year.                                                        |
 | `FOUNDER_CONTENT.facts[2]`         | `"Registered body to come (Licence ref 20XX)"` | `src/content/founder.ts` | Verified contractor registration body and licence serial.                          |
 | `Founder.portrait-slot`            | 1200 × 1500 px (4:5 ratio) WebP / JPEG         | `src/sections/Founder`   | Supply professional portrait photo (WebP and JPEG, 1200×1500 px, monochrome/tint). |
+
+---
+
+## 8. Phase 7D Contact Placeholders (`src/content/contact.ts`)
+
+| Key                           | Current Placeholder Value                         | Source File              | Replacement Target / Action                |
+| :---------------------------- | :------------------------------------------------ | :----------------------- | :----------------------------------------- |
+| `CONTACT_CONFIG.rawPhone`     | `"+914428470000"`                                 | `src/content/contact.ts` | Verified primary commercial phone number.  |
+| `CONTACT_CONFIG.displayPhone` | `"+91 (0) 44 2847 0000"`                          | `src/content/contact.ts` | Verified formatted display phone number.   |
+| `CONTACT_CONFIG.email`        | `"build@rcconstructions.com"`                     | `src/content/contact.ts` | Verified direct inquiry recipient address. |
+| `CONTACT_CONFIG.address`      | `"Survey Plot 104, Industrial Corridor, Chennai"` | `src/content/contact.ts` | Verified site office & yard address.       |
+| `CONTACT_CONFIG.workingHours` | `"Monday to Saturday, 08:00 – 18:00 IST"`         | `src/content/contact.ts` | Official client site working hours.        |
+| `VITE_FORMSPREE_ID`           | Environment variable                              | `.env` / `vercel.json`   | Production Formspree form endpoint ID.     |
