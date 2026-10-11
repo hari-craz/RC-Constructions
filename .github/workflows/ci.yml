@@ -137,6 +137,8 @@ jobs:
 
       - name: Build production bundle
         run: pnpm build
+        env:
+          VITE_FORMSPREE_ID: test_contact_formspree_id
 
       - name: Verify bundle size limit
         run: pnpm size

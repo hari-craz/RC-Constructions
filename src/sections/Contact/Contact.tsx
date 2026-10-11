@@ -180,7 +180,7 @@ export function Contact() {
           <div className="contact-left-col">
             <header className="contact-header">
               <span className="contact-kicker">{CONTACT_CONTENT.kicker}</span>
-              <h2 id="contact-heading" className="contact-headline">
+              <h2 id="contact-title" className="contact-headline">
                 {CONTACT_CONTENT.headline}
               </h2>
               <p className="contact-subhead">{CONTACT_CONTENT.subhead}</p>

@@ -143,15 +143,14 @@ a.contact-channel-value:hover {
   font-family: var(--font-body);
   font-size: 0.75rem;
   text-transform: lowercase;
-  color: var(--color-formwork-dark);
-  opacity: 0.75;
+  color: var(--color-stone);
 }
 
 .field-optional {
   font-family: var(--font-body);
   font-size: 0.75rem;
   text-transform: lowercase;
-  color: var(--color-steel);
+  color: var(--color-stone);
 }
 
 .contact-input,
@@ -376,7 +375,7 @@ a.contact-channel-value:hover {
 
   .contact-channel-value {
     text-align: left;
-    min-height: 40px;
+    min-height: 44px;
   }
 
   .contact-footer-inner {
