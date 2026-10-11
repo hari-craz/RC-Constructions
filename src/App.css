@@ -1,0 +1,10 @@
+.placeholder-container {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: var(--space-6);
+}
+
+.placeholder-lead {
+  margin-top: var(--space-4);
+  color: var(--text-secondary);
+}

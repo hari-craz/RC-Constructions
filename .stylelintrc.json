@@ -1,0 +1,9 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "ignoreFiles": ["dist/**", "node_modules/**"],
+  "rules": {
+    "custom-property-pattern": null,
+    "property-no-vendor-prefix": null,
+    "import-notation": "string"
+  }
+}

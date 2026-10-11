@@ -1,0 +1,12 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["src/content/types.ts"],
+  "ignoreDependencies": [
+    "gsap",
+    "lenis",
+    "@fontsource-variable/big-shoulders-display",
+    "@fontsource-variable/newsreader",
+    "@testing-library/user-event",
+    "@lhci/cli"
+  ]
+}
