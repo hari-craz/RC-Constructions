@@ -71,18 +71,6 @@ export function Contact() {
       return;
     }
 
-    // Double-submit and rate guard (3 seconds cooldown)
-    if (isSubmitting || isRateLimited(lastSubmitTimeRef.current)) {
-      return;
-    }
-    lastSubmitTimeRef.current = Date.now();
-
-    // Honeypot check (bot submission dropped silently without network call)
-    if (isHoneypotTriggered(formData)) {
-      setStatus('success');
-      return;
-    }
-
     const validationErrors = validateContactForm(formData);
     setErrors(validationErrors);
     setTouched({
@@ -106,6 +94,18 @@ export function Contact() {
       if (firstInvalidElement) {
         firstInvalidElement.focus();
       }
+      return;
+    }
+
+    // Double-submit and rate guard (3 seconds cooldown for server submissions)
+    if (isSubmitting || isRateLimited(lastSubmitTimeRef.current)) {
+      return;
+    }
+    lastSubmitTimeRef.current = Date.now();
+
+    // Honeypot check (bot submission dropped silently without network call)
+    if (isHoneypotTriggered(formData)) {
+      setStatus('success');
       return;
     }
 
