@@ -1,0 +1,21 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
+  "schedule": ["before 6am on Monday"],
+  "commitMessagePrefix": "chore(deps):",
+  "dependencyDashboard": true,
+  "packageRules": [
+    {
+      "description": "Group minor and patch updates together",
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-minor-patch"
+    },
+    {
+      "description": "Disable major updates for typescript and eslint because ecosystem plugins (typescript-eslint, eslint-plugin-react) do not yet support TypeScript 7 or ESLint 10",
+      "matchPackageNames": ["typescript", "eslint", "@eslint/js", "typescript-eslint"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ]
+}

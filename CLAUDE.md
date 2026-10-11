@@ -4,12 +4,12 @@ Single-page scroll-driven portfolio site where a building is progressively const
 
 ## Stack
 
-- Node >=22, pnpm 10, React 19, Vite, TypeScript strict
+- Node >=22, pnpm 10, React 19, Vite, TypeScript strict (pinned to `~5.8`)
 - Hand-written CSS driven by design tokens in `src/styles/tokens.css` (No Tailwind)
 - Self-hosted fonts: Big Shoulders Display (headings), Newsreader (body)
 - Animation & Scroll: GSAP ScrollTrigger driven by Lenis smooth scroll
 - Testing: Vitest (unit/DOM), Playwright (E2E + Axe a11y)
-- Quality: ESLint flat, Prettier, Stylelint, Knip, Size-Limit, Commitlint, Husky
+- Quality & DevOps: ESLint (pinned to `^9`), Prettier, Stylelint, Knip, Size-Limit, Docker, GHCR, Vercel
 
 ## Core Commands
 
@@ -25,6 +25,17 @@ Single-page scroll-driven portfolio site where a building is progressively const
 - `pnpm knip` — Detect unused files, exports, and dependencies
 - `pnpm size` — Verify JS bundle size against 180 kB budget
 - `pnpm check` — Complete CI verification suite (runs all checks and build)
+- `pnpm docker:build` — Build production unprivileged Docker image
+- `pnpm docker:run` — Run local container on port 8080
+- `pnpm docker:dev` — Run dev container with live reload
+- `pnpm compare:headers` — Verify header alignment between vercel.json and nginx.conf
+
+## DevOps & Deployment Rules
+
+1. **Hosting**: Vercel Git integration exclusively. No Vercel deploy workflow or `VERCEL_TOKEN`.
+2. **Container**: Multi-stage unprivileged Nginx on port 8080 (`/healthz` endpoint).
+3. **CI Gate**: Branch protection requires the unified `ci-pass` aggregate check and security checks.
+4. **Version Pins**: Never bump `typescript` to 7 or `eslint` to 10 until plugin ecosystem matures.
 
 ## Folder Map
 
@@ -37,25 +48,8 @@ Single-page scroll-driven portfolio site where a building is progressively const
 - `src/styles/` — Design tokens (`tokens.css`) and global reset/foundations (`base.css`)
 - `src/assets/` — Static SVGs, diagrams, textures
 - `e2e/` — Playwright test specs
-- `docs/` — Architectural specs, design system law, phase tracker
-
-## Coding Rules
-
-1. **Tokens Over Raw Values**: Always use CSS variables from `tokens.css`. Never use raw hex colors or ad-hoc magic numbers.
-2. **Strict Typings**: No `any`. Strict TypeScript flags are enforced (`noUncheckedIndexedAccess`, `noUnusedLocals`, `noUnusedParameters`).
-3. **Exports & Structure**: Use named exports for non-page modules. Keep modules small and single-purpose.
-4. **No Inline Design Styles**: Style via external CSS classes consuming tokens.
-5. **Accessibility & Motion**: Maintain visible `:focus-visible` rings and respect `prefers-reduced-motion` everywhere.
-6. **Data-Driven Sections**: Store content in typed data files under `src/content/`, not hardcoded in JSX markup.
-
-## Do's and Don'ts
-
-- **DO**: Run `pnpm check` before declaring any task complete.
-- **DO**: Keep production bundle within size limit budget.
-- **DO NOT**: Add Tailwind, UI kits, routers, or state libraries without explicit authorization.
-- **DO NOT**: Bypass lint rules with blanket `eslint-disable` or `@ts-ignore`.
-- **DO NOT**: Commit directly or push beyond `main`. Leave workspace clean for review.
-- **DO NOT**: Add decorative filler, stock tropes, or unasked design flair.
+- `docs/` — Architectural specs, design system law, deployment guide, phase tracker
+- `.github/workflows/` — CI, Lighthouse, Docker release, Security, and Release-Please pipelines
 
 ## Strict Phasing Rule
 
@@ -65,4 +59,4 @@ Single-page scroll-driven portfolio site where a building is progressively const
 
 - `pnpm check` passes with 0 errors and 0 warnings.
 - `pnpm test:e2e` passes cleanly on all configured viewports.
-- All code complies with `docs/DESIGN.md` and `docs/ARCHITECTURE.md`.
+- All code complies with `docs/DESIGN.md`, `docs/ARCHITECTURE.md`, and `docs/DEPLOYMENT.md`.

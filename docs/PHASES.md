@@ -6,10 +6,12 @@
   - Complete tooling suite: ESLint, Prettier, Stylelint, Vitest, Playwright, Knip, Size-Limit, Husky, commitlint.
   - AI canonical instruction files and architectural documentation.
 
-- [ ] **Phase 2: CI Pipeline, Docker & Deployment Setup**
-  - Containerization setup (Dockerfile, compose, nginx).
-  - GitHub Actions CI workflow (lint, test, build, e2e, audit).
-  - Vercel production deployment configuration.
+- [x] **Phase 2: CI Pipeline, Docker & Deployment Setup**
+  - Containerization setup (multi-stage Dockerfile, docker-compose profiles, nginx.conf on port 8080).
+  - GitHub Actions pipelines (CI with parallel jobs and `ci-pass` aggregate gate, Lighthouse, multi-arch Docker release to GHCR, Security with CodeQL/Audit/Gitleaks/Trivy, Release-Please).
+  - Vercel production hosting configuration (`vercel.json`) with header parity test against `nginx.conf`.
+  - Repo automation (Renovate with pinned TS/ESLint majors, issue/PR templates, CODEOWNERS, SECURITY.md).
+  - Comprehensive deployment and branch protection documentation (`docs/DEPLOYMENT.md`).
 
 - [ ] **Phase 3: Design Tokens & Layout Infrastructure**
   - Grid system, responsive layout tokens, and base layout shell.

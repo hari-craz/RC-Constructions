@@ -1,6 +1,6 @@
 # RC Constructions — Technical Architecture
 
-This document outlines the frontend architecture, scroll engine orchestration, and data modeling for the portfolio.
+This document outlines the frontend architecture, scroll engine orchestration, data modeling, and deployment infrastructure for the portfolio.
 
 ---
 
@@ -53,3 +53,19 @@ All data resides in `src/content/`:
 - `types.ts`: Pure TypeScript interfaces (`ProjectItem`, `MetricItem`, `SectionContent`, `SiteContent`).
 - Content modules export strongly typed arrays/objects validated at build time against these interfaces.
 - Components consume typed props, allowing mock datasets in tests and clean content revisions without layout edits.
+
+---
+
+## 5. Deployment & Infrastructure Architecture
+
+### Production Edge: Vercel Git Integration
+
+- Deployed via native GitHub integration without separate deploy workflows or secrets.
+- `vercel.json` enforces CSP, strict cache headers for hashed assets, and clean URLs without catch-all routing.
+
+### Self-Hosted & Containerization: Docker & GHCR
+
+- **Multi-Stage Build**: `deps` (pnpm cache), `build` (Vite static compilation), and `runtime` (`nginxinc/nginx-unprivileged` Alpine).
+- **Hardened Container**: Non-root execution (`USER 101`), read-only root filesystem with tmpfs, `/healthz` endpoint on port 8080.
+- **Header Parity**: Automated verification (`scripts/compare-headers.mjs`) ensures exact alignment of security and cache headers between `vercel.json` and `nginx.conf`.
+- **Registry & Automation**: Automated multi-arch builds (`linux/amd64`, `linux/arm64`) pushed to GHCR on `main` and release tags, with optional Portainer webhook redeployment.

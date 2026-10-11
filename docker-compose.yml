@@ -1,0 +1,32 @@
+services:
+  dev:
+    image: node:22.14-alpine3.21
+    profiles:
+      - dev
+    working_dir: /app
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - '5173:5173'
+    command: >
+      sh -c "corepack enable && corepack prepare pnpm@10.34.6 --activate && pnpm install && pnpm dev --host 0.0.0.0"
+    environment:
+      - NODE_ENV=development
+
+  prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    profiles:
+      - prod
+    ports:
+      - '8080:8080'
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run
+      - /var/cache/nginx
+    security_opt:
+      - no-new-privileges:true

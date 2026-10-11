@@ -6,7 +6,6 @@
     "lenis",
     "@fontsource-variable/big-shoulders-display",
     "@fontsource-variable/newsreader",
-    "@testing-library/user-event",
-    "@lhci/cli"
+    "@testing-library/user-event"
   ]
 }
