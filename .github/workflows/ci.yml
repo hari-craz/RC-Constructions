@@ -202,12 +202,24 @@ jobs:
           retention-days: 7
 
   docker:
-    name: Docker Build & Smoke Test
+    name: Docker Build & Container E2E
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -221,14 +233,37 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Run container smoke test
+      - name: Start container
         run: |
           docker run -d --name smoke-test -p 8080:8080 --read-only \
             --tmpfs /tmp --tmpfs /var/run --tmpfs /var/cache/nginx \
             rc-constructions:ci-test
           sleep 3
           curl --fail --retry 5 --retry-connrefused http://localhost:8080/healthz
-          docker stop smoke-test
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: playwright-cache-docker
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache-docker.outputs.cache-hit != 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Install Playwright OS dependencies
+        if: steps.playwright-cache-docker.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
+
+      - name: Run Playwright E2E with CSP verification against container
+        run: pnpm test:e2e
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:8080
+
+      - name: Stop container
+        if: always()
+        run: docker stop smoke-test || true
 
   ci-pass:
     name: ci-pass

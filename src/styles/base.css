@@ -1,3 +1,4 @@
+@import 'lenis/dist/lenis.css';
 @import '@fontsource-variable/big-shoulders-display';
 @import '@fontsource-variable/newsreader';
 
@@ -14,16 +15,17 @@ html {
   text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
 }
 
 body {
-  min-height: 100vh;
-  background-color: var(--surface-base);
-  color: var(--text-primary);
+  min-height: 100dvh;
+  background-color: var(--color-surface);
+  color: var(--color-ink);
   font-family: var(--font-body);
   font-size: var(--font-size-base);
-  line-height: var(--line-height-normal);
-  overflow-x: hidden;
+  line-height: var(--line-height-body);
+  overflow-x: clip;
 }
 
 h1,
@@ -34,9 +36,9 @@ h5,
 h6 {
   font-family: var(--font-headline);
   font-weight: 700;
-  line-height: var(--line-height-tight);
+  line-height: var(--line-height-heading);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--tracking-wide);
 }
 
 button,
@@ -70,11 +72,27 @@ video {
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--color-accent);
   outline-offset: 3px;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+
   *,
   *::before,
   *::after {

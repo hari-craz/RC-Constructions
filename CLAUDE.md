@@ -30,6 +30,13 @@ Single-page scroll-driven portfolio site where a building is progressively const
 - `pnpm docker:dev` — Run dev container with live reload
 - `pnpm compare:headers` — Verify header alignment between vercel.json and nginx.conf
 
+## Motion Engineering Rules
+
+1. **No Rogue GSAP**: Never call `ScrollTrigger.create` or `gsap.to` outside `useGSAP` or a dedicated hook with explicit cleanup.
+2. **Motion Token Discipline**: All numerical values animated by GSAP or consumed by scroll engines must reside in `src/lib/motion.ts`. Never use magic numbers in animation callbacks.
+3. **Reduced Motion Law**: Every animated feature must provide an explicit, graceful `prefers-reduced-motion: reduce` fallback path and a corresponding E2E verification test.
+4. **No `100vh`**: Never use `100vh` in CSS or JS layouts. Always use `100dvh` or `100svh` to avoid viewport layout jumps on mobile browsers.
+
 ## DevOps & Deployment Rules
 
 1. **Hosting**: Vercel Git integration exclusively. No Vercel deploy workflow or `VERCEL_TOKEN`.

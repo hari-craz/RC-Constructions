@@ -1,12 +1,18 @@
+import { Playground } from './app/Playground';
+import { ScrollProvider } from './app/ScrollProvider';
 import './App.css';
 
+/**
+ * Main application entry.
+ * Renders temporary Phase 3 Playground for motion and sheet-stack verification.
+ */
 export function App() {
   return (
-    <main className="placeholder-container">
-      <h1>RC Constructions</h1>
-      <p className="placeholder-lead">
-        Architectural and structural engineering portfolio. Foundation pipeline active.
-      </p>
-    </main>
+    <ScrollProvider>
+      <main>
+        <h1 className="sr-only">RC Constructions</h1>
+        <Playground />
+      </main>
+    </ScrollProvider>
   );
 }

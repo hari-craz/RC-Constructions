@@ -17,15 +17,28 @@ This document outlines the frontend architecture, scroll engine orchestration, d
 
 ### Lenis + GSAP ScrollTrigger Integration
 
-- **Single Scroll Provider**: A top-level Lenis instance initializes smooth virtual scrolling and drives the animation tick loop.
-- **ScrollTrigger Synchronization**: Lenis `on('scroll', ScrollTrigger.update)` ties virtualized smooth scroll positions directly into GSAP's scroll calculation engine.
-- **GSAP Ticker Hook**: `gsap.ticker.add((time) => lenis.raf(time * 1000))` locks both systems to the browser's native `requestAnimationFrame` lifecycle.
-- **Scroll Memory & Resize Protection**: Window resize listeners recompute trigger bounds using `ScrollTrigger.refresh()`.
+- **Single Scroll Provider (`ScrollProvider`)**: A top-level component instantiates a single Lenis smooth-scroll instance (`autoRaf: false`, `smoothWheel: true`) and wraps the entire application context via `ScrollContext`.
+- **Single Ticker Synchronization**: Lenis does not run an internal requestAnimationFrame loop. Instead, `gsap.ticker.add((time) => lenis.raf(time * 1000))` locks Lenis rendering directly to GSAP's ticker, eliminating timing desynchronization between virtual scroll interpolation and GSAP ScrollTrigger calculations. GSAP lag smoothing is configured with `lagSmoothing(500, 33)`.
+- **Trigger Refresh Rules**:
+  - `ScrollTrigger.refresh()` is automatically executed upon `document.fonts.ready` resolution to prevent layout shift inaccuracies caused by font loading.
+  - Window resize events recalculate trigger geometry with a 200ms debounce (`MOTION.scroll.resizeDebounceMs`), avoiding thrashing during viewport resizing.
+  - Mobile address bar resizing is insulated with `ScrollTrigger.config({ ignoreMobileResize: true })`.
+- **Ref-Counted Scroll Lock (`useScrollLock`)**:
+  - Dialogs, mobile menus, and modal overlays use `useScrollLock(locked: boolean)`.
+  - A central reference counter tracks nested lock consumers. When count transitions `0 -> 1`, `lenis.stop()` is invoked and body scroll is locked. When count returns to `0`, `lenis.start()` resumes virtual scrolling without premature unlocks from child unmounts.
+- **Section Spy & History State Synchronization**:
+  - `IntersectionObserver` tracks which `<section id>` occupies the viewport midpoint (`rootMargin: '-40% 0px -40% 0px'`).
+  - Active section updates the URL hash cleanly using `history.replaceState(null, '', `#${id}`)`, preventing the user's browser back button from being flooded with hundreds of scroll entries.
+  - `--page-progress` CSS custom property is throttled via `requestAnimationFrame` on `document.documentElement` to reflect `0.0000` to `1.0000` total viewport scroll progress.
+- **Clean Redirection & Reduced Motion Safety**:
+  - When `prefers-reduced-motion: reduce` is active, Lenis is completely omitted (`lenis: null`).
+  - Animations are disabled, and programmatic scrollTo reverts to native `element.scrollIntoView({ behavior: 'auto' })`.
 
 ### Transition Pattern: Sheet-Stack Layering
 
 - Sections stack physically like structural blueprints or architectural drafting sheets.
-- As the user scrolls into a new threshold, the incoming section translates over or peels away the previous section, creating a tangible sense of structural depth without jarring page jumps.
+- Outgoing sheets scale down to `scaleMin: 0.94`, round their corners to `32px`, and dim by `40%` as incoming sheets translate upward and square their top corners to `0px`.
+- Sticky tops are dynamically computed for tall sheets whose content height exceeds viewport height (`top: vh - height`), ensuring terminal elements are fully scrollable before subsequent sheets overlap.
 
 ---
 

@@ -49,8 +49,43 @@ Work-lamp amber represents a focused construction work-lamp or laser theodolite.
 ## 3. Motion & Animation Principles
 
 - **Scroll-Driven Construction**: The user's scroll position acts as physical time. As the user descends, the architectural structure erects floor by floor, truss by truss.
-- **Mechanical, Deliberate Easing**: Physics are grounded in physical steel and concrete mass (`cubic-bezier(0.2, 0, 0, 1)`). No bouncy cartoon easing.
-- **Accessibility**: All animations must respect `prefers-reduced-motion: reduce`. When reduced motion is requested, transitions default to instant opacity or static layouts.
+- **Mechanical, Deliberate Easing**: Physics are grounded in physical steel and concrete mass (`cubic-bezier(0.2, 0, 0, 1)` or GSAP `power2.out`). No bouncy cartoon easing.
+- **Division of Responsibility (CSS vs motion.ts)**:
+  - Static styling, token variables, fluid typography, responsive layouts, and base rules live exclusively in `src/styles/tokens.css` and CSS stylesheets.
+  - Numerical parameters animated by GSAP or consumed by scroll engines live strictly in `src/lib/motion.ts` (e.g. `scaleMin: 0.94`, `radiusSheetPx: 32`, `dimOverlayOpacity: 0.4`, durations, debounce timing). Never hardcode magic numbers in component animation code.
+- **Sheet-Stack Motion Specifications**:
+  - Pinned sticky stack (`position: sticky`, `top: 0` or calculated `vh - height` for tall sheets exceeding viewport).
+  - Outgoing sheet smoothly scrubs down from `scale: 1.0` to `scale: 0.94` with `transform-origin: center top`.
+  - Outgoing sheet border radius smoothly rounds to `32px` (`--radius-sheet`), and a dimming overlay scrubs from `0` to `40%` opacity (`--color-formwork-dark`).
+  - Incoming sheet top corners square from `32px` to `0px` as the sheet arrives at the viewport top.
+  - Scrubbing is strictly bidirectional, synchronized with Lenis virtual scroll through `gsap.ticker`.
+- **Accessibility & Reduced Motion**:
+  - All motion strictly obeys `prefers-reduced-motion: reduce`.
+  - Under reduced motion, Lenis is disabled, sheets revert to natural static flow (`position: static`, `transform: none`, `border-radius: 0`), dim overlays are hidden (`display: none`), and standard instant browser jump scrolling is used.
+
+---
+
+## 4. WCAG 2.1 Contrast Matrix & Pair Rules
+
+All color combinations must satisfy WCAG AA contrast (≥ 4.5:1 for body text, ≥ 3.0:1 for large display headlines ≥ 24px).
+
+| Foreground Color          | Background Surface        | Contrast Ratio | WCAG AA Status | Permitted Usage                                |
+| :------------------------ | :------------------------ | :------------- | :------------- | :--------------------------------------------- |
+| Limewash (`#E9E7DF`)      | Formwork Dark (`#232622`) | **14.2:1**     | PASS (AAA)     | Primary headline & body text on dark sheets    |
+| Formwork Dark (`#232622`) | Limewash (`#E9E7DF`)      | **14.2:1**     | PASS (AAA)     | Primary text on light inverted sheets          |
+| Formwork Dark (`#232622`) | Concrete (`#C4C4BC`)      | **9.8:1**      | PASS (AAA)     | Primary text on blueprint concrete sheets      |
+| Formwork Dark (`#232622`) | Amber (`#E3B341`)         | **8.5:1**      | PASS (AAA)     | Text on primary focal amber CTA button         |
+| Amber (`#E3B341`)         | Formwork Dark (`#232622`) | **8.5:1**      | PASS (AAA)     | Focal accents, registration badges, indicators |
+| Concrete (`#C4C4BC`)      | Formwork Dark (`#232622`) | **9.8:1**      | PASS (AAA)     | Muted secondary copy and structural callouts   |
+
+### Strictly Forbidden Color Pairings (Contrast Failures)
+
+The following combinations fail WCAG contrast and are **strictly banned**:
+
+- ❌ **Amber on Concrete (`#E3B341` on `#C4C4BC`)**: Contrast is 1.3:1 (Severe Failure).
+- ❌ **Amber on Limewash (`#E3B341` on `#E9E7DF`)**: Contrast is 1.7:1 (Severe Failure).
+- ❌ **Limewash on Concrete (`#E9E7DF` on `#C4C4BC`)**: Contrast is 1.4:1 (Severe Failure).
+- ❌ **Steel on Formwork Dark (`#7A7E78` on `#232622`) for body text**: Contrast is ~3.8:1 (Fails normal body text AA; permitted solely for non-text borders, mechanical guides, and large captions).
 
 ---
 

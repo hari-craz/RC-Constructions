@@ -13,13 +13,12 @@
   - Repo automation (Renovate with pinned TS/ESLint majors, issue/PR templates, CODEOWNERS, SECURITY.md).
   - Comprehensive deployment and branch protection documentation (`docs/DEPLOYMENT.md`).
 
-- [ ] **Phase 3: Design Tokens & Layout Infrastructure**
-  - Grid system, responsive layout tokens, and base layout shell.
-  - Survey grid background generator and theme primitives.
-
-- [ ] **Phase 4: Scroll Engine & Section Architecture**
-  - Lenis smooth scroll provider integration.
-  - GSAP ScrollTrigger timeline orchestrator and sheet-stack section transitions.
+- [x] **Phase 3: Design Tokens, Scroll Engine & Sheet-Stack Foundation**
+  - Finalized design tokens with semantic aliases, fluid type scale, and motion tokens in `src/lib/motion.ts`.
+  - Ticker-driven Lenis `ScrollProvider` synchronized with GSAP ScrollTrigger and lag smoothing.
+  - Ref-counted `useScrollLock`, active section spy with clean `history.replaceState`, and `--page-progress` variable.
+  - Bidirectional `SheetStack` component supporting tall sheets, scale and border-radius scrubbing, dim overlay, and complete reduced-motion fallback.
+  - Comprehensive unit and E2E test suites with zero axe violations and screenshot capture.
 
 - [ ] **Phase 5: Section 01 — Site Excavation & Foundation (Hero)**
   - Initial brand arrival, headline choreography, coordinate markers, and foundation reveal.

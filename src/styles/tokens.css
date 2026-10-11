@@ -1,44 +1,61 @@
 :root {
-  /* Brand palette */
+  /* Brand Palette */
   --color-concrete: #c4c4bc;
   --color-limewash: #e9e7df;
   --color-formwork-dark: #232622;
   --color-steel: #7a7e78;
   --color-work-lamp-amber: #e3b341;
 
-  /* Semantic surface & foreground tokens */
-  --surface-base: var(--color-formwork-dark);
-  --surface-subtle: #2c302b;
-  --surface-paper: var(--color-limewash);
-  --text-primary: var(--color-limewash);
-  --text-secondary: var(--color-concrete);
-  --text-muted: var(--color-steel);
-  --text-inverse: var(--color-formwork-dark);
-  --accent: var(--color-work-lamp-amber);
-  --border-subtle: rgb(122 126 120 / 25%);
-  --border-strong: var(--color-steel);
+  /* Semantic Aliases */
+  --color-surface: var(--color-formwork-dark);
+  --color-surface-raised: #2c302b;
+  --color-ink: var(--color-limewash);
+  --color-ink-muted: var(--color-concrete);
+  --color-line: var(--color-steel);
+  --color-line-subtle: rgb(122 126 120 / 25%);
+  --color-accent: var(--color-work-lamp-amber);
+  --color-accent-ink: var(--color-formwork-dark);
 
-  /* Typography */
+  /* Legacy aliases for backward compatibility */
+  --surface-base: var(--color-surface);
+  --surface-subtle: var(--color-surface-raised);
+  --surface-paper: var(--color-limewash);
+  --text-primary: var(--color-ink);
+  --text-secondary: var(--color-ink-muted);
+  --text-muted: var(--color-steel);
+  --text-inverse: var(--color-accent-ink);
+  --accent: var(--color-accent);
+  --border-subtle: var(--color-line-subtle);
+  --border-strong: var(--color-line);
+
+  /* Typography Families */
   --font-headline: 'Big Shoulders Display Variable', 'Big Shoulders Display', sans-serif;
   --font-body: 'Newsreader Variable', 'Newsreader', serif;
 
-  /* Type Scale */
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-base: 1rem;
-  --font-size-md: 1.125rem;
-  --font-size-lg: 1.5rem;
-  --font-size-xl: 2rem;
-  --font-size-2xl: 2.75rem;
-  --font-size-3xl: 3.75rem;
-  --font-size-4xl: 5rem;
-  --font-size-display: 7rem;
+  /* Fluid Type Scale (clamp) */
+  --font-size-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.8125rem);
+  --font-size-sm: clamp(0.875rem, 0.825rem + 0.25vw, 0.9375rem);
+  --font-size-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --font-size-md: clamp(1.125rem, 1.05rem + 0.375vw, 1.3125rem);
+  --font-size-lg: clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem);
+  --font-size-xl: clamp(2rem, 1.75rem + 1.25vw, 2.625rem);
+  --font-size-2xl: clamp(2.75rem, 2.25rem + 2.5vw, 3.75rem);
+  --font-size-3xl: clamp(3.75rem, 3rem + 3.75vw, 5.25rem);
+  --font-size-display: clamp(5rem, 3.75rem + 6.25vw, 8rem);
 
   /* Line Heights */
-  --line-height-tight: 1.05;
-  --line-height-snug: 1.25;
+  --line-height-display: 0.95;
+  --line-height-heading: 1.05;
+  --line-height-tight: 1.2;
   --line-height-normal: 1.5;
-  --line-height-relaxed: 1.7;
+  --line-height-body: 1.65;
+
+  /* Tracking (Letter Spacing) */
+  --tracking-tighter: -0.03em;
+  --tracking-tight: -0.015em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.04em;
+  --tracking-wider: 0.08em;
 
   /* Spacing Scale */
   --space-1: 0.25rem;
@@ -52,28 +69,37 @@
   --space-12: 6rem;
   --space-16: 8rem;
 
+  /* Layout */
+  --page-gutter: clamp(1rem, 0.5rem + 2.5vw, 3rem);
+  --max-content-width: 78rem;
+
   /* Radii */
   --radius-none: 0;
   --radius-sm: 2px;
   --radius-md: 4px;
   --radius-lg: 8px;
+  --radius-sheet: 32px;
 
-  /* Easing Curves */
+  /* Z-Index Layers */
+  --z-base: 1;
+  --z-sheet: 10;
+  --z-overlay: 20;
+  --z-nav: 30;
+  --z-cursor: 40;
+  --z-preloader: 50;
+
+  /* Static CSS Transitions */
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-entrance: cubic-bezier(0, 0, 0.2, 1);
   --ease-exit: cubic-bezier(0.4, 0, 1, 1);
-  --ease-linear: linear;
-
-  /* Durations */
   --duration-fast: 150ms;
   --duration-normal: 250ms;
   --duration-deliberate: 400ms;
+}
 
-  /* Z-index layers */
-  --z-background: -1;
-  --z-base: 1;
-  --z-header: 10;
-  --z-overlay: 20;
-  --z-modal: 30;
-  --z-survey: 40;
+.container {
+  width: 100%;
+  max-width: var(--max-content-width);
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
 }
