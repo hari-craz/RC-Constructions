@@ -69,11 +69,13 @@ test.describe('Phase 6 — Evolving Building Scroll Construction', () => {
     await page.evaluate((targetY) => {
       const lenis = (
         window as unknown as {
-          __lenis?: { scrollTo: (t: number, opts?: { immediate?: boolean }) => void };
+          __lenis?: {
+            scrollTo: (t: number, opts?: { duration?: number }) => void;
+          };
         }
       ).__lenis;
       if (lenis) {
-        lenis.scrollTo(targetY, { immediate: true });
+        lenis.scrollTo(targetY, { duration: 0.3 });
       } else {
         window.scrollTo(0, targetY);
       }
@@ -82,18 +84,20 @@ test.describe('Phase 6 — Evolving Building Scroll Construction', () => {
     await expect(siteWindow).toHaveAttribute('data-stage', 'structure');
 
     // 8. Reversible un-build: Scroll back to Hero
-    await page.evaluate((target) => {
+    await page.evaluate(() => {
       const lenis = (
         window as unknown as {
-          __lenis?: { scrollTo: (t: string | number, opts?: { immediate?: boolean }) => void };
+          __lenis?: {
+            scrollTo: (t: number, opts?: { duration?: number }) => void;
+          };
         }
       ).__lenis;
       if (lenis) {
-        lenis.scrollTo(target, { immediate: true });
+        lenis.scrollTo(0, { duration: 0.3 });
       } else {
         window.scrollTo(0, 0);
       }
-    }, 0);
+    });
     await page.waitForTimeout(800);
     await expect(siteWindow).toHaveAttribute('data-stage', /survey|hero/);
 

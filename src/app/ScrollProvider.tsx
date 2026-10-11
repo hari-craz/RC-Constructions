@@ -47,6 +47,33 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
     doc.style.setProperty('--page-progress', progress.toFixed(4));
   }, []);
 
+  const updateActiveSection = useCallback(() => {
+    const sections = Array.from(document.querySelectorAll<HTMLElement>('section[id]'));
+    if (sections.length === 0) return;
+
+    const threshold = window.innerHeight * 0.45;
+    let currentActive = sections[0].id;
+
+    for (const section of sections) {
+      const rect = section.getBoundingClientRect();
+      if (rect.top <= threshold) {
+        currentActive = section.id;
+      } else {
+        break;
+      }
+    }
+
+    setActiveSection((prev) => {
+      if (prev !== currentActive) {
+        if (window.location.hash !== `#${currentActive}`) {
+          history.replaceState(null, '', `#${currentActive}`);
+        }
+        return currentActive;
+      }
+      return prev;
+    });
+  }, []);
+
   const scrollTo = useCallback(
     (target: string | HTMLElement, options?: ScrollToOptions) => {
       const lenis = lenisRef.current;
@@ -85,11 +112,14 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
       requestAnimationFrame(() => {
         rAFPending = false;
         updatePageProgress();
+        updateActiveSection();
       });
     };
 
+    window.addEventListener('scroll', throttledProgress, { passive: true });
+
     if (reducedMotion) {
-      window.addEventListener('scroll', throttledProgress, { passive: true });
+      throttledProgress();
       return () => {
         window.removeEventListener('scroll', throttledProgress);
       };
@@ -127,6 +157,7 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
     throttledProgress();
 
     return () => {
+      window.removeEventListener('scroll', throttledProgress);
       if (typeof window !== 'undefined') {
         delete (window as unknown as { __lenis?: Lenis }).__lenis;
       }
@@ -135,7 +166,7 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
       listeners.forEach((listener) => listener());
       gsap.ticker.remove(onTick);
     };
-  }, [reducedMotion, updatePageProgress]);
+  }, [reducedMotion, updatePageProgress, updateActiveSection]);
 
   // Refresh ScrollTrigger after font loading and on debounced resize
   useEffect(() => {
@@ -162,10 +193,8 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
     };
   }, [reducedMotion]);
 
-  // Section spy and initial hash handling
+  // Initial hash handling
   useEffect(() => {
-    let initialHashHandled = typeof window === 'undefined' || !window.location.hash;
-
     const handleInitialHash = () => {
       const hash = window.location.hash;
       if (hash) {
@@ -175,10 +204,9 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
           setActiveSection(id);
           scrollTo(element, { immediate: true });
         }
+      } else {
+        updateActiveSection();
       }
-      setTimeout(() => {
-        initialHashHandled = true;
-      }, 300);
     };
 
     if (document.fonts?.ready) {
@@ -186,36 +214,7 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
     } else {
       handleInitialHash();
     }
-
-    // Section spy observing sections crossing the viewport middle
-    const sections = Array.from(document.querySelectorAll<HTMLElement>('section[id]'));
-    if (sections.length === 0 || typeof IntersectionObserver === 'undefined') return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (!initialHashHandled) return;
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const id = entry.target.id;
-            setActiveSection(id);
-            if (window.location.hash !== `#${id}`) {
-              history.replaceState(null, '', `#${id}`);
-            }
-          }
-        }
-      },
-      {
-        rootMargin: '-40% 0px -40% 0px',
-        threshold: 0,
-      },
-    );
-
-    sections.forEach((s) => observer.observe(s));
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [scrollTo]);
+  }, [scrollTo, updateActiveSection]);
 
   const value = useMemo<ScrollContextValue>(
     () => ({
