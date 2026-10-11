@@ -167,3 +167,40 @@ The following design clichés and defaults are **strictly forbidden** in this pr
   - Stock-looking hero patterns (e.g. giant generic number + gradient accent).
 - **Banned Fonts**:
   - Space Grotesk, Inter, Archivo, Roboto, and default tech-bro typography picks.
+
+---
+
+## 7. Survey-Marker Cursor & Focus Specification (Phase 8)
+
+### Survey-Marker Cursor Law
+
+The custom cursor evokes a surveyor's optical level crosshair. It is engineered with strict restraint:
+
+- **Target Devices**: Mounted strictly on devices matching `(hover: hover) and (pointer: fine)`. Never rendered or instantiated on touch devices.
+- **Native Cursor Co-existence**: Native cursor is **always kept visible**. `cursor: none` is forbidden globally. Over form fields (`input`, `textarea`, `select`), the survey marker fades out completely and the native I-beam cursor operates unhindered.
+- **Color & Tone Rules**:
+  - Never uses amber (`#E3B341`).
+  - Tone is determined contextually by the underlying surface:
+    - **Ink (`--color-formwork-dark`)** on light surfaces (`--color-concrete`, `--color-limewash`).
+    - **Limewash (`--color-limewash`)** on dark surfaces (`--color-formwork-dark`).
+    - Handled via `data-cursor-tone="dark"` or `"light"`.
+- **States & Geometry (`data-cursor`)**:
+  - **`default`**: Fine crosshair composed of two hairlines and a 2px center dot.
+  - **`link`**: Frame opens to a 28px square bracket drawing frame on hover over links and buttons.
+  - **`project`**: 28px bracket frame with an "Open" label set in Newsreader (13px) for project register rows.
+  - **`hidden`**: Opacity 0 when cursor leaves the window or enters text editable elements.
+- **Performance & Mechanical Motion**:
+  - Driven by `gsap.quickTo` on x/y translate transforms. Zero layout shifts. Passive single `pointermove` listener.
+  - All pointer events pass through (`pointer-events: none`).
+  - Under `prefers-reduced-motion: reduce`, marker follows coordinates with instant damping (no easing lag), and bracket state changes do not animate.
+
+### Universal Focus-Visible Standard
+
+- Every interactive element across the document and within project overlays features a unified `:focus-visible` ring:
+  ```css
+  :focus-visible {
+    outline: 2px solid currentcolor;
+    outline-offset: 3px;
+  }
+  ```
+- Complies with WCAG 2.4.7 (Focus Visible) and WCAG 2.4.11 (Focus Appearance).

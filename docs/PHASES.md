@@ -44,9 +44,10 @@
   - [x] **7C done**: Completion stats with ruled title-block grid and count-up helper, and Founder monograph section with 4:5 reserved portrait slot.
   - [x] **7D done**: Real Contact section wired to Formspree, full validation, honeypot, rate guard, and minimal footer. Every section on the page is now real content.
 
-- [ ] **Phase 8: Section 05 — Contact Form & Survey Marker**
-  - Formspree integration with typed validation and accessible form controls.
-  - Footer coordinates and physical survey badge.
+- [x] **Phase 8: Polish (Loading Sequence, Cursor, Project Overlays)**
+  - Hairline amber dimension line loading sequence capping at 1.2s with session skip.
+  - Fine-pointer survey-marker custom cursor with contextual state transitions (default, link, project, hidden) and tone adaptation.
+  - Lazy-loaded full-height project detail overlay sheet with focus trap, scroll lock, URL hash syncing, and accessible adjacent project navigation.
 
 - [ ] **Phase 9: Performance Tuning, A11y Audit & Release**
   - Full Lighthouse audit verification (>= 0.85 perf, >= 0.95 a11y).

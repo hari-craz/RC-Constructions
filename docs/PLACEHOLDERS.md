@@ -88,3 +88,14 @@ All temporary section stubs have been completely replaced with real content as o
 | `CONTACT_CONFIG.address`      | `"Survey Plot 104, Industrial Corridor, Chennai"` | `src/content/contact.ts` | Verified site office & yard address.       |
 | `CONTACT_CONFIG.workingHours` | `"Monday to Saturday, 08:00 – 18:00 IST"`         | `src/content/contact.ts` | Official client site working hours.        |
 | `VITE_FORMSPREE_ID`           | Environment variable                              | `.env` / `vercel.json`   | Production Formspree form endpoint ID.     |
+
+---
+
+## 9. Phase 8 Project Overlays Placeholders (`src/content/projects.ts`)
+
+| Key                                    | Current Placeholder Value                                | Source File               | Replacement Target / Action                                |
+| :------------------------------------- | :------------------------------------------------------- | :------------------------ | :--------------------------------------------------------- |
+| `PROJECTS_CONTENT.projects[*].role`    | `"Main contractor // PLACEHOLDER"`                       | `src/content/projects.ts` | Verified contractual project role per tender.              |
+| `PROJECTS_CONTENT.projects[*].brief`   | Architectural summary brief (60–90 words)                | `src/content/projects.ts` | Approved client project brief and case study narrative.    |
+| `PROJECTS_CONTENT.projects[*].scope`   | 3 complete scope sentences                               | `src/content/projects.ts` | Detailed bills of quantities and work package scope.       |
+| `PROJECTS_CONTENT.projects[*].gallery` | 3 reserved concrete slots with captions (18 total slots) | `src/content/projects.ts` | High-resolution architectural on-site construction photos. |

@@ -109,3 +109,14 @@ Outside the 6 building stages (`survey` through `completion`), the building elev
 - The editorial monograph sheet stacks at `z-index: calc(var(--z-overlay) + 5)`, smoothly handing the full viewport width to the Founder monograph spread (large display typography, pull quote, bio, 3 ruled facts, and the 4:5 portrait reserved slot).
 - The transition is completely clean: no sudden layout shifts or DOM unmounting occur.
 - When the visitor scrolls back up to `#completion`, the Founder sheet uncovers, revealing the lit building elevation in its completed state.
+
+---
+
+## 6. Loading Sequence Dimension Line Handoff (Phase 8)
+
+During initial page visit, a measured hairline amber dimension line draws left-to-right along the viewport baseline while fonts (`document.fonts.ready`) and the Hero intro timeline prepare:
+
+- **Non-blocking Architectural Cue**: Height 1px, `--color-accent`, flanked by start/end survey tick marks and the company wordmark. Sits at viewport bottom with `pointer-events: none` and does not occlude first paint content.
+- **Handoff Mechanism**: Capped at max 1.2s duration. As the Hero intro completes, the line retracts from left to right (`scaleX: 1 -> 0`), cleanly handing off visual focus to the Hero survey plot's amber setback dimension lines without duplicate drawings.
+- **Session Intelligence**: Skipped on subsequent visits within the same session using safe `sessionStorage` checks (`rc_intro_seen`). Works gracefully if storage access is restricted or throws.
+- **Reduced Motion & No-JS**: Bypasses animation entirely under `prefers-reduced-motion: reduce`. The element is never rendered in static server-rendered HTML.

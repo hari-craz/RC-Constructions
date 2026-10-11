@@ -67,4 +67,23 @@ export const MOTION = {
     revealDuration: 0.9,
     ease: 'power2.out',
   },
+  loading: {
+    maxDuration: 1.2,
+    retractDuration: 0.4,
+    ease: 'power2.out',
+  },
+  cursor: {
+    quickToDuration: 0.15,
+    quickToEase: 'power2.out',
+    frameSize: 28,
+    dotSize: 2,
+    crosshairLength: 8,
+  },
+  overlay: {
+    sheetRiseDuration: 0.7,
+    sheetFallDuration: 0.5,
+    ease: 'power2.out',
+    backdropDimOpacity: 0.4,
+    scaleBackground: 0.94,
+  },
 } as const;

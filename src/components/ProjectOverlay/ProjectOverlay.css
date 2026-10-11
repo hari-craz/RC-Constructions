@@ -1,0 +1,285 @@
+/* Project Detail Overlay */
+.project-overlay-portal {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: auto;
+}
+
+/* 40% Backdrop Dimmer */
+.project-overlay-backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-formwork-dark);
+  opacity: 0.4;
+  cursor: pointer;
+}
+
+/* Riser Sheet */
+.project-overlay-sheet {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 860px;
+  height: 100%;
+  background-color: var(--color-limewash);
+  color: var(--color-formwork-dark);
+  border-top-left-radius: var(--radius-sheet);
+  border-top-right-radius: var(--radius-sheet);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+/* Internal native scroll container with contain overscroll */
+.project-overlay-scroll-container {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.project-overlay-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--color-steel);
+  padding-bottom: var(--space-6);
+  position: relative;
+}
+
+.project-overlay-kicker-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--font-headline);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-stone);
+}
+
+.project-overlay-title {
+  margin: 0;
+  font-family: var(--font-headline);
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  font-weight: 800;
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--tracking-tight);
+  text-transform: uppercase;
+  color: var(--color-formwork-dark);
+  padding-right: 80px;
+}
+
+/* Visible Close Button in Header (first in tab order) */
+.project-overlay-close-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: transparent;
+  border: 1px solid var(--color-steel);
+  color: var(--color-formwork-dark);
+  font-family: var(--font-headline);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.project-overlay-close-btn:hover {
+  background-color: rgb(26 28 25 / 5%);
+  border-color: var(--color-formwork-dark);
+}
+
+.project-overlay-close-btn:focus-visible {
+  outline: 2px solid var(--color-formwork-dark);
+  outline-offset: 2px;
+}
+
+/* Meta Specs DL */
+.project-overlay-specs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-4);
+  background-color: var(--color-concrete);
+  border: 1px solid var(--color-steel);
+}
+
+.project-spec-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.project-spec-key {
+  font-family: var(--font-headline);
+  font-size: 0.6875rem;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-stone);
+}
+
+.project-spec-val {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-formwork-dark);
+}
+
+/* Section Blocks */
+.project-overlay-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.project-overlay-section-title {
+  margin: 0;
+  font-family: var(--font-headline);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-formwork-dark);
+  border-bottom: 1px solid var(--color-steel);
+  padding-bottom: var(--space-2);
+}
+
+.project-overlay-brief-text,
+.project-overlay-outcome-text {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-body);
+  color: var(--color-formwork-dark);
+  max-width: 65ch;
+}
+
+.project-overlay-scope-list {
+  margin: 0;
+  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-body);
+  color: var(--color-formwork-dark);
+}
+
+/* Reserved Concrete Gallery Grid */
+.project-overlay-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.project-overlay-gallery-slot {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.gallery-slot-block {
+  aspect-ratio: 16 / 10;
+  background-color: var(--color-concrete);
+  border: 1px solid var(--color-steel);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3);
+  text-align: center;
+}
+
+.gallery-slot-placeholder-mark {
+  font-family: var(--font-headline);
+  font-size: 0.6875rem;
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-stone);
+}
+
+.gallery-slot-caption {
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  line-height: var(--line-height-normal);
+  color: var(--color-stone);
+}
+
+/* Footer Adjacent Links */
+.project-overlay-footer {
+  border-top: 1px solid var(--color-steel);
+  padding-top: var(--space-6);
+  margin-top: auto;
+}
+
+.project-adjacent-links {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.project-adjacent-btn {
+  background: transparent;
+  border: 1px solid var(--color-steel);
+  color: var(--color-formwork-dark);
+  font-family: var(--font-headline);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.project-adjacent-btn:hover {
+  background-color: rgb(26 28 25 / 5%);
+  border-color: var(--color-formwork-dark);
+}
+
+.project-adjacent-btn:focus-visible {
+  outline: 2px solid var(--color-formwork-dark);
+  outline-offset: 2px;
+}
+
+/* Mobile full-screen */
+@media (width < 768px) {
+  .project-overlay-sheet {
+    max-width: 100%;
+    border-radius: 0;
+  }
+
+  .project-overlay-scroll-container {
+    padding: var(--space-4);
+  }
+
+  .project-adjacent-links {
+    flex-direction: column;
+  }
+}

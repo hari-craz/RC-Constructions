@@ -70,7 +70,10 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
 
     setActiveSection((prev) => {
       if (prev !== currentActive) {
-        if (window.location.hash !== `#${currentActive}`) {
+        if (
+          window.location.hash !== `#${currentActive}` &&
+          !window.location.hash.startsWith('#project-')
+        ) {
           history.replaceState(null, '', `#${currentActive}`);
         }
         return currentActive;

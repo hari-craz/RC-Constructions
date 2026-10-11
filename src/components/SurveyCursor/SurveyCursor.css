@@ -1,0 +1,172 @@
+/* Survey-Marker Custom Cursor */
+.survey-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  will-change: transform, opacity;
+}
+
+.survey-cursor.is-hidden {
+  opacity: 0 !important;
+}
+
+.survey-cursor-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  transform: translate(-50%, -50%);
+}
+
+/* Tone bindings: ink on light surfaces, limewash on dark surfaces (no amber) */
+.survey-cursor.cursor-tone-light {
+  --cur-color: var(--color-formwork-dark);
+}
+
+.survey-cursor.cursor-tone-dark {
+  --cur-color: var(--color-limewash);
+}
+
+/* Center 2px precision dot */
+.cursor-dot {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background-color: var(--cur-color);
+  border-radius: 50%;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+
+/* Hairline crosshairs (default state: visible, expand away in frame states) */
+.cursor-hairline-h {
+  position: absolute;
+  width: 16px;
+  height: 1px;
+  background-color: var(--cur-color);
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.15s ease;
+}
+
+.cursor-hairline-v {
+  position: absolute;
+  width: 1px;
+  height: 16px;
+  background-color: var(--cur-color);
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.15s ease;
+}
+
+/* 28px Square bracket corners (link and project states) */
+.cursor-bracket {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-color: var(--cur-color);
+  opacity: 0;
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.15s ease;
+}
+
+.cursor-bracket-tl {
+  top: 0;
+  left: 0;
+  border-top: 1px solid var(--cur-color);
+  border-left: 1px solid var(--cur-color);
+  transform: scale(0.6);
+}
+
+.cursor-bracket-tr {
+  top: 0;
+  right: 0;
+  border-top: 1px solid var(--cur-color);
+  border-right: 1px solid var(--cur-color);
+  transform: scale(0.6);
+}
+
+.cursor-bracket-bl {
+  bottom: 0;
+  left: 0;
+  border-bottom: 1px solid var(--cur-color);
+  border-left: 1px solid var(--cur-color);
+  transform: scale(0.6);
+}
+
+.cursor-bracket-br {
+  bottom: 0;
+  right: 0;
+  border-bottom: 1px solid var(--cur-color);
+  border-right: 1px solid var(--cur-color);
+  transform: scale(0.6);
+}
+
+/* Project row badge label: "Open" in Newsreader 13px */
+.cursor-label {
+  position: absolute;
+  left: 34px;
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--cur-color);
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+  transform: translateX(-4px);
+}
+
+/* State: Link / Button */
+.cursor-state-link .cursor-hairline-h,
+.cursor-state-link .cursor-hairline-v {
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+.cursor-state-link .cursor-bracket {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* State: Project row */
+.cursor-state-project .cursor-hairline-h,
+.cursor-state-project .cursor-hairline-v {
+  opacity: 0;
+  transform: scale(0.4);
+}
+
+.cursor-state-project .cursor-bracket {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.cursor-state-project .cursor-label {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Reduced motion overrides: instant state switches, zero animations */
+@media (prefers-reduced-motion: reduce) {
+  .survey-cursor,
+  .cursor-dot,
+  .cursor-hairline-h,
+  .cursor-hairline-v,
+  .cursor-bracket,
+  .cursor-label {
+    transition: none !important;
+  }
+}

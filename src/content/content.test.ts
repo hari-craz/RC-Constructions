@@ -114,7 +114,20 @@ describe('Projects content model', () => {
       expect(project.location.trim()).not.toBe('');
       expect(project.year.trim()).not.toBe('');
       expect(project.builtArea.trim()).not.toBe('');
-      expect(project.outcome.trim()).not.toBe('');
+      expect(project.slug.trim()).not.toBe('');
+      expect(project.duration.trim()).not.toBe('');
+      expect(project.role.trim()).not.toBe('');
+      expect(project.brief.trim()).not.toBe('');
+      const wordCount = project.brief.trim().split(/\s+/).length;
+      expect(wordCount).toBeGreaterThanOrEqual(60);
+      expect(wordCount).toBeLessThanOrEqual(90);
+      expect(project.scope).toHaveLength(3);
+      project.scope.forEach((s) => expect(s.trim().endsWith('.')).toBe(true));
+      expect(project.gallery).toHaveLength(3);
+      project.gallery.forEach((g) => {
+        expect(g.id.trim()).not.toBe('');
+        expect(g.caption.trim()).not.toBe('');
+      });
     });
   });
 
@@ -127,7 +140,12 @@ describe('Projects content model', () => {
         p.location,
         p.year,
         p.builtArea,
+        p.duration,
+        p.role,
+        p.brief,
+        ...p.scope,
         p.outcome,
+        ...p.gallery.map((g) => g.caption),
       ]),
     ].join(' ');
 

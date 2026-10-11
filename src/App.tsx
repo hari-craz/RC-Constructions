@@ -1,7 +1,9 @@
 import { ScrollProvider } from './app/ScrollProvider';
 import { Building } from './components/Building';
+import { LoadingLine } from './components/LoadingLine';
 import { Nav } from './components/Nav';
 import { SheetStack } from './components/SheetStack';
+import { SurveyCursor } from './components/SurveyCursor';
 import { About } from './sections/About';
 import { Completion } from './sections/Completion';
 import { Contact } from './sections/Contact';
@@ -14,13 +16,13 @@ import './App.css';
 
 /**
  * Main application entry for RC Constructions.
- * Phase 7 renders Nav, Building elevation canvas, and SheetStack containing
- * Hero (Survey), About (Foundation), Services (Structure), Projects (Envelope),
- * Process (Fit-out), Completion (Handover stats), Founder monograph, and Contact.
+ * Phase 8 integrates LoadingLine sequence, SurveyCursor, and ProjectOverlay.
  */
 export function App() {
   return (
     <ScrollProvider>
+      <LoadingLine />
+      <SurveyCursor />
       <Nav />
       <Building />
       <main id="main">

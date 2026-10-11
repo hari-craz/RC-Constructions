@@ -1,10 +1,25 @@
-import { useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Sheet } from '../../components/SheetStack';
-import { PROJECTS_CONTENT, type ProjectItem } from '../../content/projects';
+import {
+  getProjectById,
+  getProjectBySlug,
+  PROJECTS_CONTENT,
+  type ProjectItem,
+} from '../../content/projects';
 import { ENVELOPE_STAGE } from '../../data/stages';
 import { useScroll } from '../../hooks/useScroll';
 import { gsap, useGSAP } from '../../lib/gsap';
+import { parseProjectHash } from '../../lib/slug';
 import './Projects.css';
+
+// Lazy-load ProjectOverlay to keep main bundle small
+const ProjectOverlay = lazy(() =>
+  import('../../components/ProjectOverlay').then((m) => ({ default: m.ProjectOverlay })),
+);
+
+const prefetchOverlay = () => {
+  import('../../components/ProjectOverlay');
+};
 
 const stage = ENVELOPE_STAGE;
 const content = PROJECTS_CONTENT;
@@ -13,19 +28,33 @@ interface ProjectRowProps {
   project: ProjectItem;
   isActive: boolean;
   onActivate: (projectId: string) => void;
+  onOpen: (projectId: string, triggerEl: HTMLElement) => void;
 }
 
-function ProjectRow({ project, isActive, onActivate }: ProjectRowProps) {
+function ProjectRow({ project, isActive, onActivate, onOpen }: ProjectRowProps) {
   return (
-    <li className={`projects-row-item ${isActive ? 'is-active' : ''}`} data-project-id={project.id}>
+    <li
+      className={`projects-row-item ${isActive ? 'is-active' : ''}`}
+      data-project-id={project.id}
+      data-cursor="project"
+    >
       <button
         type="button"
         className="projects-row-btn"
         aria-expanded={isActive}
-        aria-label={`Project ${project.number}: ${project.name}, ${project.category}, ${project.location}`}
-        onClick={() => onActivate(project.id)}
-        onFocus={() => onActivate(project.id)}
-        onMouseEnter={() => onActivate(project.id)}
+        aria-label={`Project ${project.number}: ${project.name}, ${project.category}, ${project.location}. Click to open detail sheet.`}
+        onClick={(e) => {
+          onActivate(project.id);
+          onOpen(project.id, e.currentTarget);
+        }}
+        onFocus={() => {
+          onActivate(project.id);
+          prefetchOverlay();
+        }}
+        onMouseEnter={() => {
+          onActivate(project.id);
+          prefetchOverlay();
+        }}
       >
         <div className="projects-row-top">
           <div className="projects-row-ident">
@@ -51,14 +80,80 @@ function ProjectRow({ project, isActive, onActivate }: ProjectRowProps) {
 export function Projects() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const registerRef = useRef<HTMLUListElement | null>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+
   const firstProject = content.projects[0];
   const [activeProjectId, setActiveProjectId] = useState<string>(
     firstProject ? firstProject.id : '',
   );
+  const [overlayProjectId, setOverlayProjectId] = useState<string | null>(null);
   const { reducedMotion } = useScroll();
 
   const activeProject =
     content.projects.find((p) => p.id === activeProjectId) ?? content.projects[0];
+  const overlayProject = overlayProjectId ? (getProjectById(overlayProjectId) ?? null) : null;
+
+  // Sync state with URL hash (#project-<slug>) on direct visit, reload, or back/forward
+  useEffect(() => {
+    const handleHashChange = () => {
+      const slug = parseProjectHash(window.location.hash);
+      if (slug) {
+        const found = getProjectBySlug(slug);
+        if (found) {
+          setOverlayProjectId(found.id);
+          setActiveProjectId(found.id);
+
+          // Scroll projects section into place behind overlay on direct visit
+          const sectionEl = document.getElementById(stage.sectionId);
+          if (sectionEl && window.scrollY < 100) {
+            sectionEl.scrollIntoView({ behavior: 'auto' });
+          }
+        }
+      } else {
+        setOverlayProjectId(null);
+      }
+    };
+
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    window.addEventListener('popstate', handleHashChange);
+
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('popstate', handleHashChange);
+    };
+  }, []);
+
+  const handleOpenOverlay = (projectId: string, triggerEl: HTMLElement) => {
+    triggerRef.current = triggerEl;
+    const project = getProjectById(projectId);
+    if (project) {
+      setOverlayProjectId(project.id);
+      const targetHash = `#project-${project.slug}`;
+      if (window.location.hash !== targetHash) {
+        history.pushState(null, '', targetHash);
+      }
+    }
+  };
+
+  const handleCloseOverlay = () => {
+    setOverlayProjectId(null);
+    if (window.location.hash.startsWith('#project-')) {
+      history.back();
+    }
+  };
+
+  const handleSelectAdjacent = (nextId: string) => {
+    const nextProj = getProjectById(nextId);
+    if (nextProj) {
+      setOverlayProjectId(nextProj.id);
+      setActiveProjectId(nextProj.id);
+      const targetHash = `#project-${nextProj.slug}`;
+      if (window.location.hash !== targetHash) {
+        history.replaceState(null, '', targetHash);
+      }
+    }
+  };
 
   useGSAP(
     () => {
@@ -84,46 +179,65 @@ export function Projects() {
   );
 
   return (
-    <Sheet id={stage.sectionId} label={content.kicker} tone={stage.tone} className="projects-sheet">
-      <div ref={containerRef} className="container projects-content">
-        <header className="projects-header">
-          <div className="projects-kicker-row">
-            <span className="projects-kicker">{content.kicker}</span>
-            <span className="projects-code">{content.registerCode}</span>
-          </div>
-          <h2 className="projects-title">{content.title}</h2>
-        </header>
-
-        {/* PLACEHOLDER: Flat architectural preview slot reserved for project elevation / drawing */}
-        <div
-          className="projects-preview-slot"
-          role="region"
-          aria-label="Selected Project Architectural Preview"
-        >
-          <div className="projects-preview-badge">
-            {'// PLACEHOLDER: ARCHITECTURAL ELEVATION DRAWING SLOT (1200 × 675)'}
-          </div>
-          {activeProject && (
-            <div className="projects-preview-info">
-              <span className="projects-preview-name">
-                {activeProject.number} · {activeProject.name}
-              </span>
-              <span className="projects-preview-outcome">{activeProject.outcome}</span>
+    <>
+      <Sheet
+        id={stage.sectionId}
+        label={content.kicker}
+        tone={stage.tone}
+        className="projects-sheet"
+      >
+        <div ref={containerRef} className="container projects-content">
+          <header className="projects-header">
+            <div className="projects-kicker-row">
+              <span className="projects-kicker">{content.kicker}</span>
+              <span className="projects-code">{content.registerCode}</span>
             </div>
-          )}
-        </div>
+            <h2 className="projects-title">{content.title}</h2>
+          </header>
 
-        <ul ref={registerRef} className="projects-register" aria-label="Selected Projects Index">
-          {content.projects.map((project) => (
-            <ProjectRow
-              key={project.id}
-              project={project}
-              isActive={project.id === activeProjectId}
-              onActivate={setActiveProjectId}
-            />
-          ))}
-        </ul>
-      </div>
-    </Sheet>
+          {/* Architectural preview slot reserved for project elevation */}
+          <div
+            className="projects-preview-slot"
+            role="region"
+            aria-label="Selected Project Architectural Preview"
+          >
+            <div className="projects-preview-badge">
+              {'// PLACEHOLDER: ARCHITECTURAL ELEVATION DRAWING SLOT (1200 × 675)'}
+            </div>
+            {activeProject && (
+              <div className="projects-preview-info">
+                <span className="projects-preview-name">
+                  {activeProject.number} · {activeProject.name}
+                </span>
+                <span className="projects-preview-outcome">{activeProject.outcome}</span>
+              </div>
+            )}
+          </div>
+
+          <ul ref={registerRef} className="projects-register" aria-label="Selected Projects Index">
+            {content.projects.map((project) => (
+              <ProjectRow
+                key={project.id}
+                project={project}
+                isActive={project.id === activeProjectId}
+                onActivate={setActiveProjectId}
+                onOpen={handleOpenOverlay}
+              />
+            ))}
+          </ul>
+        </div>
+      </Sheet>
+
+      {/* Lazy-loaded Project Detail Sheet */}
+      <Suspense fallback={null}>
+        <ProjectOverlay
+          project={overlayProject}
+          isOpen={Boolean(overlayProjectId && overlayProject)}
+          onClose={handleCloseOverlay}
+          onSelectProject={handleSelectAdjacent}
+          returnFocusRef={triggerRef}
+        />
+      </Suspense>
+    </>
   );
 }

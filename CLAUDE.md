@@ -47,8 +47,8 @@ Single-page scroll-driven portfolio site where a building is progressively const
 ## Folder Map
 
 - `src/app/` — Application providers, scroll controller, layout wrappers
-- `src/sections/` — Discrete portfolio sections (Hero, Blueprint, Structural, Projects, Contact)
-- `src/components/` — Shared, reusable UI primitives
+- `src/sections/` — Discrete portfolio sections (Hero, About, Services, Projects, Process, Completion, Founder, Contact)
+- `src/components/` — Shared, reusable UI primitives (LoadingLine, SurveyCursor, ProjectOverlay, Sheet, etc.)
 - `src/content/` — Typed content schemas and datasets (`types.ts`)
 - `src/hooks/` — Custom hooks (motion preferences, measurements, scroll)
 - `src/lib/` — Utilities, GSAP & Lenis orchestration
