@@ -27,6 +27,9 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
     }
     return '';
   });
+  const initialHashHandledRef = useRef<boolean>(
+    typeof window === 'undefined' || !window.location.hash,
+  );
 
   const subscribe = useCallback((onStoreChange: () => void) => {
     listenersRef.current.add(onStoreChange);
@@ -48,11 +51,13 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
   }, []);
 
   const updateActiveSection = useCallback(() => {
+    if (!initialHashHandledRef.current) return;
     const sections = Array.from(document.querySelectorAll<HTMLElement>('section[id]'));
-    if (sections.length === 0) return;
+    const firstSection = sections[0];
+    if (!firstSection) return;
 
     const threshold = window.innerHeight * 0.45;
-    let currentActive = sections[0].id;
+    let currentActive = firstSection.id;
 
     for (const section of sections) {
       const rect = section.getBoundingClientRect();
@@ -204,7 +209,12 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
           setActiveSection(id);
           scrollTo(element, { immediate: true });
         }
+        setTimeout(() => {
+          initialHashHandledRef.current = true;
+          updateActiveSection();
+        }, 300);
       } else {
+        initialHashHandledRef.current = true;
         updateActiveSection();
       }
     };

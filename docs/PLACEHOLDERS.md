@@ -19,12 +19,12 @@ Every item listed here must be replaced with verified client material before fin
 
 ---
 
-## 2. Temporary Section Stubs (`src/sections/_stubs/`)
+## 2. Temporary Section Stubs (`src/sections/_stubs/` & `src/sections/_stages/`)
 
-| Component / Section                                   | Purpose                                                            | Replacement Phase                  |
-| :---------------------------------------------------- | :----------------------------------------------------------------- | :--------------------------------- |
-| `AboutStub` (`src/sections/_stubs/AboutStub.tsx`)     | Minimal interim sheet to anchor SheetStack slide-over transitions. | Phase 6 (`Structural` & `Metrics`) |
-| `ContactStub` (`src/sections/_stubs/ContactStub.tsx`) | Minimal interim sheet to resolve `#contact` navigation anchor.     | Phase 8 (`Contact` with Formspree) |
+| Component / Section                                            | Purpose                                                        | Replacement Phase                       |
+| :------------------------------------------------------------- | :------------------------------------------------------------- | :-------------------------------------- |
+| `ContactStub` (`src/sections/_stubs/ContactStub.tsx`)          | Minimal interim sheet to resolve `#contact` navigation anchor. | Phase 8 (`Contact` with Formspree)      |
+| `CompletionStage` (`src/sections/_stages/CompletionStage.tsx`) | Interim sheet for commissioned handover.                       | Phase 7C (`Completion Stats & Founder`) |
 
 ---
 
@@ -36,3 +36,22 @@ Every item listed here must be replaced with verified client material before fin
 | Longitudinal East Dimension | `24.80 m`         | Representative parcel depth survey measurement.         |
 | Setback Offset              | `3.00 m`          | Statutory municipal planning setback line.              |
 | Grid Pitch                  | `6.00 m`          | Standard structural column center-to-center pitch.      |
+
+---
+
+## 4. Phase 7A Content Placeholders (`src/content/about.ts`)
+
+| Key                           | Current Placeholder Value            | Source File            | Replacement Target / Action                       |
+| :---------------------------- | :----------------------------------- | :--------------------- | :------------------------------------------------ |
+| `ABOUT_CONTENT.paragraphs[0]` | `"founded by Gokul in 20XX"`         | `src/content/about.ts` | Verified incorporation / founding year.           |
+| `ABOUT_CONTENT.paragraphs[0]` | `"across the region"`                | `src/content/about.ts` | Verified primary state / district jurisdiction.   |
+| `ABOUT_CONTENT.principles`    | 3 engineering rules and consequences | `src/content/about.ts` | Verified operational quality assurance protocols. |
+
+---
+
+## 5. Phase 7B Content Placeholders (`src/content/projects.ts`)
+
+| Key                            | Current Placeholder Value                    | Source File               | Replacement Target / Action                         |
+| :----------------------------- | :------------------------------------------- | :------------------------ | :-------------------------------------------------- |
+| `PROJECTS_CONTENT.projects[*]` | Location, year ("20XX"), built area, outcome | `src/content/projects.ts` | Verified portfolio project records and photography. |
+| `Projects.preview-slot`        | Elevation drawing preview slot (1200×675)    | `src/sections/Projects`   | High-resolution CAD elevation rendering or photo.   |

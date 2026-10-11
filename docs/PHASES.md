@@ -34,12 +34,15 @@
   - Multi-viewport visual verification screenshots captured across 5 resolutions (intro-complete and mid-transition).
   - Launch checklist (`docs/LAUNCH-CHECKLIST.md`), physical device QA matrix (`docs/QA-DEVICES.md`), and review log (`docs/REVIEW-phase-5.md`) authored.
 
-- [ ] **Phase 6: Sections 02 & 03 — Framing & Engineering Metrics**
-  - Structural column assembly scroll animation.
-  - Material specifications and engineering performance data visualization.
+- [x] **Phase 6: The Evolving Building**
+  - Signature building constructed across scroll stages (Foundation, Structure, Envelope, Fit-out, Completion).
+  - Synchronized elevation drawing canvas with technical hatching and dimension badges.
 
-- [ ] **Phase 7: Section 04 — Selected Projects Showcase**
-  - Project case study cards, technical blueprint overlays, and detail transitions.
+- [ ] **Phase 7: Real Page Content**
+  - [x] **7A done**: About and Services replacing Foundation and Structure stubs with typed contractor content and drawing schedule table.
+  - [x] **7B done**: Projects and Process replacing Envelope and Fit-out stubs with register index and ordered sequence.
+  - [ ] **7C**: Completion stats and Founder.
+  - [ ] **7D**: Contact.
 
 - [ ] **Phase 8: Section 05 — Contact Form & Survey Marker**
   - Formspree integration with typed validation and accessible form controls.

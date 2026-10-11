@@ -13,19 +13,21 @@ describe('App', () => {
     expect(screen.getByText(/we build homes, offices, factories and roads/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /request a quote/i })).toBeInTheDocument();
 
-    // Verify sequential stage sections are rendered in the document outline
+    // Verify Phase 7 real content headings
     expect(
-      screen.getByRole('heading', { level: 2, name: /substructure & earthwork/i }),
+      screen.getByRole('heading', { level: 2, name: /we work from the ground up/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { level: 2, name: /column assembly & floor slabs/i }),
+      screen.getByRole('heading', { level: 2, name: /services & construction schedule/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { level: 2, name: /weatherproof enclosure & walls/i }),
+      screen.getByRole('heading', { level: 2, name: /selected projects register/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { level: 2, name: /architectural glazing & mep/i }),
+      screen.getByRole('heading', { level: 2, name: /construction process/i }),
     ).toBeInTheDocument();
+
+    // Verify remaining sequential stage sections are rendered
     expect(
       screen.getByRole('heading', { level: 2, name: /commissioning & commissioned handover/i }),
     ).toBeInTheDocument();

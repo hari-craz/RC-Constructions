@@ -2,21 +2,20 @@ import { ScrollProvider } from './app/ScrollProvider';
 import { Building } from './components/Building';
 import { Nav } from './components/Nav';
 import { SheetStack } from './components/SheetStack';
-import {
-  CompletionStage,
-  EnvelopeStage,
-  FitoutStage,
-  FoundationStage,
-  StructureStage,
-} from './sections/_stages';
+import { CompletionStage } from './sections/_stages';
 import { ContactStub } from './sections/_stubs';
+import { About } from './sections/About';
 import { Hero } from './sections/Hero';
+import { Process } from './sections/Process';
+import { Projects } from './sections/Projects';
+import { Services } from './sections/Services';
 import './App.css';
 
 /**
  * Main application entry for RC Constructions.
- * Phase 6 renders Nav, Building elevation canvas, and SheetStack containing
- * Hero (Survey), Foundation, Structure, Envelope, Fit-out, Completion, and ContactStub.
+ * Phase 7 renders Nav, Building elevation canvas, and SheetStack containing
+ * Hero (Survey), About (Foundation), Services (Structure), Projects (Envelope),
+ * Process (Fit-out), Completion, and ContactStub.
  */
 export function App() {
   return (
@@ -26,10 +25,10 @@ export function App() {
       <main id="main">
         <SheetStack>
           <Hero />
-          <FoundationStage />
-          <StructureStage />
-          <EnvelopeStage />
-          <FitoutStage />
+          <About />
+          <Services />
+          <Projects />
+          <Process />
           <CompletionStage />
           <ContactStub />
         </SheetStack>
