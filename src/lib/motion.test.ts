@@ -17,4 +17,11 @@ describe('motion constants', () => {
     expect(MOTION.scroll.lagSmoothing).toBe(0);
     expect(MOTION.scroll.resizeDebounceMs).toBeGreaterThan(0);
   });
+
+  it('defines orchestrated hero sequence timings within 2.6s', () => {
+    expect(MOTION.hero.totalDuration).toBe(2.6);
+    expect(MOTION.hero.boundaryDuration).toBeLessThanOrEqual(1.0);
+    expect(MOTION.hero.headlineStart).toBe(0.5);
+    expect(MOTION.hero.headlineDuration).toBe(0.9);
+  });
 });

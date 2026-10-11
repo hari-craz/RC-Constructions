@@ -1,0 +1,33 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.2s ease;
+}
+
+.logo:hover {
+  opacity: 0.85;
+}
+
+.logo:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+}
+
+.logo-mark {
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  display: block;
+}
+
+.logo-wordmark {
+  font-family: var(--font-headline);
+  font-size: var(--font-size-md);
+  font-weight: 800;
+  letter-spacing: var(--tracking-wide);
+  line-height: var(--line-height-heading);
+  text-transform: uppercase;
+}

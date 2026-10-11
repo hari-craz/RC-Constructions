@@ -1,0 +1,88 @@
+.hero-plot-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: clip;
+}
+
+.hero-plot-svg {
+  position: absolute;
+  top: -5%;
+  right: -5%;
+  width: 90%;
+  height: 105%;
+  overflow: visible;
+}
+
+/* Layer 1: Boundary */
+.hero-plot-boundary {
+  fill: none;
+  stroke: var(--color-formwork-dark);
+  stroke-width: 1.5px;
+  stroke-linejoin: round;
+}
+
+/* Layer 2: Stakes */
+.hero-stake-rect {
+  fill: var(--color-formwork-dark);
+}
+
+.hero-stake-pip {
+  fill: var(--color-concrete);
+}
+
+/* Layer 3: Setback */
+.hero-plot-setback {
+  fill: none;
+  stroke: var(--color-steel);
+  stroke-width: 1.2px;
+}
+
+/* Layer 4: Building Footprint */
+.hero-plot-footprint {
+  fill: transparent;
+  stroke: var(--color-formwork-dark);
+  stroke-width: 2px;
+  transition: fill 0.4s ease;
+}
+
+/* Layer 5: Column Grid Crosses */
+.hero-plot-grid {
+  stroke: var(--color-steel);
+  stroke-width: 1.5px;
+}
+
+/* Layer 6: Dimension Lines (Amber Exclusively) */
+.hero-dim-line {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 1.5px;
+}
+
+.hero-dim-badge {
+  fill: var(--color-formwork-dark);
+}
+
+.hero-dim-text {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  fill: var(--color-accent);
+  letter-spacing: 0.02em;
+}
+
+/* Mobile: hide peripheral dimension lines to prevent text collisions */
+@media (width <= 768px) {
+  .hero-plot-svg {
+    top: 5%;
+    right: 0;
+    width: 100%;
+    height: 70%;
+  }
+
+  .hero-dim-lateral {
+    display: none;
+  }
+}

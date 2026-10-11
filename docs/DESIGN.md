@@ -89,7 +89,66 @@ The following combinations fail WCAG contrast and are **strictly banned**:
 
 ---
 
-## 4. The Banned List
+## 5. Hero Section Specification (Creative Direction & Architecture)
+
+The hero opens with the core physical reality of construction: **a land survey**. Before concrete is poured or steel erected, an irregular plot of land is measured, staked, and drawn in chalk-line precision over bare concrete. The visitor witnesses the ground survey being laid out.
+
+### Visual Foundations
+
+- **Surface**: Pure flat concrete (`--color-concrete`, `#C4C4BC`). Strictly zero gradients, zero drop shadows, zero noisy canvas overlays, zero glassmorphism blurs.
+- **The Drawing (Plan View / Top-Down Plot)**:
+  - Irregular 4-sided boundary polygon representing real parcel boundaries.
+  - Dashed setback lines inset from boundary (`--color-steel`, `#7A7E78`).
+  - Solid rectangular building footprint (`--color-formwork-dark`, `#232622`).
+  - Column-grid intersections marked with small crosshairs (`+`) in `--color-steel`.
+  - Corner survey stakes marked with solid coordinate squares and center registration pips in `--color-formwork-dark`.
+  - Dimension lines and extension ticks drawn in **amber exclusively** (`--color-work-lamp-amber`, `#E3B341`).
+  - Dimension values: Real architectural survey numbers in Newsreader figures (e.g. `18.40 m`, `24.80 m`). To maintain WCAG AAA compliance (≥ 8.5:1), dimension text in amber is housed on discrete formwork-dark survey marker tags or crisp dark callouts, avoiding low-contrast yellow-on-grey failure while retaining pure survey utility.
+
+### Typography & Hierarchy
+
+- **Headline**: "RC Constructions" set on two lines (`RC` / `Constructions`), weight 800, leading 0.88, anchored bottom-left. Rendered via `--font-size-display-hero: clamp(4.25rem, 3.25rem + 7vw, 9.5rem)`. The raw physical scale of the type is the graphic statement; zero gradient text, zero decorative badges.
+- **Tagline**: One line in Newsreader Variable (`--font-size-md`, `--color-formwork-dark`).
+- **Primary CTA**: Button with solid work-lamp amber fill (`--color-accent`), formwork-dark ink (`--color-accent-ink`), no arrow icons (`→`), high-visibility focus ring.
+- **Boldness Allocation**: Visual intensity is spent in two places only: the high-contrast line drawing and the massive headline. All other elements remain quiet and utilitarian.
+
+### Breakpoint Layout Rules
+
+- **Desktop (1440×900)**:
+  - Dual-zone composition: Text column anchored to bottom-left with `--page-gutter` padding.
+  - Survey plot drawing occupies the upper and right 65% of the viewport, bleeding off the top and right edges.
+  - Clear negative space between text and drawing lines; zero overlap.
+- **Tablet (768×1024)**:
+  - SVG positioned top-right, headline bottom-left; peripheral dimension lines on the left edge collapse to prevent collision with text.
+- **Mobile (360×640)**:
+  - Survey drawing occupies upper 60% of viewport.
+  - Headline, tagline, and button anchor to lower 40%.
+  - Colliding lateral dimension lines are hidden; primary width dimension ("18.40 m") floats safely above the headline.
+  - Text never overlaps structural drawing lines at any viewport width.
+
+### Motion Timeline (Load Sequence & Scroll-Linked Construction)
+
+1. **Load Timeline (Played once, never repeated on resize)**:
+   - `0.0s – 1.0s`: Plot boundary line draws (`pathLength="1"`, `strokeDashoffset: 1 -> 0`), corner stakes appear.
+   - `0.6s – 1.4s`: Dashed setback lines draw.
+   - `1.0s – 1.8s`: Building footprint perimeter draws.
+   - `1.4s – 2.0s`: Column-grid crosses pop in with a quick stagger.
+   - `1.8s – 2.6s`: Amber dimension lines draw and survey values reveal.
+   - `0.5s – 1.4s`: Headline reveals via masked line clip (each line slides up out of an overflow-hidden container, 0.9s duration, 0.12s stagger).
+   - **Scroll Jump**: If the user scrolls before 2.6s completes, the timeline immediately jumps to `progress(1)`.
+2. **Scroll-Linked Scrub Layer**:
+   - As the user scrolls into Sheet 2 (About/Structural), the footprint fills with flat limewash (`--color-limewash`) and the grid crosses expand, transitioning survey into foundation pouring.
+3. **Accessibility**:
+   - With `prefers-reduced-motion: reduce`, all paths are instantly drawn (`strokeDashoffset: 0`), headline is immediately visible without transforms, and scroll scrub is bypassed.
+
+### Banned List Audit & Revision Record
+
+- _Review against cliches_: No generic hero tags, no "Scroll to explore" pulsing arrows, no gradient text, no glassmorphism cards.
+- _Changes made from initial concept_: Added formwork-dark survey marker backing behind amber dimension labels to enforce WCAG AA/AAA contrast (8.5:1) rather than raw amber on bare concrete (which fails at 1.3:1).
+
+---
+
+## 6. The Banned List
 
 The following design clichés and defaults are **strictly forbidden** in this project:
 

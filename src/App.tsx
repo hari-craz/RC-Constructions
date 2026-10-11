@@ -1,17 +1,24 @@
-import { Playground } from './app/Playground';
 import { ScrollProvider } from './app/ScrollProvider';
+import { Nav } from './components/Nav';
+import { SheetStack } from './components/SheetStack';
+import { AboutStub, ContactStub } from './sections/_stubs';
+import { Hero } from './sections/Hero';
 import './App.css';
 
 /**
- * Main application entry.
- * Renders temporary Phase 3 Playground for motion and sheet-stack verification.
+ * Main application entry for RC Constructions.
+ * Phase 4 renders Nav and SheetStack containing Hero, AboutStub, and ContactStub.
  */
 export function App() {
   return (
     <ScrollProvider>
-      <main>
-        <h1 className="sr-only">RC Constructions</h1>
-        <Playground />
+      <Nav />
+      <main id="main">
+        <SheetStack>
+          <Hero />
+          <AboutStub />
+          <ContactStub />
+        </SheetStack>
       </main>
     </ScrollProvider>
   );

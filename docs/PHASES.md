@@ -20,7 +20,15 @@
   - Bidirectional `SheetStack` component supporting tall sheets, scale and border-radius scrubbing, dim overlay, and complete reduced-motion fallback.
   - Comprehensive unit and E2E test suites with zero axe violations and screenshot capture.
 
-- [ ] **Phase 5: Section 01 — Site Excavation & Foundation (Hero)**
+- [x] **Phase 4: Pinned Hero & Land Survey Drawing**
+  - Land survey drawing (`HeroPlot`) in chalk-line precision on concrete with normalized paths (`pathLength="1"`).
+  - Massive architectural headline in Big Shoulders Display with masked line reveals.
+  - Polymorphic `Button` with amber accent and `Logo` with favicon geometry.
+  - Section-spy responsive `Nav` switching tone over sheets with accessible skip link.
+  - Orchestrated load sequence and scroll-linked footprint fill in `MOTION.hero`.
+  - Placeholder audit catalogued in `docs/PLACEHOLDERS.md`.
+
+- [ ] **Phase 5: Building Foundation & Excavation Footprint**
   - Initial brand arrival, headline choreography, coordinate markers, and foundation reveal.
 
 - [ ] **Phase 6: Sections 02 & 03 — Framing & Engineering Metrics**
