@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["src/content/types.ts"],
+  "entry": ["src/content/types.ts", "scripts/*.mjs"],
   "ignoreDependencies": [
     "@fontsource-variable/big-shoulders-display",
     "@fontsource-variable/newsreader",

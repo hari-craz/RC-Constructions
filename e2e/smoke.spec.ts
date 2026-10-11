@@ -68,6 +68,8 @@ test.describe('Smoke, Accessibility, and Security Policy', () => {
 
     await page.goto('/');
     await page.waitForLoadState('load');
+    await page.locator('#hero').waitFor();
+    await page.waitForTimeout(500);
 
     // Clear initial page-load script evaluation tasks, monitor animation and scrub
     const startAnimationTime = await page.evaluate(() => performance.now());

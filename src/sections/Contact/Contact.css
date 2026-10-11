@@ -232,7 +232,7 @@ a.contact-channel-value:hover {
 }
 
 .contact-submit-btn:hover:not(:disabled) {
-  filter: brightness(0.95);
+  opacity: 0.92;
 }
 
 .contact-privacy-note {

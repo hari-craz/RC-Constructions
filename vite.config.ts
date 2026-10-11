@@ -14,7 +14,7 @@ export default defineConfig({
     },
   },
   build: {
-    sourcemap: true,
+    sourcemap: process.env.SOURCE_MAP === 'true',
   },
   test: {
     globals: true,

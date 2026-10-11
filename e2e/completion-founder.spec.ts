@@ -118,18 +118,16 @@ test.describe('Phase 7C — Completion Stats and Founder Real Content', () => {
     await page.goto('/');
     await page.waitForTimeout(1200);
 
-    // Scroll to Completion
-    const completion = page.locator('#completion');
-    await completion.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500);
+    // Direct navigation to Completion
+    await page.goto('/#completion');
+    await page.waitForTimeout(1000);
 
     const completionAxe = await new AxeBuilder({ page }).analyze();
     expect(completionAxe.violations).toEqual([]);
 
-    // Scroll to Founder
-    const founder = page.locator('#founder');
-    await founder.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500);
+    // Direct navigation to Founder
+    await page.goto('/#founder');
+    await page.waitForTimeout(1000);
 
     const founderAxe = await new AxeBuilder({ page }).analyze();
     expect(founderAxe.violations).toEqual([]);

@@ -29,7 +29,9 @@
     "docker:build": "docker build -t rc-constructions:latest .",
     "docker:run": "docker run --rm -p 8080:8080 rc-constructions:latest",
     "docker:dev": "docker compose --profile dev up",
-    "compare:headers": "node scripts/compare-headers.mjs"
+    "compare:headers": "node scripts/compare-headers.mjs",
+    "generate:og": "node scripts/generate-og-image.mjs",
+    "generate:favicons": "node scripts/generate-favicons.mjs"
   },
   "size-limit": [
     {

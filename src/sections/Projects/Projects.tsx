@@ -111,6 +111,19 @@ export function Projects() {
         }
       } else {
         setOverlayProjectId(null);
+        const trigger = triggerRef.current;
+        if (trigger) {
+          let attempts = 0;
+          const refocus = () => {
+            if (document.activeElement === trigger) return;
+            trigger.focus({ preventScroll: true });
+            attempts++;
+            if (attempts < 15 && document.activeElement !== trigger) {
+              setTimeout(refocus, 50);
+            }
+          };
+          requestAnimationFrame(refocus);
+        }
       }
     };
 
@@ -138,8 +151,21 @@ export function Projects() {
 
   const handleCloseOverlay = () => {
     setOverlayProjectId(null);
+    const trigger = triggerRef.current;
     if (window.location.hash.startsWith('#project-')) {
       history.back();
+    }
+    if (trigger) {
+      let attempts = 0;
+      const refocus = () => {
+        if (document.activeElement === trigger) return;
+        trigger.focus({ preventScroll: true });
+        attempts++;
+        if (attempts < 15 && document.activeElement !== trigger) {
+          setTimeout(refocus, 50);
+        }
+      };
+      requestAnimationFrame(refocus);
     }
   };
 

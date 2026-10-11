@@ -31,6 +31,18 @@ export default defineConfig({
         },
       },
     },
+    ...(!process.env.CI || process.env.CI_ALL_BROWSERS === 'true'
+      ? [
+          {
+            name: 'firefox',
+            use: { ...devices['Desktop Firefox'] },
+          },
+          {
+            name: 'webkit',
+            use: { ...devices['Desktop Safari'] },
+          },
+        ]
+      : []),
   ],
   webServer: process.env.PLAYWRIGHT_BASE_URL
     ? undefined

@@ -99,3 +99,14 @@ All temporary section stubs have been completely replaced with real content as o
 | `PROJECTS_CONTENT.projects[*].brief`   | Architectural summary brief (60–90 words)                | `src/content/projects.ts` | Approved client project brief and case study narrative.    |
 | `PROJECTS_CONTENT.projects[*].scope`   | 3 complete scope sentences                               | `src/content/projects.ts` | Detailed bills of quantities and work package scope.       |
 | `PROJECTS_CONTENT.projects[*].gallery` | 3 reserved concrete slots with captions (18 total slots) | `src/content/projects.ts` | High-resolution architectural on-site construction photos. |
+
+---
+
+## 10. Phase 9 Launch Hardening & Branding Placeholders
+
+| Asset / Metadata              | Current Placeholder Value                           | Source File                                             | Replacement Target / Action                                                                          |
+| :---------------------------- | :-------------------------------------------------- | :------------------------------------------------------ | :--------------------------------------------------------------------------------------------------- |
+| Open Graph image              | Generated SVG-backed card (1200×630)                | `public/og-image.png`                                   | Official high-res branded portfolio graphic or hero photograph.                                      |
+| Favicons & App Icons          | Architectural geometric monogram (180, 192, 512 px) | `public/`                                               | Final client company trademark icon set.                                                             |
+| JSON-LD structured data       | Schema.org `GeneralContractor` placeholder data     | `index.html`                                            | Official verified business legal name, headquarters coordinates, official telephone, and web domain. |
+| Production Domain & Canonical | `https://rc-constructions.example.com`              | `index.html`, `public/robots.txt`, `public/sitemap.xml` | Registered public primary production domain.                                                         |

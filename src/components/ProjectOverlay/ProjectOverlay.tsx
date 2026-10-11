@@ -46,10 +46,39 @@ export function ProjectOverlay({
       closeBtnRef.current?.focus();
     });
 
+    const triggerEl = returnFocusRef?.current;
+
+    const returnFocus = () => {
+      const target =
+        triggerEl ??
+        (project
+          ? document.querySelector<HTMLElement>(`[data-project-id="${project.id}"] button`)
+          : null);
+      if (target && typeof target.focus === 'function') {
+        let attempts = 0;
+        const attempt = () => {
+          if (document.activeElement === target) return;
+          target.focus({ preventScroll: true });
+          attempts++;
+          if (attempts < 12 && document.activeElement !== target) {
+            setTimeout(attempt, 50);
+          }
+        };
+        requestAnimationFrame(attempt);
+      }
+    };
+
+    const handleClose = () => {
+      if (mainEl) mainEl.removeAttribute('inert');
+      if (navEl) navEl.removeAttribute('inert');
+      onClose();
+      returnFocus();
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.preventDefault();
-        onClose();
+        handleClose();
         return;
       }
 
@@ -78,17 +107,16 @@ export function ProjectOverlay({
 
     window.addEventListener('keydown', handleKeyDown);
 
-    const triggerEl = returnFocusRef?.current;
-
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       if (mainEl) mainEl.removeAttribute('inert');
       if (navEl) navEl.removeAttribute('inert');
 
-      // Return focus to the triggering element once inert is cleared
-      setTimeout(() => {
-        triggerEl?.focus();
-      }, 0);
+      requestAnimationFrame(() => {
+        returnFocus();
+        setTimeout(returnFocus, 50);
+        setTimeout(returnFocus, 250);
+      });
     };
   }, [isOpen, project, onClose, returnFocusRef]);
 

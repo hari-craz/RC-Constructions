@@ -52,27 +52,29 @@ Container healthcheck is available at `http://localhost:8080/healthz`.
 
 ## Available Scripts
 
-| Script                 | Purpose                                                                                                      |
-| :--------------------- | :----------------------------------------------------------------------------------------------------------- |
-| `pnpm dev`             | Start the local Vite development server                                                                      |
-| `pnpm build`           | Compile TypeScript and create production bundle in `dist/`                                                   |
-| `pnpm preview`         | Locally preview the production build                                                                         |
-| `pnpm typecheck`       | Run TypeScript compiler checks (`tsc -b`)                                                                    |
-| `pnpm lint`            | Run ESLint checks                                                                                            |
-| `pnpm lint:fix`        | Run ESLint autofix                                                                                           |
-| `pnpm lint:css`        | Run Stylelint checks across CSS files                                                                        |
-| `pnpm format`          | Format repository files using Prettier                                                                       |
-| `pnpm format:check`    | Check code formatting without writing                                                                        |
-| `pnpm test`            | Execute Vitest unit and DOM test suite                                                                       |
-| `pnpm test:watch`      | Run Vitest in interactive watch mode                                                                         |
-| `pnpm test:e2e`        | Run Playwright end-to-end tests and accessibility audits                                                     |
-| `pnpm knip`            | Scan for unused files, exports, and dependencies                                                             |
-| `pnpm size`            | Validate production bundle against 180 kB size limit                                                         |
-| `pnpm check`           | Run all validation gates in order (`typecheck`, `lint`, `lint:css`, `format:check`, `test`, `knip`, `build`) |
-| `pnpm docker:build`    | Build hardened multi-stage Docker container image                                                            |
-| `pnpm docker:run`      | Run production container locally on port 8080                                                                |
-| `pnpm docker:dev`      | Start containerized development server via Docker Compose                                                    |
-| `pnpm compare:headers` | Verify security & cache header parity between `vercel.json` and `nginx.conf`                                 |
+| Script                   | Purpose                                                                                                      |
+| :----------------------- | :----------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`               | Start the local Vite development server                                                                      |
+| `pnpm build`             | Compile TypeScript and create production bundle in `dist/`                                                   |
+| `pnpm preview`           | Locally preview the production build                                                                         |
+| `pnpm typecheck`         | Run TypeScript compiler checks (`tsc -b`)                                                                    |
+| `pnpm lint`              | Run ESLint checks                                                                                            |
+| `pnpm lint:fix`          | Run ESLint autofix                                                                                           |
+| `pnpm lint:css`          | Run Stylelint checks across CSS files                                                                        |
+| `pnpm format`            | Format repository files using Prettier                                                                       |
+| `pnpm format:check`      | Check code formatting without writing                                                                        |
+| `pnpm test`              | Execute Vitest unit and DOM test suite                                                                       |
+| `pnpm test:watch`        | Run Vitest in interactive watch mode                                                                         |
+| `pnpm test:e2e`          | Run Playwright end-to-end tests and accessibility audits                                                     |
+| `pnpm knip`              | Scan for unused files, exports, and dependencies                                                             |
+| `pnpm size`              | Validate production bundle against 180 kB size limit                                                         |
+| `pnpm check`             | Run all validation gates in order (`typecheck`, `lint`, `lint:css`, `format:check`, `test`, `knip`, `build`) |
+| `pnpm docker:build`      | Build hardened multi-stage Docker container image                                                            |
+| `pnpm docker:run`        | Run production container locally on port 8080                                                                |
+| `pnpm docker:dev`        | Start containerized development server via Docker Compose                                                    |
+| `pnpm compare:headers`   | Verify security & cache header parity between `vercel.json` and `nginx.conf`                                 |
+| `pnpm generate:og`       | Generate production 1200x630 Open Graph card image using Playwright                                          |
+| `pnpm generate:favicons` | Generate production favicon and web application icons (180, 192, 512 px)                                     |
 
 ## Project Structure
 
@@ -117,4 +119,10 @@ pnpm check
 pnpm test:e2e
 ```
 
-For detailed deployment instructions and branch protection checklist, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+For operational procedures, see:
+
+- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) — Hosting architecture and Vercel setup
+- [docs/BEFORE-GOING-LIVE.md](docs/BEFORE-GOING-LIVE.md) — Client assets and placeholder replacement guide
+- [docs/HANDOFF.md](docs/HANDOFF.md) — Client engineering hand-off and customization manual
+- [docs/LAUNCH-CHECKLIST.md](docs/LAUNCH-CHECKLIST.md) — Step-by-step production release and verification checklist
+- [docs/RELEASE.md](docs/RELEASE.md) — Semantic versioning and Release Please automation

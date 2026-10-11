@@ -4,6 +4,8 @@ import './styles/tokens.css';
 import './styles/base.css';
 import { App } from './App';
 
+import { ErrorBoundary } from './components/ErrorBoundary';
+
 const rootElement = document.getElementById('root');
 
 if (!rootElement) {
@@ -12,6 +14,8 @@ if (!rootElement) {
 
 ReactDOM.createRoot(rootElement).render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </React.StrictMode>,
 );

@@ -131,3 +131,72 @@ Navigate to **GitHub Repository > Settings > Branches**:
    ```bash
    docker stop rc-smoke
    ```
+
+---
+
+## 7. Portainer / Self-Hosted Production Deployment
+
+1. In Portainer, navigate to **Stacks > Add stack**.
+2. Name the stack: `rc-constructions`.
+3. Paste the contents of `docker-compose.yml`:
+   ```yaml
+   services:
+     web:
+       build:
+         context: .
+         dockerfile: Dockerfile
+         args:
+           VITE_FORMSPREE_ID: ${VITE_FORMSPREE_ID:-mock-formspree-id}
+       image: rc-constructions:latest
+       container_name: rc-constructions-app
+       restart: unless-stopped
+       read_only: true
+       tmpfs:
+         - /var/cache/nginx:rw,noexec,nosuid,size=16m
+         - /var/run:rw,noexec,nosuid,size=4m
+       environment:
+         - VITE_FORMSPREE_ID=${VITE_FORMSPREE_ID}
+       ports:
+         - '8080:8080'
+       healthcheck:
+         test: ['CMD', 'wget', '--spider', '-q', 'http://127.0.0.1:8080/healthz']
+         interval: 30s
+         timeout: 5s
+         retries: 3
+         start_period: 5s
+   ```
+4. Under **Environment variables**, set `VITE_FORMSPREE_ID` to the verified Formspree form ID.
+5. Click **Deploy the stack**.
+6. Verify the container shows **healthy** status in Portainer.
+
+---
+
+## 8. Final Live Edge Verification
+
+Run the verification suite against your deployed production URL:
+
+```bash
+# 1. Verify HTTP headers and security policy
+curl -I https://<your-production-domain>/
+
+# 2. Verify 404 handler returns status 404 and custom template
+curl -i https://<your-production-domain>/nonexistent-path-test
+
+# 3. Verify static SEO files
+curl -s https://<your-production-domain>/robots.txt
+curl -s https://<your-production-domain>/sitemap.xml
+
+# 4. Verify Open Graph and Favicon assets
+curl -I https://<your-production-domain>/og-image.png
+curl -I https://<your-production-domain>/apple-touch-icon.png
+curl -I https://<your-production-domain>/site.webmanifest
+```
+
+---
+
+## 9. Release Automation (`v0.1.0`)
+
+1. Once `main` is stable, the `release-please` action will open a Release PR (`chore: release v0.1.0`).
+2. Review the generated `CHANGELOG.md` entry.
+3. Merge the Release PR into `main`.
+4. Release Please will automatically tag `v0.1.0` and create the GitHub Release.

@@ -49,6 +49,9 @@
   - Fine-pointer survey-marker custom cursor with contextual state transitions (default, link, project, hidden) and tone adaptation.
   - Lazy-loaded full-height project detail overlay sheet with focus trap, scroll lock, URL hash syncing, and accessible adjacent project navigation.
 
-- [ ] **Phase 9: Performance Tuning, A11y Audit & Release**
-  - Full Lighthouse audit verification (>= 0.85 perf, >= 0.95 a11y).
-  - Cross-browser validation and production release sign-off.
+- [x] **Phase 9: Hardening and Launch (Final Gate & Release Process)**
+  - Comprehensive adversarial audit: bundle decomposition, sourcemap leak resolution, Gecko focus restoration, zero banned styles.
+  - Hardened runtime: React ErrorBoundary with plain contact fallback, custom 404 page for Vercel/Nginx, noscript fallback banner.
+  - Complete SEO and social suite: canonical metadata, robots.txt, sitemap.xml, generated 1200x630 OG image, full PWA favicon set (180, 192, 512 px) and manifest, Schema.org `GeneralContractor` structured data test.
+  - Containerization and self-hosting: non-root unprivileged container, read-only filesystem with tmpfs, Portainer compose with `/healthz` check, Formspree arg passing.
+  - Client handoff documentation suite: `BEFORE-GOING-LIVE.md`, `HANDOFF.md`, `RELEASE.md`, updated `LAUNCH-CHECKLIST.md` and `QA-DEVICES.md`.
