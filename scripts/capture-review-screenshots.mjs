@@ -4,7 +4,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const targetDir = path.resolve(__dirname, '../docs/review/before');
+const subDir = process.argv[2] || 'after';
+const targetDir = path.resolve(__dirname, `../docs/review/${subDir}`);
 
 if (!fs.existsSync(targetDir)) {
   fs.mkdirSync(targetDir, { recursive: true });

@@ -71,7 +71,8 @@
   font-size: 0.875rem;
   line-height: var(--line-height-tight);
   letter-spacing: var(--tracking-normal);
-  color: var(--color-ink-muted);
+  color: inherit;
+  opacity: 0.85;
   text-transform: none;
 }
 

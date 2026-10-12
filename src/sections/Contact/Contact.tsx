@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { Sheet } from '../../components/SheetStack';
 import { CONTACT_CONFIG, CONTACT_CONTENT } from '../../content/contact';
 import { SERVICES_CONTENT } from '../../content/services';
@@ -37,6 +37,12 @@ export function Contact() {
 
   const lastSubmitTimeRef = useRef<number>(0);
   const successRegionRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (status === 'success') {
+      successRegionRef.current?.focus();
+    }
+  }, [status]);
 
   const nameId = useId();
   const phoneId = useId();
@@ -139,11 +145,6 @@ export function Contact() {
       setErrors({});
       setTouched({});
       setLiveAnnouncement('Enquiry sent successfully.');
-
-      // Move focus to confirmation region
-      requestAnimationFrame(() => {
-        successRegionRef.current?.focus();
-      });
     } catch {
       setStatus('error');
       setLiveAnnouncement('Unable to send enquiry. Please contact us directly by phone or email.');

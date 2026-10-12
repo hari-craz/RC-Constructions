@@ -167,7 +167,7 @@
   font-family: var(--font-headline);
   font-size: var(--font-size-base);
   font-weight: 700;
-  color: var(--color-steel);
+  color: var(--color-ink-muted);
 }
 
 .projects-row-name {

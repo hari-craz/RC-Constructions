@@ -194,5 +194,6 @@ const ALL_SECTIONS: readonly (StageConfig | SectionConfig)[] = [
 ];
 
 export function getSectionById(sectionId: string): StageConfig | SectionConfig | undefined {
+  if (sectionId === 'about') return FOUNDATION_STAGE;
   return ALL_SECTIONS.find((s) => s.sectionId === sectionId);
 }

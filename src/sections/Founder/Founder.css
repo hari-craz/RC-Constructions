@@ -193,7 +193,8 @@
   font-weight: 600;
   letter-spacing: var(--tracking-normal);
   text-transform: none;
-  color: var(--color-steel);
+  color: var(--color-formwork-dark);
+  opacity: 0.85;
 }
 
 /* Responsive (< 1024px) */
