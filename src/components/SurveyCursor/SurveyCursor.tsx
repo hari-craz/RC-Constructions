@@ -33,6 +33,13 @@ export function SurveyCursor() {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
+  // Hide the native cursor only while the custom survey marker is mounted
+  useEffect(() => {
+    if (!isFinePointer) return;
+    document.documentElement.classList.add('has-survey-cursor');
+    return () => document.documentElement.classList.remove('has-survey-cursor');
+  }, [isFinePointer]);
+
   // 2. Track pointer with gsap.quickTo (transforms only, passive listener, zero rAF overhead)
   useEffect(() => {
     if (!isFinePointer || !markerRef.current) return;

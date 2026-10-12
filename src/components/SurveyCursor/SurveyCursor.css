@@ -1,3 +1,9 @@
+/* Native cursor is hidden while the survey marker is active (fine pointers only) */
+.has-survey-cursor,
+.has-survey-cursor * {
+  cursor: none !important;
+}
+
 /* Survey-Marker Custom Cursor */
 .survey-cursor {
   position: fixed;
