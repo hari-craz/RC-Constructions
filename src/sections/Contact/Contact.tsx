@@ -168,20 +168,13 @@ export function Contact() {
   };
 
   return (
-    <Sheet
-      id={CONTACT_CONTENT.sectionId}
-      label={CONTACT_CONTENT.kicker}
-      headingTag="span"
-      tone="light"
-      className="contact-sheet"
-    >
-      <div className="container contact-content">
+    <Sheet id={CONTACT_CONTENT.sectionId} tone="light" className="contact-sheet">
+      <div className="sheet-wide contact-content">
         <div className="contact-grid">
           {/* Left Column: Headline, subhead, ruled channels */}
           <div className="contact-left-col">
             <header className="contact-header">
-              <span className="contact-kicker">{CONTACT_CONTENT.kicker}</span>
-              <h2 id="contact-title" className="contact-headline">
+              <h2 id={`${CONTACT_CONTENT.sectionId}-heading`} className="contact-headline">
                 {CONTACT_CONTENT.headline}
               </h2>
               <p className="contact-subhead">{CONTACT_CONTENT.subhead}</p>
@@ -275,7 +268,7 @@ export function Contact() {
                 </div>
 
                 {/* Name Field */}
-                <div className="contact-field-group">
+                <div className={`contact-field-group ${errors.name ? 'is-invalid' : ''}`}>
                   <label htmlFor={nameId} className="contact-label">
                     <span>Name</span>
                     <span className="field-required">required</span>
@@ -301,7 +294,7 @@ export function Contact() {
                 </div>
 
                 {/* Phone Field */}
-                <div className="contact-field-group">
+                <div className={`contact-field-group ${errors.phone ? 'is-invalid' : ''}`}>
                   <label htmlFor={phoneId} className="contact-label">
                     <span>Phone</span>
                     <span className="field-required">required</span>
@@ -328,7 +321,7 @@ export function Contact() {
                 </div>
 
                 {/* Email Field */}
-                <div className="contact-field-group">
+                <div className={`contact-field-group ${errors.email ? 'is-invalid' : ''}`}>
                   <label htmlFor={emailId} className="contact-label">
                     <span>Email</span>
                     <span className="field-optional">optional</span>
@@ -354,7 +347,7 @@ export function Contact() {
                 </div>
 
                 {/* Project Type Select */}
-                <div className="contact-field-group">
+                <div className={`contact-field-group ${errors.projectType ? 'is-invalid' : ''}`}>
                   <label htmlFor={projectTypeId} className="contact-label">
                     <span>Project type</span>
                     <span className="field-required">required</span>
@@ -394,7 +387,7 @@ export function Contact() {
                 </div>
 
                 {/* Message Field */}
-                <div className="contact-field-group">
+                <div className={`contact-field-group ${errors.message ? 'is-invalid' : ''}`}>
                   <label htmlFor={messageId} className="contact-label">
                     <span>Project description</span>
                     <span className="field-required">required</span>

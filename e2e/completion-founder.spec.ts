@@ -18,8 +18,8 @@ test.describe('Phase 7C — Completion Stats and Founder Real Content', () => {
     await page.waitForTimeout(400);
 
     // Verify Completion headings
-    await expect(page.locator('#completion-title')).toBeVisible();
-    await expect(page.locator('#completion-title')).toHaveText(
+    await expect(page.locator('#completion-heading')).toBeVisible();
+    await expect(page.locator('#completion-heading')).toHaveText(
       /commissioned delivery & site records/i,
     );
 
@@ -32,7 +32,7 @@ test.describe('Phase 7C — Completion Stats and Founder Real Content', () => {
       const figure = cell.locator('.completion-stat-figure');
       await expect(figure).toBeVisible();
       // Final values must be in DOM from the start
-      await expect(figure).toContainText('XX');
+      await expect(figure).toHaveText(/\d+/);
       const caption = cell.locator('.completion-stat-caption');
       await expect(caption).toBeVisible();
       const text = await caption.textContent();

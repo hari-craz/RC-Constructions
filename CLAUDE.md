@@ -44,6 +44,12 @@ Single-page scroll-driven portfolio site where a building is progressively const
 3. **CI Gate**: Branch protection requires the unified `ci-pass` aggregate check and security checks.
 4. **Version Pins**: Never bump `typescript` to 7 or `eslint` to 10 until plugin ecosystem matures.
 
+## Layout & Building Rules
+
+- One 12-column grid: text in columns 1-5, fixed site window (constant formwork) in columns 6-12; mobile band 42svh. Details in `docs/BUILDING.md` and `docs/DESIGN.md` section 8.
+- No section labels, eyebrows, codes or uppercase micro-labels. Sheets are labelled by their headline (`<section>-heading`).
+- Never use GSAP `stagger` with `fromTo` on scrubbed building timelines; use the `staggered` helper.
+
 ## Folder Map
 
 - `src/app/` — Application providers, scroll controller, layout wrappers

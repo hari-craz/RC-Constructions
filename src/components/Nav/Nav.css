@@ -1,31 +1,56 @@
+/*
+ * Two zones, one per half of the page grid: the logo sits over the text column (sheet surface),
+ * the action sits over the site window (constant formwork) once the window is showing.
+ */
 .nav-bar {
+  --nav-bg: var(--color-concrete);
+  --nav-ink: var(--color-formwork-dark);
+  --nav-window-bg: var(--nav-bg);
+  --nav-window-ink: var(--nav-ink);
+
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: var(--z-nav);
-  padding-block: var(--space-4);
-  background-color: transparent;
-  pointer-events: none;
-  transition: color 0.3s ease;
-}
-
-.nav-bar > * {
+  display: flex;
+  height: var(--nav-height);
+  border-bottom: 1px solid var(--color-line-subtle);
   pointer-events: auto;
 }
 
-.nav-tone-dark {
-  color: var(--color-formwork-dark);
+.nav-bar[data-tone='light'] {
+  --nav-bg: var(--color-limewash);
 }
 
-.nav-tone-light {
-  color: var(--color-limewash);
+.nav-bar[data-tone='dark'] {
+  --nav-bg: var(--color-formwork-dark);
+  --nav-ink: var(--color-limewash);
 }
 
-.nav-container {
+.nav-bar[data-window='on'] {
+  --nav-window-bg: var(--color-formwork-dark);
+  --nav-window-ink: var(--color-limewash);
+}
+
+.nav-zone {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+}
+
+.nav-zone-text {
+  flex: 0 0 calc(100% * 5 / 12);
+  padding-left: var(--column-left);
+  background-color: var(--nav-bg);
+  color: var(--nav-ink);
+}
+
+.nav-zone-window {
+  flex: 1;
+  justify-content: flex-end;
+  padding-right: var(--page-gutter);
+  background-color: var(--nav-window-bg);
+  color: var(--nav-window-ink);
 }
 
 .nav-list {
@@ -40,7 +65,7 @@
 .nav-link {
   display: inline-flex;
   align-items: center;
-  min-height: 38px;
+  min-height: 2.5rem;
   padding: 0 var(--space-4);
   font-family: var(--font-headline);
   font-size: var(--font-size-sm);
@@ -51,17 +76,15 @@
   text-decoration: none;
   color: inherit;
   border: 1px solid currentcolor;
-  transition:
-    opacity 0.2s ease,
-    background-color 0.2s ease;
+  transition: background-color var(--duration-fast) ease;
 }
 
 .nav-link:hover {
-  background-color: rgb(122 126 120 / 15%);
+  background-color: rgb(122 126 120 / 20%);
 }
 
 .nav-link:focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid currentcolor;
   outline-offset: 3px;
 }
 
@@ -78,13 +101,29 @@
   text-decoration: none;
   background-color: var(--color-formwork-dark);
   color: var(--color-limewash);
-  z-index: var(--z-modal);
+  z-index: var(--z-preloader);
   border: 1px solid var(--color-line);
   transition: top 0.2s ease;
 }
 
 .skip-link:focus {
   top: var(--space-4);
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-limewash);
   outline-offset: 3px;
+}
+
+/* Mobile and tablet: the whole header sits over the fixed band when it is showing */
+@media (width < 1024px) {
+  .nav-bar[data-window='on'] {
+    --nav-bg: var(--color-formwork-dark);
+    --nav-ink: var(--color-limewash);
+  }
+
+  .nav-zone-text {
+    flex: 1;
+  }
+
+  .nav-zone-window {
+    flex: 0 0 auto;
+  }
 }

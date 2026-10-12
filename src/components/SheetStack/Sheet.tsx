@@ -2,39 +2,25 @@ import type { ReactNode } from 'react';
 
 export interface SheetProps {
   id: string;
-  label: string;
   tone?: 'dark' | 'light' | 'concrete' | 'raised';
-  headingTag?: 'h1' | 'h2' | 'span';
   children: ReactNode;
   className?: string;
 }
 
-export function Sheet({
-  id,
-  label,
-  tone = 'dark',
-  headingTag: HeadingTag = 'h2',
-  children,
-  className = '',
-}: SheetProps) {
-  const headingId = `${id}-heading`;
-
+/**
+ * A stacked sheet. It carries no label of its own: the section's headline (an element with
+ * id `${id}-heading`) names the landmark and opens the section.
+ */
+export function Sheet({ id, tone = 'dark', children, className = '' }: SheetProps) {
   return (
     <section
       id={id}
-      aria-labelledby={headingId}
+      aria-labelledby={`${id}-heading`}
       className={`sheet sheet-tone-${tone} ${className}`.trim()}
       data-sheet-id={id}
     >
       <div className="sheet-dim-overlay" aria-hidden="true" />
-      <div className="sheet-inner">
-        <header className="sheet-header">
-          <HeadingTag id={headingId} className="sheet-label">
-            {label}
-          </HeadingTag>
-        </header>
-        <div className="sheet-content">{children}</div>
-      </div>
+      <div className="sheet-inner">{children}</div>
     </section>
   );
 }

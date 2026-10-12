@@ -1,31 +1,71 @@
 import { useEffect, useRef, useState } from 'react';
-import { getStageBySectionId, type StageId } from '../../data/stages';
+import { getStageBySectionId, isSiteWindowVisible, type StageId } from '../../data/stages';
 import { useActiveSection } from '../../hooks/useActiveSection';
 import { useScroll } from '../../hooks/useScroll';
-import { gsap, ScrollTrigger, useGSAP } from '../../lib/gsap';
+import { gsap, useGSAP } from '../../lib/gsap';
 import { MOTION } from '../../lib/motion';
+import {
+  BAYS,
+  BEAM_DEPTH,
+  BUILDING_TOP,
+  CANOPY,
+  COLUMN_LEFTS,
+  COLUMN_WIDTH,
+  CORE_SLIT,
+  ENTRANCE,
+  FOOTING,
+  FOOTINGS,
+  FRAME,
+  GROUND_Y,
+  NAME_PLATE,
+  PANE_INSET,
+  PIT,
+  SLAB_THICKNESS,
+  SLAB_TOPS,
+  STOREY_COUNT,
+  VIEWBOX,
+  WINDOWS,
+  storeyBounds,
+  wallBounds,
+} from './geometry';
 import './Building.css';
 
 export interface BuildingProps {
   className?: string;
 }
 
+const STOREYS = Array.from({ length: STOREY_COUNT }, (_, s) => s);
+const LEFT_ORIGIN = '0% 50%';
+const TOP_ORIGIN = '50% 0%';
+const BOTTOM_ORIGIN = '50% 100%';
+
+const STAIR_POINTS = Array.from({ length: 7 }, (_, k) => {
+  const x = k % 2 === 0 ? CORE_SLIT.x + 6 : CORE_SLIT.x + CORE_SLIT.width - 6;
+  return `${x},${CORE_SLIT.y + CORE_SLIT.height - 52 * k}`;
+}).join(' ');
+
+const RAILINGS = WINDOWS.filter((w) => w.storey > 0).map((w) => {
+  const rail = w.y + 36;
+  const left = w.x - 6;
+  const right = w.x + w.width + 6;
+  let posts = '';
+  for (let x = left; x <= right; x += 13) posts += `M${x} ${rail}V${w.y + w.height + 6}`;
+  return { id: w.id, d: `M${left} ${rail}H${right}${posts}` };
+});
+
 export function Building({ className = '' }: BuildingProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLElement | null>(null);
   const [mounted, setMounted] = useState(false);
   const { reducedMotion } = useScroll();
   const activeSection = useActiveSection();
 
-  // Derive active stage from activeSection
   const stageFromSection = getStageBySectionId(activeSection);
   const activeStage: StageId = stageFromSection
     ? stageFromSection.id
     : activeSection === 'contact' || activeSection === 'founder'
       ? 'completion'
       : 'survey';
-
-  const isVisible =
-    activeStage !== 'survey' && activeSection !== 'founder' && activeSection !== 'contact';
+  const isVisible = isSiteWindowVisible(activeSection);
 
   // Lazy mount after initial idle period to stay completely off the Hero LCP critical path
   useEffect(() => {
@@ -33,732 +73,497 @@ export function Building({ className = '' }: BuildingProps) {
     let idleId: number | null = null;
 
     if ('requestIdleCallback' in window) {
-      idleId = window.requestIdleCallback(
-        () => {
-          setMounted(true);
-        },
-        { timeout: 1500 },
-      );
+      idleId = window.requestIdleCallback(() => setMounted(true), { timeout: 1500 });
     } else {
-      timeoutId = setTimeout(() => {
-        setMounted(true);
-      }, 500);
+      timeoutId = setTimeout(() => setMounted(true), 500);
     }
 
     return () => {
-      if (idleId !== null && 'cancelIdleCallback' in window) {
-        window.cancelIdleCallback(idleId);
-      }
-      if (timeoutId !== null) {
-        clearTimeout(timeoutId);
-      }
+      if (idleId !== null && 'cancelIdleCallback' in window) window.cancelIdleCallback(idleId);
+      if (timeoutId !== null) clearTimeout(timeoutId);
     };
   }, []);
 
   useGSAP(
     () => {
-      if (!mounted || !containerRef.current) return;
+      if (!mounted || reducedMotion || !containerRef.current) return;
 
-      const container = containerRef.current;
-      const foundationGroup = container.querySelector('#stage-foundation');
-      const structureGroup = container.querySelector('#stage-structure');
-      const envelopeGroup = container.querySelector('#stage-envelope');
-      const fitoutGroup = container.querySelector('#stage-fitout');
-      const completionGroup = container.querySelector('#stage-completion');
-      const dimensionsGroup = container.querySelector('#stage-dimensions');
-      const columns = container.querySelectorAll('.bldg-col');
-      const slabs = container.querySelectorAll('.bldg-slab');
-      const windows = container.querySelectorAll('.bldg-window-glass');
+      const root = containerRef.current;
+      const all = (selector: string) => gsap.utils.toArray<SVGElement>(selector, root);
+      const styles = getComputedStyle(document.documentElement);
+      const amber = styles.getPropertyValue('--color-work-lamp-amber').trim();
+      const raised = styles.getPropertyValue('--color-surface-raised').trim();
+      const B = MOTION.building;
 
-      if (reducedMotion) {
-        // Immediate static layout for reduced motion
-        gsap.set(
-          [
-            foundationGroup,
-            structureGroup,
-            envelopeGroup,
-            fitoutGroup,
-            completionGroup,
-            dimensionsGroup,
-          ].filter(Boolean),
-          { opacity: 1, scaleY: 1, strokeDashoffset: 0 },
-        );
-        gsap.set(columns, { scaleY: 1, opacity: 1 });
-        gsap.set(slabs, { scaleX: 1, opacity: 1 });
-        gsap.set(windows, { fill: 'var(--color-accent)' });
-        return;
-      }
+      // Staggered fromTo tweens only render their first target's start state up front, so a
+      // stagger is laid out as explicit per-element positions on the scrubbed timeline.
+      const staggered = (
+        tl: gsap.core.Timeline,
+        targets: SVGElement[],
+        from: gsap.TweenVars,
+        to: gsap.TweenVars,
+        at: number,
+        step: number,
+      ) => {
+        targets.forEach((target, i) => tl.fromTo(target, from, to, at + i * step));
+      };
 
-      // Initial state: hide progressive elevation stages
-      gsap.set(
-        [
-          foundationGroup,
-          structureGroup,
-          envelopeGroup,
-          fitoutGroup,
-          completionGroup,
-          dimensionsGroup,
-        ].filter(Boolean),
-        { opacity: 0 },
-      );
-      gsap.set(columns, { scaleY: 0, transformOrigin: 'bottom center' });
-      gsap.set(slabs, { scaleX: 0, transformOrigin: 'left center' });
-      gsap.set(windows, { fill: 'transparent' });
-
-      // Stage 2: Foundation (Substructure & Earthwork)
-      const foundationSection = document.getElementById('foundation');
-      if (foundationSection && foundationGroup) {
-        const foundationPaths = foundationGroup.querySelectorAll<SVGGeometryElement>(
-          'path, line, rect, polygon',
-        );
-        foundationPaths.forEach((el) => {
-          el.setAttribute('pathLength', '1');
-          gsap.set(el, { strokeDasharray: 1, strokeDashoffset: 1 });
-        });
-
-        const foundationTl = gsap.timeline({
+      const scrubStage = (sectionId: string, build: (tl: gsap.core.Timeline) => void) => {
+        const trigger = document.getElementById(sectionId);
+        if (!trigger) return;
+        const tl = gsap.timeline({
           scrollTrigger: {
-            trigger: foundationSection,
-            start: 'top 85%',
-            end: 'top 20%',
+            trigger,
+            start: B.stageStart,
+            end: B.stageEnd,
             scrub: true,
           },
         });
+        build(tl);
+      };
 
-        foundationTl.to(foundationGroup, { opacity: 1, duration: 0.2 }, 0);
-        foundationTl.to(
-          foundationPaths,
-          {
-            strokeDashoffset: 0,
-            duration: MOTION.building.foundationDrawDuration,
-            ease: MOTION.building.strokeEase,
-            stagger: 0.04,
-          },
-          0.1,
-        );
-      }
-
-      // Stage 3: Structure (Column Grid & Slabs)
-      const structureSection = document.getElementById('structure');
-      if (structureSection && structureGroup) {
-        const structureTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: structureSection,
-            start: 'top 85%',
-            end: 'top 20%',
-            scrub: true,
-          },
-        });
-
-        structureTl.to(structureGroup, { opacity: 1, duration: 0.1 }, 0);
-        structureTl.to(
-          columns,
-          {
-            scaleY: 1,
-            duration: MOTION.building.columnRiseDuration,
-            ease: MOTION.building.strokeEase,
-            stagger: MOTION.building.columnRiseStagger,
-          },
-          0.1,
-        );
-        structureTl.to(
-          slabs,
-          {
-            scaleX: 1,
-            duration: MOTION.building.slabDrawDuration,
-            ease: MOTION.building.strokeEase,
-            stagger: MOTION.building.slabDrawStagger,
-          },
-          0.4,
-        );
-      }
-
-      // Stage 4: Envelope (Walls & Openings)
-      const envelopeSection = document.getElementById('envelope');
-      if (envelopeSection && envelopeGroup) {
-        const envelopeTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: envelopeSection,
-            start: 'top 85%',
-            end: 'top 20%',
-            scrub: true,
-          },
-        });
-
-        envelopeTl.to(
-          envelopeGroup,
-          {
-            opacity: 1,
-            duration: MOTION.building.wallFillDuration,
-            ease: MOTION.building.fillEase,
-          },
+      // Stage 2: Foundation — excavation, footings, plinth, ground slab
+      scrubStage('foundation', (tl) => {
+        tl.fromTo(
+          all('.b-pit'),
+          { scaleY: 0, transformOrigin: TOP_ORIGIN },
+          { scaleY: 1, duration: B.digDuration, ease: B.strokeEase },
           0,
+        ).fromTo(
+          all('.b-ground-slab'),
+          { scaleX: 0, transformOrigin: LEFT_ORIGIN },
+          { scaleX: 1, duration: B.memberDuration, ease: B.strokeEase },
+          B.digDuration + B.footingDuration + B.memberDuration,
         );
-      }
-
-      // Stage 5: Fit-out (Partitions, Stairs & Mullions)
-      const fitoutSection = document.getElementById('fitout');
-      if (fitoutSection && fitoutGroup) {
-        const fitoutTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: fitoutSection,
-            start: 'top 85%',
-            end: 'top 20%',
-            scrub: true,
-          },
-        });
-
-        fitoutTl.to(fitoutGroup, { opacity: 1, duration: 0.5, ease: 'power2.out' }, 0);
-      }
-
-      // Stage 6: Completion (Lit Windows, Dimensions & Handover)
-      const completionSection = document.getElementById('completion');
-      if (completionSection && completionGroup) {
-        const dimPaths = dimensionsGroup?.querySelectorAll<SVGGeometryElement>('line, path') || [];
-        dimPaths.forEach((el) => {
-          el.setAttribute('pathLength', '1');
-          gsap.set(el, { strokeDasharray: 1, strokeDashoffset: 1 });
-        });
-
-        const completionTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: completionSection,
-            start: 'top 85%',
-            end: 'top 20%',
-            scrub: true,
-          },
-        });
-
-        completionTl.to(completionGroup, { opacity: 1, duration: 0.2 }, 0);
-        completionTl.to(
-          windows,
-          {
-            fill: 'var(--color-accent)',
-            duration: MOTION.building.windowLitDuration,
-            ease: 'none',
-            stagger: MOTION.building.windowLitStagger,
-          },
-          0.1,
+        staggered(
+          tl,
+          all('.b-footing'),
+          { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
+          { scaleY: 1, duration: B.footingDuration, ease: B.strokeEase },
+          B.digDuration,
+          B.footingStagger,
         );
-        if (dimensionsGroup) {
-          completionTl.to(dimensionsGroup, { opacity: 1, duration: 0.2 }, 0.4);
-          completionTl.to(
-            dimPaths,
-            {
-              strokeDashoffset: 0,
-              duration: MOTION.building.dimensionDrawDuration,
-              ease: MOTION.building.strokeEase,
-            },
-            0.5,
+        staggered(
+          tl,
+          all('.b-stub, .b-tie'),
+          { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
+          { scaleY: 1, duration: B.memberDuration, ease: B.strokeEase },
+          B.digDuration + B.footingDuration,
+          B.memberStagger,
+        );
+      });
+
+      // Stage 3: Structure — level by level: columns and core, then slab and beam
+      scrubStage('structure', (tl) => {
+        STOREYS.forEach((s) => {
+          const at = s * B.levelStagger;
+          tl.fromTo(
+            all(`.b-level[data-level="${s}"] .b-col, .b-level[data-level="${s}"] .b-core`),
+            { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
+            { scaleY: 1, duration: B.levelDuration, ease: B.strokeEase },
+            at,
+          ).fromTo(
+            all(`.b-level[data-level="${s}"] .b-slab, .b-level[data-level="${s}"] .b-beam`),
+            { scaleX: 0, transformOrigin: LEFT_ORIGIN },
+            { scaleX: 1, duration: B.levelDuration, ease: B.strokeEase },
+            at + B.levelDuration * 0.6,
           );
-        }
-      }
+        });
+      });
 
-      // Check immediate initial hash and seek if present
-      const initialHash = window.location.hash.slice(1);
-      if (initialHash === 'completion') {
-        gsap.set(
-          [
-            foundationGroup,
-            structureGroup,
-            envelopeGroup,
-            fitoutGroup,
-            completionGroup,
-            dimensionsGroup,
-          ].filter(Boolean),
-          { opacity: 1, scaleY: 1, strokeDashoffset: 0 },
+      // Stage 4: Envelope — walls rise storey by storey, openings, parapet, backfill
+      scrubStage('envelope', (tl) => {
+        STOREYS.forEach((s) => {
+          const at = s * B.wallStagger;
+          tl.fromTo(
+            all(`.b-wall[data-storey="${s}"]`),
+            { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
+            { scaleY: 1, duration: B.wallDuration, ease: B.strokeEase },
+            at,
+          ).fromTo(
+            all(`.b-opening[data-storey="${s}"]`),
+            { opacity: 0 },
+            { opacity: 1, duration: B.wallDuration, ease: B.fillEase },
+            at + B.wallDuration,
+          );
+        });
+        staggered(
+          tl,
+          all('.b-parapet'),
+          { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
+          { scaleY: 1, duration: B.wallDuration, ease: B.strokeEase },
+          STOREY_COUNT * B.wallStagger + B.wallDuration,
+          B.wallStagger,
         );
-        gsap.set(columns, { scaleY: 1, opacity: 1 });
-        gsap.set(slabs, { scaleX: 1, opacity: 1 });
-        gsap.set(windows, { fill: 'var(--color-accent)' });
-      }
+        tl.to(all('.b-pit'), { fill: raised, duration: B.wallDuration, ease: B.fillEase }, 0);
+      });
 
-      ScrollTrigger.refresh();
+      // Stage 5: Fit-out — frames, mullions, doors, stair flights, railings
+      scrubStage('fitout', (tl) => {
+        staggered(
+          tl,
+          all('.b-fit'),
+          { opacity: 0 },
+          { opacity: 1, duration: B.detailDuration, ease: B.fillEase },
+          0,
+          B.detailStagger,
+        );
+      });
+
+      // Stage 6: Completion — every window lit (flat amber), name plate, dimensions
+      scrubStage('completion', (tl) => {
+        // Each window switches on as one flat amber rectangle; never a blended or translucent tint
+        all('.b-pane').forEach((pane, i) => {
+          tl.fromTo(
+            pane,
+            { fill: raised },
+            { fill: amber, duration: B.windowSwitchDuration, ease: 'none' },
+            i * B.windowLitStagger,
+          );
+        });
+        tl.fromTo(
+          all('.b-plate'),
+          { opacity: 0 },
+          { opacity: 1, duration: B.detailDuration, ease: B.fillEase },
+          0,
+        )
+          .fromTo(
+            all('.b-dim-vertical'),
+            { scaleY: 0, transformOrigin: TOP_ORIGIN },
+            { scaleY: 1, duration: B.dimensionDrawDuration, ease: B.strokeEase },
+            B.dimensionLabelDelay,
+          )
+          .fromTo(
+            all('.b-dim-horizontal'),
+            { scaleX: 0, transformOrigin: LEFT_ORIGIN },
+            { scaleX: 1, duration: B.dimensionDrawDuration, ease: B.strokeEase },
+            B.dimensionLabelDelay,
+          )
+          .fromTo(
+            all('.b-dim-label, .b-dim-tick'),
+            { opacity: 0 },
+            { opacity: 1, duration: B.detailDuration, ease: B.fillEase },
+            B.dimensionLabelDelay + B.dimensionDrawDuration,
+          );
+      });
     },
     { scope: containerRef, dependencies: [mounted, reducedMotion] },
   );
 
-  if (!mounted) {
-    return null;
-  }
+  if (!mounted) return null;
+
+  const frameWidth = FRAME.right - FRAME.left;
+  const dimX = FRAME.right + 28;
+  const dimWidthY = BUILDING_TOP - 36;
 
   return (
     <aside
       ref={containerRef}
       className={`building-site-window ${isVisible ? 'is-visible' : ''} ${className}`.trim()}
       data-stage={activeStage}
+      data-static={reducedMotion ? 'true' : undefined}
       aria-hidden="true"
     >
-      <div className="building-svg-container">
-        <svg
-          className="building-svg"
-          viewBox="0 0 800 1000"
-          preserveAspectRatio="xMidYMid meet"
-          role="presentation"
-          focusable="false"
-        >
-          <defs>
-            {/* 45° Technical Hatch for section cuts */}
-            <pattern
-              id="hatch-steel"
-              width="10"
-              height="10"
-              patternTransform="rotate(45 0 0)"
-              patternUnits="userSpaceOnUse"
-            >
-              <line
-                x1="0"
-                y1="0"
-                x2="0"
-                y2="10"
-                stroke="var(--color-steel)"
-                strokeWidth="0.8"
-                vectorEffect="non-scaling-stroke"
-              />
-            </pattern>
+      <svg
+        className="building-svg"
+        viewBox={`0 0 ${VIEWBOX.width} ${VIEWBOX.height}`}
+        preserveAspectRatio="xMidYMax slice"
+        role="presentation"
+        focusable="false"
+      >
+        {/* Ground: soil mass and the ground line run the full width of the window */}
+        <rect className="b-soil" x={-400} y={GROUND_Y} width={2000} height={400} />
+        <line className="b-ground-line" x1={-400} y1={GROUND_Y} x2={1600} y2={GROUND_Y} />
 
-            {/* Reusable structural column profile (width 16, height 122) */}
-            <symbol id="bldg-col" viewBox="0 0 16 122">
-              <rect
-                x="0"
-                y="0"
-                width="16"
-                height="122"
-                className="bldg-column-stroke"
-                vectorEffect="non-scaling-stroke"
-              />
-            </symbol>
-
-            {/* Reusable window bay unit (width 60, height 75) */}
-            <symbol id="bldg-window" viewBox="0 0 60 75">
-              <rect
-                x="0"
-                y="0"
-                width="60"
-                height="75"
-                className="bldg-window-opening"
-                vectorEffect="non-scaling-stroke"
-              />
-              <rect
-                x="3"
-                y="3"
-                width="54"
-                height="69"
-                className="bldg-symbol-glass"
-                vectorEffect="non-scaling-stroke"
-              />
-              <line
-                x1="30"
-                y1="0"
-                x2="30"
-                y2="75"
-                className="bldg-window-mullion"
-                vectorEffect="non-scaling-stroke"
-              />
-              <line
-                x1="0"
-                y1="38"
-                x2="60"
-                y2="38"
-                className="bldg-window-mullion"
-                vectorEffect="non-scaling-stroke"
-              />
-            </symbol>
-          </defs>
-
-          {/* Persistent Ground Datum Line (y = 750) */}
-          <line
-            x1="60"
-            y1="750"
-            x2="740"
-            y2="750"
-            className="bldg-datum-line"
-            vectorEffect="non-scaling-stroke"
+        {/* STAGE 2: FOUNDATION */}
+        <g id="stage-foundation" className="stage-group">
+          <polygon
+            className="b-pit"
+            points={`${PIT.topLeft},${GROUND_Y} ${PIT.bottomLeft},${GROUND_Y + PIT.depth} ${PIT.bottomRight},${GROUND_Y + PIT.depth} ${PIT.topRight},${GROUND_Y}`}
           />
+          {FOOTINGS.map((f) => (
+            <rect
+              key={f.x}
+              className="b-footing"
+              x={f.x}
+              y={FOOTING.top}
+              width={f.width}
+              height={FOOTING.height}
+            />
+          ))}
+          {COLUMN_LEFTS.map((x) => (
+            <rect
+              key={x}
+              className="b-stub"
+              x={x}
+              y={GROUND_Y}
+              width={COLUMN_WIDTH}
+              height={FOOTING.top - GROUND_Y}
+            />
+          ))}
+          <rect
+            className="b-stub"
+            x={FRAME.coreLeft + 10}
+            y={GROUND_Y}
+            width={FRAME.right - FRAME.coreLeft - 20}
+            height={FOOTING.top - GROUND_Y}
+          />
+          <rect
+            className="b-tie"
+            x={COLUMN_LEFTS[0]}
+            y={GROUND_Y + 22}
+            width={FRAME.coreLeft - COLUMN_LEFTS[0]}
+            height={16}
+          />
+          <rect
+            className="b-ground-slab"
+            x={FRAME.left - 4}
+            y={SLAB_TOPS[0]}
+            width={frameWidth + 8}
+            height={SLAB_THICKNESS}
+          />
+        </g>
 
-          {/* STAGE 2: FOUNDATION (Substructure & Earthwork) */}
-          <g id="stage-foundation" className="stage-group">
-            {/* Stepped excavation perimeter */}
-            <path
-              d="M 100 750 L 130 840 L 670 840 L 700 750"
-              className="bldg-excavation-cut"
-              fill="none"
-              vectorEffect="non-scaling-stroke"
-            />
-            {/* 4 Reinforced Pad Footings */}
+        {/* STAGE 4: ENVELOPE (drawn behind the frame) */}
+        <g id="stage-envelope" className="stage-group">
+          {STOREYS.flatMap((s) => {
+            const wall = wallBounds(s);
+            return BAYS.map((bay, i) => (
+              <rect
+                key={`w${s}${i}`}
+                className="b-wall"
+                data-storey={s}
+                x={bay.left}
+                y={wall.top}
+                width={bay.right - bay.left}
+                height={wall.height}
+              />
+            ));
+          })}
+          {WINDOWS.map((w) => (
             <rect
-              x="150"
-              y="805"
-              width="80"
-              height="35"
-              className="bldg-footing-outline"
-              vectorEffect="non-scaling-stroke"
+              key={`o${w.id}`}
+              className="b-opening"
+              data-storey={w.storey}
+              x={w.x}
+              y={w.y}
+              width={w.width}
+              height={w.height}
+            />
+          ))}
+          <rect
+            className="b-opening"
+            data-storey={0}
+            x={ENTRANCE.x}
+            y={ENTRANCE.y}
+            width={ENTRANCE.width}
+            height={ENTRANCE.height}
+          />
+          <rect
+            className="b-parapet b-parapet-wall"
+            x={FRAME.left}
+            y={SLAB_TOPS[4] - 20}
+            width={frameWidth}
+            height={20}
+          />
+          <rect
+            className="b-parapet b-parapet-cap"
+            x={FRAME.left - 6}
+            y={BUILDING_TOP}
+            width={frameWidth + 12}
+            height={6}
+          />
+        </g>
+
+        {/* STAGE 3: STRUCTURE */}
+        <g id="stage-structure" className="stage-group">
+          {STOREYS.map((s) => {
+            const { ceiling, height } = storeyBounds(s);
+            const slabTop = SLAB_TOPS[s + 1] as number;
+            const roof = s === STOREY_COUNT - 1;
+            return (
+              <g key={s} className="b-level" data-level={s}>
+                {COLUMN_LEFTS.map((x) => (
+                  <rect
+                    key={x}
+                    className="b-col"
+                    x={x}
+                    y={ceiling}
+                    width={COLUMN_WIDTH}
+                    height={height}
+                  />
+                ))}
+                <rect
+                  className="b-core"
+                  x={FRAME.coreLeft}
+                  y={ceiling}
+                  width={FRAME.right - FRAME.coreLeft}
+                  height={height}
+                />
+                <rect
+                  className="b-beam"
+                  x={FRAME.left}
+                  y={ceiling}
+                  width={FRAME.coreLeft - FRAME.left}
+                  height={BEAM_DEPTH}
+                />
+                <rect
+                  className="b-slab"
+                  x={FRAME.left - (roof ? 8 : 4)}
+                  y={slabTop}
+                  width={frameWidth + (roof ? 16 : 8)}
+                  height={SLAB_THICKNESS}
+                />
+              </g>
+            );
+          })}
+        </g>
+
+        {/* STAGE 5: FIT-OUT */}
+        <g id="stage-fitout" className="stage-group">
+          {WINDOWS.map((w) => (
+            <g key={`f${w.id}`} className="b-fit">
+              <rect
+                className="b-pane"
+                x={w.x + PANE_INSET}
+                y={w.y + PANE_INSET}
+                width={w.width - PANE_INSET * 2}
+                height={w.height - PANE_INSET * 2}
+              />
+              <rect className="b-frame" x={w.x} y={w.y} width={w.width} height={w.height} />
+              <line
+                className="b-mullion"
+                x1={w.x + w.width / 2}
+                y1={w.y}
+                x2={w.x + w.width / 2}
+                y2={w.y + w.height}
+              />
+              <line className="b-mullion" x1={w.x} y1={w.y + 20} x2={w.x + w.width} y2={w.y + 20} />
+            </g>
+          ))}
+          <g className="b-fit">
+            <rect
+              className="b-frame"
+              x={ENTRANCE.x}
+              y={ENTRANCE.y}
+              width={ENTRANCE.width}
+              height={ENTRANCE.height}
             />
             <rect
-              x="270"
-              y="805"
-              width="80"
-              height="35"
-              className="bldg-footing-outline"
-              vectorEffect="non-scaling-stroke"
+              className="b-door"
+              x={ENTRANCE.x + 5}
+              y={ENTRANCE.y + 5}
+              width={ENTRANCE.width / 2 - 7}
+              height={ENTRANCE.height - 5}
             />
             <rect
-              x="450"
-              y="805"
-              width="80"
-              height="35"
-              className="bldg-footing-outline"
-              vectorEffect="non-scaling-stroke"
+              className="b-door"
+              x={ENTRANCE.x + ENTRANCE.width / 2 + 2}
+              y={ENTRANCE.y + 5}
+              width={ENTRANCE.width / 2 - 7}
+              height={ENTRANCE.height - 5}
             />
             <rect
-              x="570"
-              y="805"
-              width="80"
-              height="35"
-              className="bldg-footing-outline"
-              vectorEffect="non-scaling-stroke"
-            />
-            {/* Continuous Ground Plinth Tie Beam */}
-            <rect
-              x="130"
-              y="745"
-              width="540"
-              height="15"
-              className="bldg-tie-beam"
-              vectorEffect="non-scaling-stroke"
+              className="b-canopy"
+              x={CANOPY.x}
+              y={CANOPY.y}
+              width={CANOPY.width}
+              height={CANOPY.height}
             />
           </g>
-
-          {/* STAGE 3: STRUCTURE (Columns & Slabs) */}
-          <g id="stage-structure" className="stage-group">
-            {/* Level 1 Columns (y: 628..745) */}
-            <use href="#bldg-col" x="182" y="625" className="bldg-col" />
-            <use href="#bldg-col" x="302" y="625" className="bldg-col" />
-            <use href="#bldg-col" x="482" y="625" className="bldg-col" />
-            <use href="#bldg-col" x="602" y="625" className="bldg-col" />
-
-            {/* Level 1 Slab (y = 620) */}
+          <g className="b-fit">
             <rect
-              x="160"
-              y="617"
-              width="480"
-              height="10"
-              className="bldg-slab bldg-slab-cut"
-              vectorEffect="non-scaling-stroke"
+              className="b-opening b-slit"
+              x={CORE_SLIT.x}
+              y={CORE_SLIT.y}
+              width={CORE_SLIT.width}
+              height={CORE_SLIT.height}
             />
-
-            {/* Level 2 Columns (y: 498..617) */}
-            <use href="#bldg-col" x="182" y="497" className="bldg-col" />
-            <use href="#bldg-col" x="302" y="497" className="bldg-col" />
-            <use href="#bldg-col" x="482" y="497" className="bldg-col" />
-            <use href="#bldg-col" x="602" y="497" className="bldg-col" />
-
-            {/* Level 2 Slab (y = 490) */}
-            <rect
-              x="160"
-              y="487"
-              width="480"
-              height="10"
-              className="bldg-slab bldg-slab-cut"
-              vectorEffect="non-scaling-stroke"
-            />
-
-            {/* Level 3 Columns (y: 368..487) */}
-            <use href="#bldg-col" x="182" y="367" className="bldg-col" />
-            <use href="#bldg-col" x="302" y="367" className="bldg-col" />
-            <use href="#bldg-col" x="482" y="367" className="bldg-col" />
-            <use href="#bldg-col" x="602" y="367" className="bldg-col" />
-
-            {/* Level 3 Slab (y = 360) */}
-            <rect
-              x="160"
-              y="357"
-              width="480"
-              height="10"
-              className="bldg-slab bldg-slab-cut"
-              vectorEffect="non-scaling-stroke"
-            />
-
-            {/* Level 4 Columns (y: 250..357) */}
-            <use href="#bldg-col" x="182" y="247" className="bldg-col" />
-            <use href="#bldg-col" x="302" y="247" className="bldg-col" />
-            <use href="#bldg-col" x="482" y="247" className="bldg-col" />
-            <use href="#bldg-col" x="602" y="247" className="bldg-col" />
-
-            {/* Roof Slab & Parapet Beam (y = 240) */}
-            <rect
-              x="160"
-              y="237"
-              width="480"
-              height="12"
-              className="bldg-slab bldg-slab-cut"
-              vectorEffect="non-scaling-stroke"
-            />
-
-            {/* Central Stair Core Shaft (x = 370..430) */}
-            <rect
-              x="370"
-              y="245"
-              width="60"
-              height="500"
-              className="bldg-stair-core"
-              vectorEffect="non-scaling-stroke"
-            />
+            <polyline className="b-stair" points={STAIR_POINTS} />
           </g>
+          {RAILINGS.map((r) => (
+            <path key={r.id} className="b-fit b-rail" d={r.d} />
+          ))}
+        </g>
 
-          {/* STAGE 4: ENVELOPE (Walls & Apertures) */}
-          <g id="stage-envelope" className="stage-group">
-            {/* Ground Floor Infill Walls */}
+        {/* STAGE 6: COMPLETION — name plate */}
+        <g id="stage-completion" className="stage-group">
+          <g className="b-plate">
             <rect
-              x="160"
-              y="627"
-              width="130"
-              height="118"
-              className="bldg-wall-infill"
-              vectorEffect="non-scaling-stroke"
-            />
-            <rect
-              x="510"
-              y="627"
-              width="130"
-              height="118"
-              className="bldg-wall-infill"
-              vectorEffect="non-scaling-stroke"
-            />
-
-            {/* Level 2 Infill Walls */}
-            <rect
-              x="160"
-              y="497"
-              width="130"
-              height="120"
-              className="bldg-wall-infill"
-              vectorEffect="non-scaling-stroke"
-            />
-            <rect
-              x="510"
-              y="497"
-              width="130"
-              height="120"
-              className="bldg-wall-infill"
-              vectorEffect="non-scaling-stroke"
-            />
-
-            {/* Level 3 Infill Walls */}
-            <rect
-              x="160"
-              y="367"
-              width="130"
-              height="120"
-              className="bldg-wall-infill"
-              vectorEffect="non-scaling-stroke"
-            />
-            <rect
-              x="510"
-              y="367"
-              width="130"
-              height="120"
-              className="bldg-wall-infill"
-              vectorEffect="non-scaling-stroke"
-            />
-
-            {/* Level 4 Infill Walls */}
-            <rect
-              x="160"
-              y="249"
-              width="130"
-              height="108"
-              className="bldg-wall-infill"
-              vectorEffect="non-scaling-stroke"
-            />
-            <rect
-              x="510"
-              y="249"
-              width="130"
-              height="108"
-              className="bldg-wall-infill"
-              vectorEffect="non-scaling-stroke"
-            />
-
-            {/* Roof Parapet Cap (y = 220) */}
-            <rect
-              x="155"
-              y="222"
-              width="490"
-              height="15"
-              className="bldg-slab-cut"
-              vectorEffect="non-scaling-stroke"
-            />
-          </g>
-
-          {/* STAGE 5: FIT-OUT (Partitions, Windows & Mullions) */}
-          <g id="stage-fitout" className="stage-group">
-            {/* Level 2 Windows */}
-            <use href="#bldg-window" x="205" y="520" className="bldg-window-glass" />
-            <use href="#bldg-window" x="535" y="520" className="bldg-window-glass" />
-
-            {/* Level 3 Windows */}
-            <use href="#bldg-window" x="205" y="390" className="bldg-window-glass" />
-            <use href="#bldg-window" x="535" y="390" className="bldg-window-glass" />
-
-            {/* Level 4 Windows */}
-            <use href="#bldg-window" x="205" y="265" className="bldg-window-glass" />
-            <use href="#bldg-window" x="535" y="265" className="bldg-window-glass" />
-
-            {/* Ground Bay Glazed Entrance Portal */}
-            <rect
-              x="320"
-              y="630"
-              width="160"
-              height="115"
-              className="bldg-window-opening"
-              vectorEffect="non-scaling-stroke"
-            />
-            <rect
-              x="325"
-              y="635"
-              width="150"
-              height="105"
-              className="bldg-window-glass"
-              vectorEffect="non-scaling-stroke"
-            />
-            <line
-              x1="400"
-              y1="630"
-              x2="400"
-              y2="745"
-              className="bldg-window-mullion"
-              vectorEffect="non-scaling-stroke"
-            />
-            <line
-              x1="320"
-              y1="690"
-              x2="480"
-              y2="690"
-              className="bldg-window-mullion"
-              vectorEffect="non-scaling-stroke"
-            />
-
-            {/* Stair Flights (Internal Core) */}
-            <line
-              x1="380"
-              y1="745"
-              x2="420"
-              y2="625"
-              className="bldg-stair-core"
-              vectorEffect="non-scaling-stroke"
-            />
-            <line
-              x1="420"
-              y1="617"
-              x2="380"
-              y2="497"
-              className="bldg-stair-core"
-              vectorEffect="non-scaling-stroke"
-            />
-            <line
-              x1="380"
-              y1="487"
-              x2="420"
-              y2="367"
-              className="bldg-stair-core"
-              vectorEffect="non-scaling-stroke"
-            />
-            <line
-              x1="420"
-              y1="357"
-              x2="380"
-              y2="247"
-              className="bldg-stair-core"
-              vectorEffect="non-scaling-stroke"
-            />
-          </g>
-
-          {/* STAGE 6: COMPLETION (Lighting, Dimensions & Nameplate) */}
-          <g id="stage-completion" className="stage-group">
-            {/* Architectural Entrance Nameplate */}
-            <rect
-              x="355"
-              y="615"
-              width="90"
-              height="16"
-              fill="var(--color-limewash)"
-              stroke="var(--color-formwork-dark)"
-              strokeWidth="1"
-              vectorEffect="non-scaling-stroke"
+              className="b-plate-box"
+              x={NAME_PLATE.x}
+              y={NAME_PLATE.y}
+              width={NAME_PLATE.width}
+              height={NAME_PLATE.height}
             />
             <text
-              x="400"
-              y="627"
+              className="b-plate-text"
+              x={NAME_PLATE.x + NAME_PLATE.width / 2}
+              y={NAME_PLATE.y + NAME_PLATE.height / 2 + 5}
               textAnchor="middle"
-              className="bldg-nameplate"
-              vectorEffect="non-scaling-stroke"
             >
-              RC / PLOT 104
-            </text>
-
-            {/* Entry Access Path */}
-            <line
-              x1="320"
-              y1="755"
-              x2="480"
-              y2="755"
-              stroke="var(--color-formwork-dark)"
-              strokeWidth="2"
-              vectorEffect="non-scaling-stroke"
-            />
-          </g>
-
-          {/* Elevation Height Dimension Lines (Amber exclusively) */}
-          <g id="stage-dimensions" className="stage-group">
-            {/* Top and Bottom Extension Witness Ticks */}
-            <line
-              x1="655"
-              y1="222"
-              x2="710"
-              y2="222"
-              className="bldg-dimension-tick"
-              vectorEffect="non-scaling-stroke"
-            />
-            <line
-              x1="655"
-              y1="750"
-              x2="710"
-              y2="750"
-              className="bldg-dimension-tick"
-              vectorEffect="non-scaling-stroke"
-            />
-            {/* Continuous Vertical Dimension Line */}
-            <line
-              x1="700"
-              y1="222"
-              x2="700"
-              y2="750"
-              className="bldg-dimension-line"
-              vectorEffect="non-scaling-stroke"
-            />
-            {/* Dimension Text Badge */}
-            <rect
-              x="665"
-              y="470"
-              width="70"
-              height="22"
-              fill="var(--color-formwork-dark)"
-              rx="0"
-              vectorEffect="non-scaling-stroke"
-            />
-            <text
-              x="700"
-              y="485"
-              textAnchor="middle"
-              className="bldg-dimension-text"
-              vectorEffect="non-scaling-stroke"
-            >
-              15.40 m
+              RC Constructions
             </text>
           </g>
-        </svg>
-      </div>
+        </g>
+
+        {/* Dimension lines: amber hairlines with two sentence-case labels */}
+        <g id="stage-dimensions" className="stage-group">
+          <line
+            className="b-dim b-dim-vertical"
+            x1={dimX}
+            y1={BUILDING_TOP}
+            x2={dimX}
+            y2={GROUND_Y}
+          />
+          <line
+            className="b-dim b-dim-tick"
+            x1={dimX - 12}
+            y1={BUILDING_TOP}
+            x2={dimX + 12}
+            y2={BUILDING_TOP}
+          />
+          <line
+            className="b-dim b-dim-tick"
+            x1={dimX - 12}
+            y1={GROUND_Y}
+            x2={dimX + 12}
+            y2={GROUND_Y}
+          />
+          <text className="b-dim-label" x={dimX + 10} y={(BUILDING_TOP + GROUND_Y) / 2}>
+            15.40 m
+          </text>
+          <line
+            className="b-dim b-dim-horizontal"
+            x1={FRAME.left}
+            y1={dimWidthY}
+            x2={FRAME.right}
+            y2={dimWidthY}
+          />
+          <line
+            className="b-dim b-dim-tick"
+            x1={FRAME.left}
+            y1={dimWidthY - 12}
+            x2={FRAME.left}
+            y2={dimWidthY + 12}
+          />
+          <line
+            className="b-dim b-dim-tick"
+            x1={FRAME.right}
+            y1={dimWidthY - 12}
+            x2={FRAME.right}
+            y2={dimWidthY + 12}
+          />
+          <text
+            className="b-dim-label"
+            x={(FRAME.left + FRAME.right) / 2}
+            y={dimWidthY - 12}
+            textAnchor="middle"
+          >
+            17.40 m
+          </text>
+        </g>
+      </svg>
     </aside>
   );
 }

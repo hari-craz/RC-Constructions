@@ -7,13 +7,11 @@ export interface ProcessStep {
 }
 
 export interface ProcessContent {
-  readonly kicker: string;
   readonly title: string;
   readonly steps: readonly ProcessStep[];
 }
 
 export const PROCESS_CONTENT: ProcessContent = {
-  kicker: 'Section 05 — Fit-out',
   title: 'Construction Process',
   steps: [
     {

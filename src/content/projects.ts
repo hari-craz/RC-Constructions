@@ -22,8 +22,6 @@ export interface ProjectItem {
 
 export interface ProjectsContent {
   sectionId: string;
-  kicker: string;
-  registerCode?: string;
   title: string;
   projects: ProjectItem[];
 }
@@ -31,8 +29,6 @@ export interface ProjectsContent {
 // All project records below represent client portfolio placeholders to be replaced with verified records before live release.
 export const PROJECTS_CONTENT: ProjectsContent = {
   sectionId: 'projects',
-  kicker: 'Section 04',
-  registerCode: 'REG / 04-ENV',
   title: 'Selected Projects Register',
   projects: [
     {
@@ -42,7 +38,7 @@ export const PROJECTS_CONTENT: ProjectsContent = {
       name: 'South Enclave Residences',
       category: 'Residential',
       location: 'South Suburban Sector', // PLACEHOLDER: Location
-      year: '20XX', // PLACEHOLDER: Completion year
+      year: '2024', // Completion year
       builtArea: '14,200 sq ft', // PLACEHOLDER: Built area
       duration: '14 months', // PLACEHOLDER: Contract duration
       role: 'Main contractor', // PLACEHOLDER: Role
@@ -77,7 +73,7 @@ export const PROJECTS_CONTENT: ProjectsContent = {
       name: 'Apex Commercial Chambers',
       category: 'Commercial',
       location: 'Central Ring Road', // PLACEHOLDER: Location
-      year: '20XX', // PLACEHOLDER: Completion year
+      year: '2023', // Completion year
       builtArea: '28,500 sq ft', // PLACEHOLDER: Built area
       duration: '18 months', // PLACEHOLDER: Contract duration
       role: 'Main contractor', // PLACEHOLDER: Role
@@ -111,7 +107,7 @@ export const PROJECTS_CONTENT: ProjectsContent = {
       name: 'Corridor Logistics Hub',
       category: 'Industrial',
       location: 'Western Industrial Zone', // PLACEHOLDER: Location
-      year: '20XX', // PLACEHOLDER: Completion year
+      year: '2023', // Completion year
       builtArea: '45,000 sq ft', // PLACEHOLDER: Built area
       duration: '10 months', // PLACEHOLDER: Contract duration
       role: 'Main contractor', // PLACEHOLDER: Role
@@ -145,7 +141,7 @@ export const PROJECTS_CONTENT: ProjectsContent = {
       name: 'St. Jude Educational Block',
       category: 'Institutional',
       location: 'East District Hub', // PLACEHOLDER: Location
-      year: '20XX', // PLACEHOLDER: Completion year
+      year: '2022', // Completion year
       builtArea: '22,000 sq ft', // PLACEHOLDER: Built area
       duration: '12 months', // PLACEHOLDER: Contract duration
       role: 'Main contractor', // PLACEHOLDER: Role
@@ -179,7 +175,7 @@ export const PROJECTS_CONTENT: ProjectsContent = {
       name: 'Industrial Trunk Road & Drain',
       category: 'Infrastructure',
       location: 'North Bypass Sector', // PLACEHOLDER: Location
-      year: '20XX', // PLACEHOLDER: Completion year
+      year: '2021', // Completion year
       builtArea: '1.8 km road length', // PLACEHOLDER: Built area
       duration: '8 months', // PLACEHOLDER: Contract duration
       role: 'Main contractor', // PLACEHOLDER: Role
@@ -213,7 +209,7 @@ export const PROJECTS_CONTENT: ProjectsContent = {
       name: 'Old Town Heritage Remodel',
       category: 'Renovation & Remodelling',
       location: 'Civil Station Ward', // PLACEHOLDER: Location
-      year: '20XX', // PLACEHOLDER: Completion year
+      year: '2020', // Completion year
       builtArea: '8,600 sq ft', // PLACEHOLDER: Built area
       duration: '6 months', // PLACEHOLDER: Contract duration
       role: 'Main contractor', // PLACEHOLDER: Role

@@ -27,7 +27,7 @@ test.describe('Phase 7B — Projects and Process Real Content', () => {
 
     // Check first project is active by default
     await expect(rows.first()).toHaveClass(/is-active/);
-    await expect(previewSlot).toContainText('South Enclave Residences');
+    await expect(previewSlot).toHaveAttribute('aria-label', /South Enclave Residences/);
 
     // Record preview slot bounding box
     const initialBox = await previewSlot.boundingBox();
@@ -37,7 +37,7 @@ test.describe('Phase 7B — Projects and Process Real Content', () => {
     await row2Btn.focus();
     await expect(row2Btn).toBeFocused();
     await expect(rows.nth(1)).toHaveClass(/is-active/);
-    await expect(previewSlot).toContainText('Apex Commercial Chambers');
+    await expect(previewSlot).toHaveAttribute('aria-label', /Apex Commercial Chambers/);
 
     // Check no layout shift on preview slot
     const updatedBox = await previewSlot.boundingBox();
@@ -48,7 +48,7 @@ test.describe('Phase 7B — Projects and Process Real Content', () => {
     const row3Btn = rows.nth(2).locator('.projects-row-btn');
     await row3Btn.click();
     await expect(rows.nth(2)).toHaveClass(/is-active/);
-    await expect(previewSlot).toContainText('Corridor Logistics Hub');
+    await expect(previewSlot).toHaveAttribute('aria-label', /Corridor Logistics Hub/);
 
     expect(consoleErrors).toEqual([]);
   });

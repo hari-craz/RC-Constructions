@@ -22,15 +22,6 @@
   padding-bottom: var(--space-4);
 }
 
-.founder-kicker {
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  letter-spacing: var(--tracking-normal);
-  text-transform: none;
-  color: var(--color-formwork-dark);
-}
-
 .founder-name-group {
   display: flex;
   align-items: baseline;
@@ -159,18 +150,20 @@
   inset: 0;
   width: 100%;
   height: 100%;
+  z-index: 2;
 }
 
 .founder-portrait-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0;
+  opacity: 1;
 }
 
 .founder-portrait-placeholder {
   position: absolute;
   inset: 0;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -189,7 +182,7 @@
 
 .founder-portrait-dimensions {
   font-family: var(--font-body);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: var(--tracking-normal);
   text-transform: none;

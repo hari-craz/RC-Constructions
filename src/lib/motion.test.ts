@@ -7,7 +7,7 @@ describe('motion constants', () => {
     expect(MOTION.sheetStack.scaleMax).toBe(1);
     expect(MOTION.sheetStack.radiusSheetPx).toBe(32);
     expect(MOTION.sheetStack.radiusSquarePx).toBe(0);
-    expect(MOTION.sheetStack.dimOverlayOpacity).toBe(0.12);
+    expect(MOTION.sheetStack.dimOverlayOpacity).toBe(0.1);
     expect(MOTION.sheetStack.transformOrigin).toBe('center top');
     expect(MOTION.sheetStack.ease).toBe('power2.out');
   });
@@ -26,11 +26,11 @@ describe('motion constants', () => {
   });
 
   it('defines building elevation motion constants with non-zero durations', () => {
-    expect(MOTION.building.foundationDrawDuration).toBeGreaterThan(0);
-    expect(MOTION.building.columnRiseDuration).toBeGreaterThan(0);
-    expect(MOTION.building.slabDrawDuration).toBeGreaterThan(0);
-    expect(MOTION.building.wallFillDuration).toBeGreaterThan(0);
-    expect(MOTION.building.windowLitDuration).toBeGreaterThan(0);
+    expect(MOTION.building.digDuration).toBeGreaterThan(0);
+    expect(MOTION.building.levelDuration).toBeGreaterThan(0);
+    expect(MOTION.building.memberDuration).toBeGreaterThan(0);
+    expect(MOTION.building.wallDuration).toBeGreaterThan(0);
+    expect(MOTION.building.windowLitStagger).toBeGreaterThan(0);
   });
 
   it('defines stats and founder motion tokens with positive durations', () => {

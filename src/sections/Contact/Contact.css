@@ -36,15 +36,6 @@
   gap: var(--space-2);
 }
 
-.contact-kicker {
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  letter-spacing: var(--tracking-normal);
-  text-transform: none;
-  color: var(--color-formwork-dark);
-}
-
 .contact-headline {
   margin: 0;
   font-family: var(--font-headline);
@@ -143,16 +134,26 @@ a.contact-channel-value:hover {
 
 .field-required {
   font-family: var(--font-body);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   text-transform: lowercase;
-  color: var(--color-stone);
+  color: var(--color-ink-muted-light);
+  transition: color 150ms ease;
 }
 
 .field-optional {
   font-family: var(--font-body);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   text-transform: lowercase;
-  color: var(--color-stone);
+  color: var(--color-ink-muted-light);
+}
+
+.contact-field-group.is-invalid .contact-label {
+  color: #8a2424;
+}
+
+.contact-field-group.is-invalid .field-required {
+  color: #8a2424;
+  font-weight: 600;
 }
 
 .contact-input,
@@ -191,41 +192,43 @@ a.contact-channel-value:hover {
 .contact-select.is-invalid,
 .contact-textarea.is-invalid {
   border-color: #8a2424;
+  background-color: rgb(138 36 36 / 4%);
 }
 
 .field-error-msg {
   font-family: var(--font-body);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: #8a2424;
   margin-top: 2px;
 }
 
-/* Primary Submit Action: The only place amber is used for a button */
+/* Primary Submit Action: Solid filled amber matching hero button */
 .contact-submit-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: 48px;
-  padding: 12px 24px;
+  padding: var(--space-3) var(--space-6);
   background-color: var(--color-accent);
   color: var(--color-accent-ink);
   font-family: var(--font-headline);
   font-size: var(--font-size-base);
   font-weight: 800;
-  letter-spacing: var(--tracking-wide);
+  letter-spacing: var(--tracking-wider);
   text-transform: uppercase;
-  border: none;
-  border-radius: 0;
+  border: 1px solid var(--color-accent);
+  border-radius: 2px;
   cursor: pointer;
   outline: none;
   transition:
-    background-color 150ms ease,
-    opacity 150ms ease;
+    opacity 0.2s ease,
+    transform 0.15s ease;
+  user-select: none;
 }
 
 .contact-submit-btn:focus-visible {
   outline: 2px solid var(--color-formwork-dark);
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
 .contact-submit-btn:disabled {
@@ -237,10 +240,14 @@ a.contact-channel-value:hover {
   opacity: 0.92;
 }
 
+.contact-submit-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
 .contact-privacy-note {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   line-height: var(--line-height-normal);
   color: var(--color-formwork-dark);
   opacity: 0.85;
@@ -315,7 +322,7 @@ a.contact-channel-value:hover {
   padding: var(--space-3) var(--space-4);
   border: 1px dashed var(--color-steel);
   font-family: var(--font-body);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   color: var(--color-formwork-dark);
   background-color: rgb(122 126 120 / 10%);
 }

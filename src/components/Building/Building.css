@@ -1,188 +1,175 @@
+/*
+ * Site window: a fixed, constant formwork surface. Desktop: grid columns 6-12 (7/12 of the
+ * viewport), edge to edge in height. Mobile: a fixed band at the top (42svh).
+ * The building is one inline SVG that fills the window; it is drawn with three line weights.
+ */
 .building-site-window {
+  --lw-heavy: 3px;
+  --lw-medium: 2px;
+  --lw-hair: 1px;
+
   position: fixed;
   top: 0;
   right: 0;
-  width: 44vw;
+  width: var(--site-window-width);
   height: 100dvh;
-  z-index: 15;
+  z-index: var(--z-site-window);
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background-color: var(--color-formwork-dark);
   overflow: clip;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--duration-normal) var(--ease-standard);
 }
 
-/* Site window becomes visible once user scrolls past hero plan view */
 .building-site-window.is-visible {
   opacity: 1;
 }
 
-.building-svg-container {
-  position: relative;
-  width: 90%;
-  height: 85%;
-  max-width: 600px;
-  max-height: 840px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .building-svg {
+  display: block;
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  max-width: none;
 }
 
-/* Stage Group Base Rules */
-.stage-group {
+/* Every element keeps its stroke weight at any scale */
+.building-svg :is(rect, line, polygon, polyline, path) {
   vector-effect: non-scaling-stroke;
 }
 
-/* Section Line Weights & Stroke Colours */
-.bldg-datum-line {
-  stroke: var(--color-formwork-dark);
-  stroke-width: 2px;
-  stroke-linecap: square;
+/* Ground */
+.b-soil {
+  fill: var(--color-surface-raised);
 }
 
-.bldg-excavation-cut {
-  stroke: var(--color-steel);
-  stroke-width: 2px;
-  stroke-dasharray: 8 5;
+.b-ground-line {
+  stroke: var(--color-limewash);
+  stroke-width: var(--lw-heavy);
 }
 
-.bldg-footing-outline {
-  stroke: var(--color-formwork-dark);
-  stroke-width: 2px;
-  fill: url('#hatch-steel');
-}
-
-.bldg-tie-beam {
-  stroke: var(--color-formwork-dark);
-  stroke-width: 2px;
-  fill: none;
-}
-
-.bldg-slab-cut {
-  stroke: var(--color-formwork-dark);
-  stroke-width: 2px;
-  fill: none;
-}
-
-.bldg-column-stroke {
-  stroke: var(--color-formwork-dark);
-  stroke-width: 1.5px;
-  fill: none;
-}
-
-.bldg-stair-core {
-  stroke: var(--color-steel);
-  stroke-width: 1.2px;
-  fill: none;
-}
-
-.bldg-wall-infill {
-  stroke: var(--color-formwork-dark);
-  stroke-width: 1.2px;
-  fill: none;
-}
-
-.bldg-window-opening {
-  stroke: var(--color-formwork-dark);
-  stroke-width: 1.2px;
-  fill: transparent;
-}
-
-.bldg-window-mullion {
-  stroke: var(--color-steel);
-  stroke-width: 1px;
-}
-
-.bldg-symbol-glass {
-  fill: var(--color-window-glass, transparent);
-  transition: fill 0.4s ease;
-}
-
-.bldg-window-glass {
-  --color-window-glass: transparent;
-
-  fill: var(--color-window-glass, transparent);
-  transition: fill 0.4s ease;
-}
-
-.building-site-window[data-stage='completion'] .bldg-symbol-glass,
-.building-site-window[data-stage='completion'] .bldg-window-glass,
-.bldg-window-glass.is-lit {
-  --color-window-glass: var(--color-accent);
-
-  fill: var(--color-accent);
-}
-
-.bldg-dimension-line {
-  stroke: var(--color-accent);
-  stroke-width: 1.2px;
-}
-
-.bldg-dimension-tick {
-  stroke: var(--color-accent);
-  stroke-width: 1.5px;
-}
-
-.bldg-dimension-text {
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 600;
-  fill: var(--color-accent);
-  letter-spacing: 0.02em;
-}
-
-.bldg-nameplate {
-  font-family: var(--font-headline);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: var(--tracking-wide);
+.b-pit {
   fill: var(--color-formwork-dark);
-  text-transform: uppercase;
+  stroke: var(--color-steel);
+  stroke-width: var(--lw-medium);
 }
 
-/* Reduced Motion Fallback: Show complete building statically */
+/* Heavy section cuts: concrete mass with a limewash outline */
+.b-footing,
+.b-stub,
+.b-tie,
+.b-ground-slab,
+.b-slab,
+.b-core,
+.b-parapet-cap {
+  fill: var(--color-concrete);
+  stroke: var(--color-limewash);
+  stroke-width: var(--lw-heavy);
+}
+
+/* Medium: frame members, canopy */
+.b-col,
+.b-beam,
+.b-canopy {
+  fill: var(--color-concrete);
+  stroke: var(--color-steel);
+  stroke-width: var(--lw-medium);
+}
+
+/* Walls: limewash masses between the frame, separated by steel hairlines */
+.b-wall,
+.b-parapet-wall {
+  fill: var(--color-limewash);
+  stroke: var(--color-steel);
+  stroke-width: var(--lw-hair);
+}
+
+/* Openings are formwork-dark voids */
+.b-opening {
+  fill: var(--color-formwork-dark);
+  stroke: var(--color-steel);
+  stroke-width: var(--lw-medium);
+}
+
+.b-frame {
+  fill: none;
+  stroke: var(--color-limewash);
+  stroke-width: var(--lw-medium);
+}
+
+.b-mullion,
+.b-stair,
+.b-rail {
+  fill: none;
+  stroke: var(--color-steel);
+  stroke-width: var(--lw-medium);
+}
+
+.b-rail {
+  stroke-width: var(--lw-hair);
+}
+
+.b-door {
+  fill: var(--color-surface-raised);
+  stroke: var(--color-steel);
+  stroke-width: var(--lw-medium);
+}
+
+/* Window glass: dark until commissioned, then one flat amber rectangle per window */
+.b-pane {
+  fill: var(--color-surface-raised);
+  stroke: none;
+}
+
+.building-site-window[data-static='true'] .b-pane {
+  fill: var(--color-work-lamp-amber);
+}
+
+.b-plate-box {
+  fill: var(--color-formwork-dark);
+  stroke: var(--color-steel);
+  stroke-width: var(--lw-hair);
+}
+
+.b-plate-text {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  fill: var(--color-limewash);
+}
+
+/* Dimensions: amber hairlines */
+.b-dim {
+  stroke: var(--color-work-lamp-amber);
+  stroke-width: var(--lw-hair);
+}
+
+.b-dim-label {
+  font-family: var(--font-body);
+  font-size: 15px;
+  fill: var(--color-work-lamp-amber);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .building-site-window {
-    opacity: 1 !important;
-  }
-
-  .stage-group {
-    opacity: 1 !important;
-    transform: none !important;
-    stroke-dashoffset: 0 !important;
-  }
-
-  .bldg-window-glass,
-  .bldg-symbol-glass {
-    fill: var(--color-accent) !important;
+    transition: none;
   }
 }
 
-/* Mobile & Tablet Layout (< 1024px) */
+/* Mobile and tablet: fixed band at the top, below the header */
 @media (width < 1024px) {
   .building-site-window {
+    --lw-heavy: 2.5px;
+    --lw-medium: 1.5px;
+
     top: 0;
     left: 0;
-    right: 0;
     width: 100%;
-    height: 34svh;
-    background-color: var(--color-surface);
-    border-bottom: 1px solid var(--color-line);
-    padding: var(--space-2);
+    height: var(--site-band-height);
+    padding-top: var(--nav-height);
+    box-sizing: border-box;
   }
 
-  .building-svg-container {
-    width: 100%;
-    height: 100%;
-    max-width: none;
-    max-height: none;
+  .b-dim-label,
+  .b-plate {
+    display: none;
   }
 }

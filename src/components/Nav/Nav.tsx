@@ -1,4 +1,4 @@
-import { getSectionById } from '../../data/stages';
+import { getSectionById, isSiteWindowVisible } from '../../data/stages';
 import { useActiveSection } from '../../hooks/useActiveSection';
 import { useScroll } from '../../hooks/useScroll';
 import { Logo } from '../Logo';
@@ -12,14 +12,10 @@ export function Nav({ className = '' }: NavProps) {
   const activeSection = useActiveSection();
   const { scrollTo } = useScroll();
 
-  // Hero, Contact, Founder, and concrete/light stages are light sheets (dark ink); dark stages need light ink.
-  const section = getSectionById(activeSection);
-  const isLightSheet =
-    !activeSection ||
-    activeSection === 'hero' ||
-    section?.tone === 'concrete' ||
-    section?.tone === 'light';
-  const toneClass = isLightSheet ? 'nav-tone-dark' : 'nav-tone-light';
+  // The header takes the surface of the sheet beneath it. Over the fixed site window
+  // (always formwork) it switches to light ink so it stays legible on every surface.
+  const tone = (activeSection && getSectionById(activeSection)?.tone) || 'concrete';
+  const windowOn = isSiteWindowVisible(activeSection);
 
   const handleEnquireClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -38,22 +34,26 @@ export function Nav({ className = '' }: NavProps) {
   };
 
   return (
-    <header className={`nav-bar ${toneClass} ${className}`.trim()}>
+    <header
+      className={`nav-bar ${className}`.trim()}
+      data-tone={tone}
+      data-window={windowOn ? 'on' : 'off'}
+    >
       <a href="#main" className="skip-link">
         Skip to main content
       </a>
-      <div className="container nav-container">
+      <div className="nav-zone nav-zone-text">
         <Logo onClick={handleLogoClick} />
-        <nav aria-label="Main Navigation">
-          <ul className="nav-list">
-            <li>
-              <a href="#contact" className="nav-link" onClick={handleEnquireClick}>
-                Enquire
-              </a>
-            </li>
-          </ul>
-        </nav>
       </div>
+      <nav className="nav-zone nav-zone-window" aria-label="Main Navigation">
+        <ul className="nav-list">
+          <li>
+            <a href="#contact" className="nav-link" onClick={handleEnquireClick}>
+              Enquire
+            </a>
+          </li>
+        </ul>
+      </nav>
     </header>
   );
 }

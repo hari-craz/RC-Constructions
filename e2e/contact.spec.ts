@@ -20,8 +20,8 @@ test.describe('Phase 7D — Contact Section and Formspree Integration', () => {
     await page.waitForTimeout(400);
 
     // Verify headline and subhead
-    await expect(page.locator('#contact-title')).toBeVisible();
-    await expect(page.locator('#contact-title')).toHaveText(/tell us what you want to build/i);
+    await expect(page.locator('#contact-heading')).toBeVisible();
+    await expect(page.locator('#contact-heading')).toHaveText(/tell us what you want to build/i);
 
     // Verify ruled channels
     const channels = contact.locator('.contact-channel-item');

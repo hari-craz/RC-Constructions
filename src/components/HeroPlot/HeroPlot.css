@@ -9,7 +9,7 @@
 
 .hero-plot-svg {
   position: absolute;
-  top: 4%;
+  top: max(4%, var(--nav-height));
   right: 0;
   width: 54%;
   height: 82%;
@@ -76,10 +76,10 @@
 /* Mobile: hide peripheral dimension lines to prevent text collisions */
 @media (width <= 768px) {
   .hero-plot-svg {
-    top: 2%;
+    top: var(--nav-height);
     right: 0;
     width: 100%;
-    height: 48%;
+    height: 42%;
   }
 
   .hero-dim-lateral {

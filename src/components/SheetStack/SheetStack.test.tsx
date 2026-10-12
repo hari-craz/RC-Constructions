@@ -16,11 +16,11 @@ describe('SheetStack', () => {
     render(
       <ScrollContext.Provider value={mockContext}>
         <SheetStack>
-          <Sheet id="test-1" label="Section Alpha">
-            <p>Alpha Content</p>
+          <Sheet id="test-1">
+            <h2 id="test-1-heading">Alpha</h2>
           </Sheet>
-          <Sheet id="test-2" label="Section Beta">
-            <p>Beta Content</p>
+          <Sheet id="test-2">
+            <h2 id="test-2-heading">Beta</h2>
           </Sheet>
         </SheetStack>
       </ScrollContext.Provider>,
@@ -46,8 +46,8 @@ describe('SheetStack', () => {
     const { container } = render(
       <ScrollContext.Provider value={mockContext}>
         <SheetStack>
-          <Sheet id="test-1" label="Section Alpha">
-            <p>Alpha Content</p>
+          <Sheet id="test-1">
+            <h2 id="test-1-heading">Alpha</h2>
           </Sheet>
         </SheetStack>
       </ScrollContext.Provider>,

@@ -32,11 +32,13 @@ export function SheetStack({ children, className = '' }: SheetStackProps) {
             return;
           }
           const height = sheet.offsetHeight;
-          if (height > vh) {
-            sheet.style.top = `${vh - height}px`;
-          } else {
-            sheet.style.top = '0px';
-          }
+          // Tall sheets pin their bottom edge to the viewport bottom so their last line stays
+          // reachable; the next sheet then slides over padding, never over content.
+          const tall = height > vh;
+          sheet.style.top = tall ? `${vh - height}px` : '0px';
+          sheet.style.transformOrigin = tall
+            ? MOTION.sheetStack.transformOriginTall
+            : MOTION.sheetStack.transformOrigin;
         });
       };
 
@@ -81,7 +83,6 @@ export function SheetStack({ children, className = '' }: SheetStackProps) {
           {
             scale: MOTION.sheetStack.scaleMin,
             borderRadius: MOTION.sheetStack.radiusSheetPx,
-            transformOrigin: MOTION.sheetStack.transformOrigin,
             ease: MOTION.sheetStack.ease,
           },
           0,

@@ -13,7 +13,6 @@ interface FounderFact {
 
 export interface FounderContent {
   sectionId: string;
-  kicker: string;
   name: string;
   role: string;
   bioParagraphs: readonly [string, string, string];
@@ -25,7 +24,6 @@ export interface FounderContent {
 
 export const FOUNDER_CONTENT: FounderContent = {
   sectionId: 'founder',
-  kicker: 'Leadership / Field Direction',
   name: 'Gokul', // PLACEHOLDER: Surname to be supplied
   role: 'Founder', // PLACEHOLDER: Official title
   bioParagraphs: [

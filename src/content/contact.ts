@@ -12,7 +12,6 @@ interface ContactChannel {
 
 export interface ContactContent {
   readonly sectionId: string;
-  readonly kicker: string;
   readonly headline: string;
   readonly subhead: string;
   readonly channels: readonly ContactChannel[];
@@ -34,7 +33,6 @@ export const CONTACT_CONFIG = {
 
 export const CONTACT_CONTENT: ContactContent = {
   sectionId: 'contact',
-  kicker: 'Section 07 / Direct Enquiry',
   headline: 'Tell us what you want to build.',
   subhead:
     'Every enquiry is reviewed directly by our site team. We respond with initial feasibility notes and estimated mobilization schedules.',

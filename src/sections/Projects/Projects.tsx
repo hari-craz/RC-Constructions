@@ -206,36 +206,25 @@ export function Projects() {
 
   return (
     <>
-      <Sheet
-        id={stage.sectionId}
-        label={content.kicker}
-        tone={stage.tone}
-        className="projects-sheet"
-      >
-        <div ref={containerRef} className="container projects-content">
+      <Sheet id={stage.sectionId} tone={stage.tone} className="projects-sheet">
+        <div ref={containerRef} className="sheet-column projects-content">
           <header className="projects-header">
-            <div className="projects-kicker-row">
-              <span className="projects-kicker">{content.kicker}</span>
-              <span className="projects-code">{content.registerCode}</span>
-            </div>
-            <h2 className="projects-title">{content.title}</h2>
+            <h2 id={`${stage.sectionId}-heading`} className="projects-title">
+              {content.title}
+            </h2>
           </header>
 
-          {/* Architectural preview slot reserved for project elevation */}
+          {/* Image slot reserved for the selected project's elevation; it never holds list rows */}
           <div
             className="projects-preview-slot"
-            role="region"
-            aria-label="Selected Project Architectural Preview"
+            role="img"
+            aria-label={
+              activeProject
+                ? `Elevation drawing slot for ${activeProject.name}, drawing to come`
+                : 'Elevation drawing slot, drawing to come'
+            }
           >
-            <div className="projects-preview-badge">Elevation drawing to come, 1200 by 675</div>
-            {activeProject && (
-              <div className="projects-preview-info">
-                <span className="projects-preview-name">
-                  {activeProject.number} · {activeProject.name}
-                </span>
-                <span className="projects-preview-outcome">{activeProject.outcome}</span>
-              </div>
-            )}
+            <span className="projects-preview-badge">Elevation drawing to come, 1200 by 675</span>
           </div>
 
           <ul ref={registerRef} className="projects-register" aria-label="Selected Projects Index">

@@ -50,7 +50,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         <div className="error-boundary-wrapper" role="alert" aria-live="assertive">
           <div className="error-boundary-card">
             <header className="error-boundary-header">
-              <span className="error-boundary-kicker">SYSTEM RECORD // 00-FAULT</span>
               <h1 className="error-boundary-title">{SITE.companyName}</h1>
             </header>
 

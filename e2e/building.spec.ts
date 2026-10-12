@@ -59,11 +59,10 @@ test.describe('Phase 6 — Evolving Building Scroll Construction', () => {
     await expect(siteWindow).toHaveAttribute('data-stage', 'completion');
 
     // Verify lit windows and dimension callout in Completion stage
-    const litWindows = page.locator('.bldg-window-glass');
-    await expect(litWindows.first()).toBeVisible();
+    await expect(page.locator('.b-pane')).toHaveCount(11);
 
-    const dimensionText = page.locator('.bldg-dimension-text');
-    await expect(dimensionText).toHaveText('15.40 m');
+    const dimensionText = page.locator('.b-dim-label');
+    await expect(dimensionText).toHaveText(['15.40 m', '17.40 m']);
 
     // 7. Reverse Scroll: Scroll back to Structure using lenis.scrollTo with recorded scroll position.
     await page.evaluate((targetY) => {

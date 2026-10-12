@@ -204,3 +204,12 @@ The custom cursor evokes a surveyor's optical level crosshair. It is engineered 
   }
   ```
 - Complies with WCAG 2.4.7 (Focus Visible) and WCAG 2.4.11 (Focus Appearance).
+
+## 8. Phase 11 — Composition and Sheet Rules
+
+- **Grid**: one 12-column grid. Text owns columns 1-5, the fixed site window columns 6-12 (58.33% wide, full height, constant `#232622`) on desktop; on mobile the window is a fixed 42svh band. See `docs/BUILDING.md`.
+- **Quiet text column**: one headline opens each section, then short body and the content module (table, register, steps, stats). No section labels, eyebrows, drawing codes, all-caps or monospace micro-labels. Body text uses `--font-size-body` (18-20 px); nothing is smaller than 14 px.
+- **Sheets**: tones are limewash or concrete (the ink tokens are re-pointed per tone in `SheetStack.css`). A sheet is as tall as its content plus `--sheet-bottom-pad` (at least 12vh); it never crops its content. Tall sheets pin their bottom edge, so the next sheet slides over padding. The dim on the sheet below is formwork at `MOTION.sheetStack.dimOverlayOpacity` (0.1), a darker version of its own surface.
+- **Projects**: the image slot (16:9) and the register are separate blocks; register rows never render inside the slot.
+- **Header**: two zones that follow the grid. The logo sits on the sheet surface; the action sits on the window surface once the window shows. No blur.
+- **Amber** appears only on dimension lines, lit windows, primary buttons and the loading line (`e2e/phase-11.spec.ts`, `src/styles/banned-patterns.test.ts`).

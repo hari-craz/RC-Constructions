@@ -41,14 +41,12 @@ export function Services() {
   );
 
   return (
-    <Sheet id={stage.sectionId} label={content.kicker} tone={stage.tone} className="services-sheet">
-      <div ref={containerRef} className="container services-content">
+    <Sheet id={stage.sectionId} tone={stage.tone} className="services-sheet">
+      <div ref={containerRef} className="sheet-column services-content">
         <header className="services-header">
-          <div className="services-kicker-row">
-            <span className="services-kicker">{content.kicker}</span>
-            <span className="services-code">{content.scheduleCode}</span>
-          </div>
-          <h2 className="services-title">{content.title}</h2>
+          <h2 id={`${stage.sectionId}-heading`} className="services-title">
+            {content.title}
+          </h2>
         </header>
 
         <div className="services-schedule-container">
