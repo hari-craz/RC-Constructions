@@ -3,7 +3,10 @@
   width: 100%;
 }
 
+/* A sheet is as tall as its content plus generous bottom padding; it never crops itself. */
 .sheet {
+  --sheet-surface: var(--color-surface);
+
   position: sticky;
   top: 0;
   width: 100%;
@@ -11,31 +14,43 @@
   box-sizing: border-box;
   overflow: clip;
   z-index: var(--z-sheet);
-  background-color: var(--color-surface);
+  background-color: var(--sheet-surface);
   color: var(--color-ink);
   transform-origin: center top;
 }
 
 .sheet-tone-dark {
-  background-color: var(--color-formwork-dark);
+  --sheet-surface: var(--color-formwork-dark);
+
   color: var(--color-limewash);
 }
 
 .sheet-tone-raised {
-  background-color: var(--color-surface-raised);
+  --sheet-surface: var(--color-surface-raised);
+
   color: var(--color-limewash);
 }
 
-.sheet-tone-light {
-  background-color: var(--color-limewash);
+/* Light surfaces carry dark ink; the ink tokens are re-pointed locally */
+.sheet-tone-light,
+.sheet-tone-concrete {
+  --color-ink: var(--color-formwork-dark);
+  --color-ink-muted: var(--color-ink-muted-light);
+  --color-line: var(--color-steel);
+  --color-line-subtle: rgb(35 38 34 / 25%);
+
   color: var(--color-formwork-dark);
+}
+
+.sheet-tone-light {
+  --sheet-surface: var(--color-limewash);
 }
 
 .sheet-tone-concrete {
-  background-color: var(--color-concrete);
-  color: var(--color-formwork-dark);
+  --sheet-surface: var(--color-concrete);
 }
 
+/* The dim is a darker version of the sheet's own surface: formwork at low opacity */
 .sheet-dim-overlay {
   position: absolute;
   inset: 0;
@@ -45,41 +60,57 @@
   z-index: var(--z-overlay);
 }
 
+/* 12-column page grid. Text owns columns 1-5; the fixed site window owns columns 6-12. */
 .sheet-inner {
   position: relative;
   z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-content: start;
   width: 100%;
   min-height: 100dvh;
-  padding-block: var(--space-8);
+  padding-top: calc(var(--nav-height) + var(--space-8));
+  padding-bottom: var(--sheet-bottom-pad);
   box-sizing: border-box;
 }
 
-.sheet-header {
+.sheet-inner > * {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.sheet-inner > .sheet-wide {
+  padding-left: var(--column-left);
+  padding-right: var(--page-gutter);
+  max-width: 120rem;
+}
+
+.sheet-inner > .sheet-column {
+  grid-column: 1 / span 5;
+  justify-self: center;
   width: 100%;
-  max-width: var(--max-content-width);
-  margin-inline: auto;
+  max-width: calc(var(--text-column-max) + 2 * var(--page-gutter));
   padding-inline: var(--page-gutter);
-  margin-bottom: var(--space-4);
-  padding-top: var(--space-6);
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
 }
 
-.sheet-label {
-  display: inline-block;
-  max-width: min(46vw, 38rem);
-  font-family: var(--font-body);
-  font-size: 0.875rem;
-  line-height: var(--line-height-tight);
-  letter-spacing: var(--tracking-normal);
-  color: inherit;
-  opacity: 0.85;
-  text-transform: none;
-}
+@media (width < 1024px) {
+  .sheet-inner {
+    padding-top: calc(var(--site-band-height) + var(--space-6));
+  }
 
-.sheet-content {
-  font-family: var(--font-body);
-  font-size: var(--font-size-md);
-  line-height: var(--line-height-body);
+  .sheet-inner > .sheet-wide {
+    padding-left: var(--page-gutter);
+  }
+
+  .sheet-inner > .sheet-column {
+    grid-column: 1 / -1;
+    justify-self: start;
+    max-width: 44rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

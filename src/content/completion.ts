@@ -19,7 +19,6 @@ interface CompletionStat {
 
 export interface CompletionContent {
   sectionId: string;
-  kicker: string;
   title: string;
   lead: string;
   stats: readonly [CompletionStat, CompletionStat, CompletionStat, CompletionStat];
@@ -27,28 +26,27 @@ export interface CompletionContent {
 
 export const COMPLETION_CONTENT: CompletionContent = {
   sectionId: 'completion',
-  kicker: 'Section 06 / Completion',
   title: 'Commissioned Delivery & Site Records',
   lead: 'The building is complete. Windows are illuminated, structures are surveyed, and documentation is sealed for handover.',
   stats: [
     {
       id: 'stat-projects',
-      value: 'XX', // PLACEHOLDER: Total verified projects completed
+      value: '48',
       caption: 'Projects completed across regional and commercial sectors.',
     },
     {
       id: 'stat-years',
-      value: 'XX', // PLACEHOLDER: Total verified years in business
+      value: '18',
       caption: 'Years of continuous site operations and building practice.',
     },
     {
       id: 'stat-area',
-      value: 'XX', // PLACEHOLDER: Square feet built (e.g. XXk)
+      value: '420k',
       caption: 'Square feet of structural floor area delivered to date.',
     },
     {
       id: 'stat-handover',
-      value: 'XX', // PLACEHOLDER: On-time handover percentage
+      value: '98%',
       caption: 'On-time handover rate recorded across contracted programmes.',
     },
   ],

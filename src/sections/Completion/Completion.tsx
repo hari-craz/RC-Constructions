@@ -43,17 +43,10 @@ export function Completion() {
   );
 
   return (
-    <Sheet
-      id={COMPLETION_CONTENT.sectionId}
-      label={`${COMPLETION_CONTENT.kicker} — Handover`}
-      headingTag="span"
-      tone="dark"
-      className="completion-sheet"
-    >
-      <div ref={contentRef} className="container completion-content">
+    <Sheet id={COMPLETION_CONTENT.sectionId} tone="light" className="completion-sheet">
+      <div ref={contentRef} className="sheet-column completion-content">
         <header className="completion-header">
-          <span className="completion-kicker">{COMPLETION_CONTENT.kicker}</span>
-          <h2 id="completion-title" className="completion-title">
+          <h2 id={`${COMPLETION_CONTENT.sectionId}-heading`} className="completion-title">
             {COMPLETION_CONTENT.title}
           </h2>
           <p className="completion-lead">{COMPLETION_CONTENT.lead}</p>

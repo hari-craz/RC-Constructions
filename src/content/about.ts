@@ -5,8 +5,6 @@ interface PrincipleItem {
 }
 
 export interface AboutContent {
-  readonly kicker: string;
-  readonly title: string;
   readonly headline: string;
   readonly paragraphs: readonly string[];
   readonly principlesTitle: string;
@@ -14,8 +12,6 @@ export interface AboutContent {
 }
 
 export const ABOUT_CONTENT: AboutContent = {
-  kicker: 'Section 02 — Foundation',
-  title: 'About RC Constructions',
   headline: 'We work from the ground up.',
   paragraphs: [
     // PLACEHOLDER: Company founding year and geographic scope

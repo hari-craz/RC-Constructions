@@ -54,15 +54,13 @@
   position: relative;
 }
 
-.project-overlay-kicker-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+.project-overlay-role {
+  margin: 0;
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: var(--font-size-body);
   letter-spacing: var(--tracking-normal);
   text-transform: none;
-  color: var(--color-stone);
+  color: var(--color-ink-muted-light);
 }
 
 .project-overlay-title {
@@ -131,10 +129,10 @@
 
 .project-spec-key {
   font-family: var(--font-body);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   letter-spacing: var(--tracking-normal);
   text-transform: none;
-  color: var(--color-stone);
+  color: var(--color-ink-muted-light);
 }
 
 .project-spec-val {
@@ -213,16 +211,16 @@
 
 .gallery-slot-placeholder-mark {
   font-family: var(--font-headline);
-  font-size: 0.6875rem;
+  font-size: 0.875rem;
   letter-spacing: var(--tracking-wide);
-  color: var(--color-stone);
+  color: var(--color-ink-muted-light);
 }
 
 .gallery-slot-caption {
   font-family: var(--font-body);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   line-height: var(--line-height-normal);
-  color: var(--color-stone);
+  color: var(--color-ink-muted-light);
 }
 
 /* Footer Adjacent Links */

@@ -7,16 +7,12 @@ interface ServiceItem {
 }
 
 export interface ServicesContent {
-  readonly kicker: string;
   readonly title: string;
-  readonly scheduleCode: string;
   readonly services: readonly ServiceItem[];
 }
 
 export const SERVICES_CONTENT: ServicesContent = {
-  kicker: 'Section 03 — Structure',
   title: 'Services & Construction Schedule',
-  scheduleCode: 'DWG-SCH-01',
   services: [
     {
       id: 'residential',

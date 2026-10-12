@@ -13,7 +13,6 @@ export function LoadingLine({ onComplete }: LoadingLineProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const barRef = useRef<HTMLDivElement | null>(null);
   const endTickRef = useRef<HTMLDivElement | null>(null);
-  const labelRef = useRef<HTMLSpanElement | null>(null);
   const { reducedMotion } = useScroll();
 
   const isSkipped = reducedMotion || hasSeenIntro();
@@ -49,18 +48,6 @@ export function LoadingLine({ onComplete }: LoadingLineProps) {
       duration: Math.min(MOTION.loading.maxDuration * 0.7, 0.8),
       ease: MOTION.loading.ease,
     });
-
-    if (labelRef.current) {
-      tl.to(
-        labelRef.current,
-        {
-          opacity: 1,
-          duration: 0.3,
-          ease: 'power1.out',
-        },
-        0.2,
-      );
-    }
 
     if (endTickRef.current) {
       tl.to(
@@ -113,9 +100,6 @@ export function LoadingLine({ onComplete }: LoadingLineProps) {
     >
       <div className="loading-line-track">
         <div className="loading-line-start-tick" />
-        <span ref={labelRef} className="loading-line-label">
-          RC CONSTRUCTIONS // 0.00 M
-        </span>
         <div ref={barRef} className="loading-line-bar" />
         <div ref={endTickRef} className="loading-line-end-tick" />
       </div>

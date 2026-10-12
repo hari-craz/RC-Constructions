@@ -1,122 +1,49 @@
-# RC Constructions — Evolving Building Architecture (`docs/BUILDING.md`)
+# RC Constructions — The Building (`docs/BUILDING.md`)
 
-This document defines the architectural specification, viewport layout strategy, stage progression sequence, and SVG vector engineering for the scroll-constructed building feature.
+The building is the protagonist. It is one inline SVG in a fixed "site window" that sits beside the text column and is built up as the visitor scrolls (and un-built when they scroll back).
 
----
+## 1. Layout: site window and page grid
 
-## 1. Layout Decision & Dual-Zone Composition
+One 12-column grid governs the page (`src/components/SheetStack/SheetStack.css`, `tokens.css`):
 
-### The Core Problem
+| Zone        | Desktop (>= 1024 px)                                                                                                    | Mobile / tablet (< 1024 px)                          |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Text column | Columns 1-5 (5/12). Content is centred in the zone, max `--text-column-max` (40rem), never closer than the page gutter. | Full width, max 44rem, left aligned.                 |
+| Site window | Columns 6-12 (7/12 = 58.33%), fixed, `top: 0`, full `100dvh`, constant `#232622` surface.                               | Fixed band at the top, `--site-band-height` (42svh). |
 
-In RC Constructions, the narrative sections exist as a sticky, scaling sheet-stack (`position: sticky`, `transform: scale(0.94)`, `border-radius: 32px`, `opacity` dim overlay). Because each sheet is an opaque material slab (`--color-formwork-dark`, `--color-concrete`, or `--color-limewash`), placing a fixed building layer behind the sheet stack causes incoming sheets to completely occlude the building.
+- The window never changes colour. Sheets (limewash or concrete) slide over the left; the window is layered above them (`--z-site-window`) and is `pointer-events: none`.
+- `--column-left` is the left edge of the text column; the header logo and the Hero text align to it.
+- The window is shown from Foundation to Completion (`isSiteWindowVisible` in `src/data/stages.ts`). Hero (plan view), Founder and Contact use the full width.
+- Sheets carry no labels. Each section's headline (`id="<section>-heading"`) names the landmark.
 
-### The Solution: Co-Existent Dual-Zone Split
+## 2. Drawing
 
-#### Desktop (≥ 1024px)
+- ViewBox 1200 x 800, `preserveAspectRatio="xMidYMax slice"`: the ground line (y = 700) and soil run the full width of the window; the building (about 65% of the window height) is cropped intentionally, never floating.
+- Geometry lives in `src/components/Building/geometry.ts` (storeys, bays, windows, slabs, footings). Change proportions there.
+- Solid masses: limewash walls, concrete slabs / columns / core / footings, formwork-dark openings, `#2c302b` soil and glass.
+- Line system (CSS vars on `.building-site-window`, `non-scaling-stroke`): heavy section cut 3 px (limewash), medium 2 px (steel), hairline 1 px (steel), dimension lines 1 px (amber). On mobile heavy 2.5 px, medium 1.5 px.
+- All strokes must reach 3:1 against the window surface (limewash, concrete, steel or amber only). An e2e test enforces it.
+- No gradients, filters, shadows, hatch patterns or translucent colour.
 
-- **Left Column (~48% width)**: Houses the narrative content stack (`.sheet-inner`), section typography, engineering metrics, and copy blocks. The sheet-stack motion engine continues to scrub scale down to 0.94, rounds incoming sheet corners to 32px, and cross-dims outgoing sheets without clipping the building.
-- **Right Column (~52% width)**: Forms a dedicated, fixed architectural "Site Window" (`.building-site-window`).
-  - Anchored fixed to the viewport: `top: 0; right: 0; width: 52%; height: 100dvh;`.
-  - `pointer-events: none` to guarantee all mouse, touch, and scroll interactions pass directly through to the underlying document scroll engine.
-  - Layered above sheet surfaces (`z-index: var(--z-nav, 100) - 1`) with an opaque drafting background matching `--color-formwork-dark` or transparently floating on the shared plane.
-  - Zero interference with the Hero sheet: During the Hero plan-view intro, the site window is transparent or visually dormant until the footprint stands up into the ground line.
+## 3. The six stages (each complete at rest)
 
-#### Mobile & Tablet (< 1024px)
+| #   | Stage        | Anchor        | What is drawn at rest                                                                                                     |
+| --- | ------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `survey`     | `#hero`       | Hero plan view (window hidden). Hands off to the elevation.                                                               |
+| 2   | `foundation` | `#foundation` | Excavation, four footings, pedestal stubs, tie beam, ground slab.                                                         |
+| 3   | `structure`  | `#structure`  | Four storeys, level by level: columns and stair core, then beam and slab. Roof slab last.                                 |
+| 4   | `envelope`   | `#envelope`   | Limewash walls storey by storey, window openings, parapet and coping; excavation backfilled.                              |
+| 5   | `fitout`     | `#fitout`     | Window frames and mullions, entrance doors and canopy, stair flights in the core slit, railings.                          |
+| 6   | `completion` | `#completion` | Every window lit as one flat amber rectangle, name plate, height and width dimension lines with two sentence-case labels. |
 
-- **Top Elevation Band (34svh / 34dvh)**: The building elevation sits pinned in a fixed upper viewport band.
-  - Dimensioned strictly in small/dynamic viewport units (`34svh`, `34dvh`), never `100vh`, preventing vertical jumps when iOS Safari or Android Chrome collapses or expands the dynamic address bar.
-- **Lower Narrative Stream (66dvh)**: Section headings and descriptive copy scroll naturally beneath the fixed building band.
-  - Top padding on mobile sheets (`padding-top: calc(34svh + var(--space-4))`) prevents content from being obscured beneath the building canvas.
+## 4. Motion architecture
 
----
+- `Building.tsx` builds one scrubbed timeline per stage with `scrubStage(sectionId, build)`: `ScrollTrigger` `scrub: true` from `MOTION.building.stageStart` to `stageEnd`. Scrubbing makes every stage reversible and seekable by anchor.
+- Use `fromTo` so each stage's start state is applied up front. Do not use GSAP `stagger` with `fromTo` on scrubbed timelines (only the first target gets its start state); use the `staggered` helper (explicit positions).
+- Lit windows use a 0.01 s `fromTo` per pane (a flat switch, reversible), never a colour blend over scroll distance.
+- All durations, staggers and trigger strings are in `MOTION.building` (`src/lib/motion.ts`).
+- Reduced motion: no timelines; the finished, lit building is shown (`data-static="true"` turns the panes amber in CSS).
 
-## 2. Stage Progression Table
+## 5. Tests
 
-The building depicts an architectural elevation cut of a modern 4-storey mixed-use structural frame with an articulated ground-floor bay. It transitions continuously across 6 distinct phases:
-
-| #     | Stage ID     | Target Anchor | Scroll Range  | Visual Elements Drawn / Revealed                                                                                                                                                                     | Token Palette                                                 |
-| ----- | ------------ | ------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| **1** | `survey`     | `#hero`       | `0.00 – 0.16` | **Plan-view survey plot** (existing Hero). Hands off to elevation: boundary footprint stands up into the baseline datum line; amber front setback dimension carries over to the elevation baseline.  | `--color-concrete`, `--color-formwork-dark`, `--color-accent` |
-| **2** | `foundation` | `#foundation` | `0.16 – 0.33` | **Substructure & Earthwork**: Ground datum line, stepped excavation cut, structural footings (isolated pad footings), plinth beam, and concrete ground slab drawn as technical section cuts.         | `--color-formwork-dark`, `--color-concrete`, `--color-steel`  |
-| **3** | `structure`  | `#structure`  | `0.33 – 0.50` | **Superstructure Grid**: Vertical column lines rise level-by-level; floor slabs (Levels 1, 2, 3, Roof) and spandrel beams draw horizontally; structural stair core rises through the central shaft.  | `--color-formwork-dark`, `--color-steel`                      |
-| **4** | `envelope`   | `#envelope`   | `0.50 – 0.67` | **Building Enclosure**: Exterior masonry/curtain walls infill; window structural openings punch through; roof parapet and weathering capstone establish building silhouette. Fills in flat limewash. | `--color-limewash`, `--color-formwork-dark`                   |
-| **5** | `fit-out`    | `#fitout`     | `0.67 – 0.84` | **Architectural Detailing**: Internal partition layouts, doors, structural stair flights with handrails, window mullions, and ground-floor glazed entry portal.                                      | `--color-steel`, `--color-formwork-dark`                      |
-| **6** | `completion` | `#completion` | `0.84 – 1.00` | **Commissioning & Handover**: Windows illuminate in solid work-lamp amber (flat fill, zero glow); architectural nameplate; final surveyed building height dimension line; entry access pathway.      | `--color-accent` (windows/dims), `--color-formwork-dark`      |
-
----
-
-## 3. SVG Vector Structure & Element Budget
-
-### Clean Geometry Budget (< 600 Elements)
-
-To maintain 60 FPS mobile scrub and prevent long tasks, geometry is engineered without redundant markup:
-
-- **Reuse via `<defs>`**:
-  - `<symbol id="building-col">`: Single standardized column profile reused with `<use>` across 4 levels.
-  - `<symbol id="building-window">`: Modular window opening unit.
-  - `<pattern id="hatch-steel">`: Clean 45° single-line hatching for section cuts.
-- **Hierarchical `<g>` Container Groups**:
-  ```xml
-  <svg class="building-svg" viewBox="0 0 800 1000" aria-hidden="true" role="presentation">
-    <defs>...</defs>
-    <g id="stage-foundation" class="building-stage">...</g>
-    <g id="stage-structure" class="building-stage">...</g>
-    <g id="stage-envelope" class="building-stage">...</g>
-    <g id="stage-fitout" class="building-stage">...</g>
-    <g id="stage-completion" class="building-stage">...</g>
-    <g id="stage-dimensions" class="building-stage">...</g>
-  </svg>
-  ```
-- **Stroke Weights & Engineering Hierarchy**:
-  - _Primary section cuts_: `2.5px` (`--color-formwork-dark`).
-  - _Secondary structural grid_: `1.5px` (`--color-steel`).
-  - _Architectural infill & mullions_: `1.0px` (`--color-steel`).
-  - _Dimension lines & ticks_: `1.0px` (`--color-accent`).
-- **Zero Disallowed Styling**:
-  - Zero linear/radial gradients.
-  - Zero drop shadows or SVG filters (`<filter>`, `feGaussianBlur`).
-  - Zero glow around lit windows; windows transition strictly between transparent and flat `--color-accent`.
-
----
-
-## 4. Retiming Stages & Customizing Proportions
-
-All stage definitions, section anchors, and scroll percentages reside in `src/data/stages.ts`:
-
-```typescript
-export interface StageConfig {
-  id: 'survey' | 'foundation' | 'structure' | 'envelope' | 'fitout' | 'completion';
-  sectionId: string;
-  name: string;
-  kicker: string;
-  title: string;
-  range: [number, number]; // Normalized scroll bounds [0..1]
-}
-```
-
-To retime a stage or adjust the building's structural levels for a specific client tender:
-
-1. Update `range: [start, end]` in `src/data/stages.ts`.
-2. Update animation timings in `src/lib/motion.ts` under `MOTION.building`.
-3. Modify grid bay pitch or floor count in `Building.tsx` symbols. All GSAP ScrollTrigger timeline bounds recalculate automatically.
-
----
-
-## 5. Post-Completion Transition & Founder Hand-off
-
-Outside the 6 building stages (`survey` through `completion`), the building elevation remains in its completed, fully illuminated state (`data-stage="completion"`). When the visitor scrolls into `#founder`:
-
-- The editorial monograph sheet stacks at `z-index: calc(var(--z-overlay) + 5)`, smoothly handing the full viewport width to the Founder monograph spread (large display typography, pull quote, bio, 3 ruled facts, and the 4:5 portrait reserved slot).
-- The transition is completely clean: no sudden layout shifts or DOM unmounting occur.
-- When the visitor scrolls back up to `#completion`, the Founder sheet uncovers, revealing the lit building elevation in its completed state.
-
----
-
-## 6. Loading Sequence Dimension Line Handoff (Phase 8)
-
-During initial page visit, a measured hairline amber dimension line draws left-to-right along the viewport baseline while fonts (`document.fonts.ready`) and the Hero intro timeline prepare:
-
-- **Non-blocking Architectural Cue**: Height 1px, `--color-accent`, flanked by start/end survey tick marks and the company wordmark. Sits at viewport bottom with `pointer-events: none` and does not occlude first paint content.
-- **Handoff Mechanism**: Capped at max 1.2s duration. As the Hero intro completes, the line retracts from left to right (`scaleX: 1 -> 0`), cleanly handing off visual focus to the Hero survey plot's amber setback dimension lines without duplicate drawings.
-- **Session Intelligence**: Skipped on subsequent visits within the same session using safe `sessionStorage` checks (`rc_intro_seen`). Works gracefully if storage access is restricted or throws.
-- **Reduced Motion & No-JS**: Bypasses animation entirely under `prefers-reduced-motion: reduce`. The element is never rendered in static server-rendered HTML.
+`e2e/phase-11.spec.ts`: window size and constant surface, mobile band, stage state per anchor and reverse scroll, flat lit windows, reduced-motion state, stroke contrast, no labels, one headline per section, no text under 14 px or uppercase micro-labels, sheets never crop content, amber allowlist, Projects slot, header contrast. `src/styles/banned-patterns.test.ts` checks banned CSS patterns and the amber allowlist in source.

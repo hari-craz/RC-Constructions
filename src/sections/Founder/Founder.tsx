@@ -34,18 +34,13 @@ export function Founder() {
   );
 
   return (
-    <Sheet
-      id={FOUNDER_CONTENT.sectionId}
-      label={`${FOUNDER_CONTENT.kicker} — ${FOUNDER_CONTENT.name}`}
-      headingTag="span"
-      tone="concrete"
-      className="founder-sheet"
-    >
-      <div ref={contentRef} className="container founder-content">
+    <Sheet id={FOUNDER_CONTENT.sectionId} tone="concrete" className="founder-sheet">
+      <div ref={contentRef} className="sheet-wide founder-content">
         <header className="founder-header">
-          <span className="founder-kicker">{FOUNDER_CONTENT.kicker}</span>
           <div className="founder-name-group">
-            <h2 className="founder-name">{FOUNDER_CONTENT.name}</h2>
+            <h2 id={`${FOUNDER_CONTENT.sectionId}-heading`} className="founder-name">
+              {FOUNDER_CONTENT.name}
+            </h2>
             <span className="founder-role">{FOUNDER_CONTENT.role}</span>
           </div>
         </header>

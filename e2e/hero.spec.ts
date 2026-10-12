@@ -49,14 +49,15 @@ test.describe('Phase 4 — Pinned Hero & Land Survey Drawing', () => {
 
     const nav = page.locator('.nav-bar');
     // Initially on hero (concrete sheet): dark ink
-    await expect(nav).toHaveClass(/nav-tone-dark/);
+    await expect(nav).toHaveAttribute('data-tone', 'concrete');
 
     // Scroll down to #about section (formwork-dark sheet)
-    const about = page.locator('#about');
+    const about = page.locator('#foundation');
     await about.scrollIntoViewIfNeeded();
     await page.waitForTimeout(600);
 
     // Nav should switch to light ink over dark sheet
-    await expect(nav).toHaveClass(/nav-tone-light/);
+    await expect(nav).toHaveAttribute('data-tone', 'light');
+    await expect(nav).toHaveAttribute('data-window', 'on');
   });
 });

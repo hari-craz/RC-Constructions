@@ -13,7 +13,7 @@
 }
 
 .logo:focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid currentcolor;
   outline-offset: 4px;
 }
 
@@ -31,4 +31,5 @@
   letter-spacing: var(--tracking-wide);
   line-height: var(--line-height-heading);
   text-transform: uppercase;
+  white-space: nowrap;
 }

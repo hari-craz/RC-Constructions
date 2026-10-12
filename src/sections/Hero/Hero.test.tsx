@@ -22,20 +22,19 @@ describe('Hero', () => {
     expect(heroSection).toHaveClass('sheet-tone-concrete');
   });
 
-  it('renders sheet-label as span to preserve proper h1 document heading outline', () => {
+  it('opens with a single h1 that names the landmark and no section label', () => {
     render(
       <ScrollProvider>
         <Hero />
       </ScrollProvider>,
     );
 
-    const sheetHeading = document.getElementById('hero-heading');
-    expect(sheetHeading?.tagName).toBe('SPAN');
-    expect(sheetHeading).toHaveTextContent(/section 01/i);
+    const heading = document.getElementById('hero-heading');
+    expect(heading?.tagName).toBe('H1');
+    expect(document.getElementById('hero')).toHaveAttribute('aria-labelledby', 'hero-heading');
+    expect(document.body).not.toHaveTextContent(/section 01/i);
 
-    // Ensure h1 is the first heading in the DOM order
     const headings = document.querySelectorAll('h1, h2, h3, h4, h5, h6');
     expect(headings).toHaveLength(1);
-    expect(headings[0]?.tagName).toBe('H1');
   });
 });

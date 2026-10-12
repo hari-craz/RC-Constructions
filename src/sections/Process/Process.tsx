@@ -53,11 +53,12 @@ export function Process() {
   );
 
   return (
-    <Sheet id={stage.sectionId} label={content.kicker} tone={stage.tone} className="process-sheet">
-      <div ref={containerRef} className="container process-content">
+    <Sheet id={stage.sectionId} tone={stage.tone} className="process-sheet">
+      <div ref={containerRef} className="sheet-column process-content">
         <header className="process-header">
-          <span className="process-kicker">{content.kicker}</span>
-          <h2 className="process-title">{content.title}</h2>
+          <h2 id={`${stage.sectionId}-heading`} className="process-title">
+            {content.title}
+          </h2>
         </header>
 
         <div className="process-sequence-container">

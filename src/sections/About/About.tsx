@@ -38,13 +38,12 @@ export function About() {
   );
 
   return (
-    <Sheet id={stage.sectionId} label={content.kicker} tone={stage.tone} className="about-sheet">
+    <Sheet id={stage.sectionId} tone={stage.tone} className="about-sheet">
       {/* Anchor alias so #about deep-links seamlessly target Foundation/About */}
       <div id="about" aria-hidden="true" style={{ height: '1px', width: '100%' }} />
-      <div ref={containerRef} className="container about-content">
+      <div ref={containerRef} className="sheet-column about-content">
         <header className="about-header">
-          <span className="about-title">{content.title}</span>
-          <h2 ref={headlineRef} className="about-headline">
+          <h2 id={`${stage.sectionId}-heading`} ref={headlineRef} className="about-headline">
             <span className="about-headline-line">{content.headline}</span>
           </h2>
         </header>

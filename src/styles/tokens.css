@@ -12,6 +12,7 @@
   --color-ink: var(--color-limewash);
   --color-ink-muted: var(--color-concrete);
   --color-line: var(--color-steel);
+  --color-ink-muted-light: #454944;
   --color-line-subtle: rgb(122 126 120 / 25%);
   --color-accent: var(--color-work-lamp-amber);
   --color-accent-ink: var(--color-formwork-dark);
@@ -37,6 +38,8 @@
   --font-size-sm: clamp(0.875rem, 0.825rem + 0.25vw, 0.9375rem);
   --font-size-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
   --font-size-md: clamp(1.125rem, 1.05rem + 0.375vw, 1.3125rem);
+  --font-size-body: clamp(1.125rem, 1rem + 0.3vw, 1.25rem);
+  --font-size-label: 0.875rem;
   --font-size-lg: clamp(1.5rem, 1.35rem + 0.75vw, 1.875rem);
   --font-size-xl: clamp(2rem, 1.75rem + 1.25vw, 2.625rem);
   --font-size-2xl: clamp(2.75rem, 2.25rem + 2.5vw, 3.75rem);
@@ -70,9 +73,20 @@
   --space-12: 6rem;
   --space-16: 8rem;
 
-  /* Layout */
+  /* Layout: one 12-column grid. Text owns columns 1-5, the site window columns 6-12. */
   --page-gutter: clamp(1rem, 0.5rem + 2.5vw, 3rem);
   --max-content-width: 78rem;
+  --text-column-max: 40rem;
+  --site-window-width: calc(100% * 7 / 12);
+
+  /* Left edge of the text column: centred in grid columns 1-5, never closer than the gutter */
+  --column-left: calc(
+    max(0px, (100% * 5 / 12 - var(--text-column-max) - 2 * var(--page-gutter)) / 2) +
+      var(--page-gutter)
+  );
+  --site-band-height: 42svh;
+  --nav-height: 4.25rem;
+  --sheet-bottom-pad: max(12vh, var(--space-10));
 
   /* Radii */
   --radius-none: 0;
@@ -84,6 +98,7 @@
   /* Z-Index Layers */
   --z-base: 1;
   --z-sheet: 10;
+  --z-site-window: 15;
   --z-overlay: 20;
   --z-nav: 30;
   --z-cursor: 40;
@@ -96,6 +111,13 @@
   --duration-fast: 150ms;
   --duration-normal: 250ms;
   --duration-deliberate: 400ms;
+}
+
+@media (width < 1024px) {
+  :root {
+    --column-left: var(--page-gutter);
+    --nav-height: 3.5rem;
+  }
 }
 
 .container {

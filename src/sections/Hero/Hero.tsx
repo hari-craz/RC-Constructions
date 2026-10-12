@@ -226,18 +226,13 @@ export function Hero() {
   );
 
   return (
-    <Sheet
-      id="hero"
-      label="Section 01 — Site Survey & Excavation"
-      tone="concrete"
-      headingTag="span"
-    >
+    <Sheet id="hero" tone="concrete">
       <div ref={containerRef} className="hero-sheet-inner">
         <HeroPlot ref={plotRef} />
 
-        <div className="container hero-content">
+        <div className="hero-content">
           <div className="hero-text-block">
-            <h1 className="hero-headline" aria-label="RC Constructions">
+            <h1 id="hero-heading" className="hero-headline" aria-label="RC Constructions">
               <span className="hero-headline-line-mask">
                 <span className="hero-headline-line">RC</span>
               </span>{' '}

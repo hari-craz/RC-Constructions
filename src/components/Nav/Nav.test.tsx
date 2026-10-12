@@ -20,7 +20,8 @@ describe('Nav', () => {
 
     const header = screen.getByRole('banner');
     expect(header).toBeInTheDocument();
-    expect(header).toHaveClass('nav-tone-dark');
+    expect(header).toHaveAttribute('data-tone', 'concrete');
+    expect(header).toHaveAttribute('data-window', 'off');
 
     const nav = screen.getByRole('navigation', { name: /main navigation/i });
     expect(nav).toBeInTheDocument();
@@ -34,10 +35,10 @@ describe('Nav', () => {
     expect(navLink).toHaveAttribute('href', '#contact');
   });
 
-  it('switches tone to light when activeSection is a dark sheet', () => {
+  it('takes the sheet tone and flags the site window once past the hero', () => {
     const darkScroll: ScrollContextValue = {
       ...mockScroll,
-      activeSection: 'about',
+      activeSection: 'envelope',
     };
 
     render(
@@ -47,6 +48,7 @@ describe('Nav', () => {
     );
 
     const header = screen.getByRole('banner');
-    expect(header).toHaveClass('nav-tone-light');
+    expect(header).toHaveAttribute('data-tone', 'light');
+    expect(header).toHaveAttribute('data-window', 'on');
   });
 });

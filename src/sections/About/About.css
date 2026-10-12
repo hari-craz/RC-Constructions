@@ -1,33 +1,6 @@
-.about-sheet {
-  min-height: 100dvh;
-}
-
-.about-content {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: min(46vw, 38rem);
-  margin-left: 0;
-  margin-right: auto;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-  padding-block: var(--space-8);
-}
-
 .about-header {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-}
-
-.about-title {
-  margin: 0;
-  font-family: var(--font-body);
-  font-size: 0.9375rem;
-  font-weight: 600;
-  letter-spacing: var(--tracking-normal);
-  color: var(--color-ink-muted);
 }
 
 .about-headline {
@@ -51,34 +24,32 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  max-width: 65ch;
 }
 
 .about-paragraph {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 1.1875rem; /* ~19px desktop */
+  font-size: var(--font-size-body);
   line-height: var(--line-height-body);
   color: var(--color-ink);
-  opacity: 0.95;
 }
 
 .about-principles {
-  margin-top: var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  border-top: 1px solid var(--color-line-subtle);
+  border-top: 1px solid var(--color-line);
   padding-top: var(--space-6);
 }
 
 .about-principles-title {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: var(--font-size-body);
   font-weight: 600;
   letter-spacing: var(--tracking-normal);
-  color: var(--color-ink-muted);
+  text-transform: none;
+  color: var(--color-ink);
 }
 
 .about-principles-list {
@@ -94,7 +65,7 @@
   position: relative;
   padding-left: var(--space-5);
   font-family: var(--font-body);
-  font-size: 1.0625rem;
+  font-size: var(--font-size-body);
   line-height: var(--line-height-normal);
   color: var(--color-ink);
 }
@@ -111,32 +82,15 @@
 
 .about-principle-statement {
   font-weight: 600;
-  color: var(--color-ink);
 }
 
 .about-principle-consequence {
   color: var(--color-ink-muted);
-  display: inline;
   margin-left: 0.35em;
 }
 
-/* Responsive adjustment (< 1024px) */
 @media (width < 1024px) {
-  .about-content {
-    max-width: 100%;
-    padding-top: calc(34svh + var(--space-6));
-    padding-bottom: var(--space-8);
-  }
-
-  .about-sheet {
-    min-height: 100dvh;
-  }
-
   .about-headline {
     font-size: var(--font-size-2xl);
-  }
-
-  .about-paragraph {
-    font-size: 1.0625rem;
   }
 }

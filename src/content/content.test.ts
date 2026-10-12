@@ -32,13 +32,11 @@ function hasExclamationMark(text: string): boolean {
 
 describe('About content model', () => {
   it('contains required fields with non-empty strings and no banned words', () => {
-    expect(ABOUT_CONTENT.title.trim()).not.toBe('');
     expect(ABOUT_CONTENT.headline.trim()).not.toBe('');
     expect(ABOUT_CONTENT.paragraphs.length).toBeGreaterThanOrEqual(2);
     expect(ABOUT_CONTENT.principles.length).toBe(3);
 
     const fullAboutText = [
-      ABOUT_CONTENT.title,
       ABOUT_CONTENT.headline,
       ...ABOUT_CONTENT.paragraphs,
       ...ABOUT_CONTENT.principles.flatMap((p) => [p.statement, p.consequence]),

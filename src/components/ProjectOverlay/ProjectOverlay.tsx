@@ -195,14 +195,10 @@ export function ProjectOverlay({
       <div ref={sheetRef} className="project-overlay-sheet">
         <div className="project-overlay-scroll-container">
           <header className="project-overlay-header">
-            <div className="project-overlay-kicker-row">
-              <span className="project-overlay-number">PROJECT {project.number}</span>
-              <span className="project-overlay-role">{project.role}</span>
-            </div>
-
             <h2 id="project-overlay-title" className="project-overlay-title">
               {project.name}
             </h2>
+            <p className="project-overlay-role">{project.role}</p>
 
             <button
               ref={closeBtnRef}
