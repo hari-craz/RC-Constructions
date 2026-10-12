@@ -1,8 +1,9 @@
 #hero .sheet-header {
   position: absolute;
-  top: var(--space-8);
+  top: var(--space-12);
   left: var(--page-gutter);
   margin-bottom: 0;
+  padding-top: 0;
   z-index: 3;
 }
 
@@ -25,7 +26,7 @@
 
 .hero-text-block {
   pointer-events: auto;
-  max-width: 720px;
+  max-width: min(58vw, 840px);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);

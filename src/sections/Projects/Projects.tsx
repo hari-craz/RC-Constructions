@@ -227,9 +227,7 @@ export function Projects() {
             role="region"
             aria-label="Selected Project Architectural Preview"
           >
-            <div className="projects-preview-badge">
-              {'// PLACEHOLDER: ARCHITECTURAL ELEVATION DRAWING SLOT (1200 × 675)'}
-            </div>
+            <div className="projects-preview-badge">Elevation drawing to come, 1200 by 675</div>
             {activeProject && (
               <div className="projects-preview-info">
                 <span className="projects-preview-name">

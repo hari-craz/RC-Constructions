@@ -91,7 +91,7 @@ test.describe('Phase 7C — Completion Stats and Founder Real Content', () => {
     await expect(img).toHaveAttribute('height', '1500');
 
     const placeholderText = portraitSlot.locator('.founder-portrait-placeholder');
-    await expect(placeholderText).toContainText('PLACEHOLDER');
+    await expect(placeholderText).toContainText('Portrait to come');
 
     expect(consoleErrors).toEqual([]);
   });

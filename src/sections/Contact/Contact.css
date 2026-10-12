@@ -7,10 +7,12 @@
   position: relative;
   z-index: 2;
   width: 100%;
+  min-height: calc(100dvh - var(--space-8));
   display: flex;
   flex-direction: column;
-  gap: var(--space-12);
-  padding-block: var(--space-12);
+  justify-content: space-between;
+  gap: var(--space-8);
+  padding-block: var(--space-8);
   color: var(--color-formwork-dark);
 }
 
@@ -35,11 +37,11 @@
 }
 
 .contact-kicker {
-  font-family: var(--font-headline);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: var(--tracking-wider);
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
   color: var(--color-formwork-dark);
 }
 
@@ -83,11 +85,11 @@
 }
 
 .contact-channel-label {
-  font-family: var(--font-headline);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: var(--tracking-wider);
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
   color: var(--color-formwork-dark);
   flex-shrink: 0;
 }
@@ -128,11 +130,11 @@ a.contact-channel-value:hover {
 }
 
 .contact-label {
-  font-family: var(--font-headline);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
   color: var(--color-formwork-dark);
   display: flex;
   justify-content: space-between;
@@ -279,11 +281,11 @@ a.contact-channel-value:hover {
   padding: 8px 16px;
   background: transparent;
   border: 1px solid var(--color-formwork-dark);
-  font-family: var(--font-headline);
-  font-size: var(--font-size-sm);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
   color: var(--color-formwork-dark);
   cursor: pointer;
 }
@@ -336,21 +338,21 @@ a.contact-channel-value:hover {
 }
 
 .contact-footer-credit {
-  font-family: var(--font-headline);
-  font-size: var(--font-size-xs);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
   color: var(--color-formwork-dark);
 }
 
 .contact-footer-top {
   color: var(--color-formwork-dark);
   text-decoration: none;
-  font-family: var(--font-headline);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: var(--tracking-wider);
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
   min-height: 44px;
   display: inline-flex;
   align-items: center;

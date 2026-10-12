@@ -93,10 +93,8 @@ export function Founder() {
                 />
               </picture>
               <div className="founder-portrait-placeholder" aria-hidden="true">
-                <span className="founder-portrait-spec">{'// PLACEHOLDER: Founder portrait'}</span>
-                <span className="founder-portrait-dimensions">
-                  {'1200 × 1500 px (4:5) WebP / JPEG'}
-                </span>
+                <span className="founder-portrait-spec">Portrait to come, 1200 by 1500</span>
+                <span className="founder-portrait-dimensions">4:5 ratio · WebP / JPEG</span>
               </div>
             </div>
           </div>

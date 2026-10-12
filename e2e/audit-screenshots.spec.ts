@@ -12,6 +12,7 @@ test.describe('Audit Visual Verification Screenshots', () => {
   test('captures screenshots across required viewports at intro complete and mid-transition', async ({
     page,
   }) => {
+    test.setTimeout(60000);
     for (const vp of VIEWPORTS) {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto('/');

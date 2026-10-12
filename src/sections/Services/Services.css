@@ -1,16 +1,18 @@
 .services-sheet {
-  min-height: 110dvh;
+  min-height: 100dvh;
 }
 
 .services-content {
   position: relative;
   z-index: 2;
   width: 100%;
-  max-width: 48%;
+  max-width: min(46vw, 38rem);
+  margin-left: 0;
+  margin-right: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
-  padding-block: var(--space-12);
+  padding-block: var(--space-8);
 }
 
 .services-header {
@@ -28,18 +30,18 @@
 }
 
 .services-kicker {
-  font-family: var(--font-headline);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: var(--tracking-wider);
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
   color: var(--color-formwork-dark);
 }
 
 .services-code {
-  font-family: var(--font-headline);
-  font-size: var(--font-size-xs);
-  letter-spacing: var(--tracking-wide);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  letter-spacing: var(--tracking-normal);
   color: var(--color-formwork-dark);
 }
 
@@ -73,11 +75,11 @@
 
 .services-th {
   padding: var(--space-2) var(--space-3);
-  font-family: var(--font-headline);
-  font-size: var(--font-size-xs);
-  font-weight: 700;
-  letter-spacing: var(--tracking-wider);
-  text-transform: uppercase;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
   color: var(--color-formwork-dark);
   opacity: 0.85;
 }

@@ -7,7 +7,7 @@ describe('motion constants', () => {
     expect(MOTION.sheetStack.scaleMax).toBe(1);
     expect(MOTION.sheetStack.radiusSheetPx).toBe(32);
     expect(MOTION.sheetStack.radiusSquarePx).toBe(0);
-    expect(MOTION.sheetStack.dimOverlayOpacity).toBe(0.4);
+    expect(MOTION.sheetStack.dimOverlayOpacity).toBe(0.12);
     expect(MOTION.sheetStack.transformOrigin).toBe('center top');
     expect(MOTION.sheetStack.ease).toBe('power2.out');
   });

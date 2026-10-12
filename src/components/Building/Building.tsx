@@ -24,7 +24,8 @@ export function Building({ className = '' }: BuildingProps) {
       ? 'completion'
       : 'survey';
 
-  const isVisible = activeStage !== 'survey';
+  const isVisible =
+    activeStage !== 'survey' && activeSection !== 'founder' && activeSection !== 'contact';
 
   // Lazy mount after initial idle period to stay completely off the Hero LCP critical path
   useEffect(() => {

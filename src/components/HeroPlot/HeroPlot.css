@@ -9,11 +9,11 @@
 
 .hero-plot-svg {
   position: absolute;
-  top: -5%;
-  right: -5%;
-  width: 90%;
-  height: 105%;
-  overflow: visible;
+  top: 4%;
+  right: 0;
+  width: 54%;
+  height: 82%;
+  overflow: clip;
 }
 
 /* Layer 1: Boundary */
@@ -76,10 +76,10 @@
 /* Mobile: hide peripheral dimension lines to prevent text collisions */
 @media (width <= 768px) {
   .hero-plot-svg {
-    top: 5%;
+    top: 2%;
     right: 0;
     width: 100%;
-    height: 70%;
+    height: 48%;
   }
 
   .hero-dim-lateral {

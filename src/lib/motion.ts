@@ -8,7 +8,7 @@ export const MOTION = {
     scaleMax: 1,
     radiusSheetPx: 32,
     radiusSquarePx: 0,
-    dimOverlayOpacity: 0.4,
+    dimOverlayOpacity: 0.12,
     transformOrigin: 'center top',
     ease: 'power2.out',
   },
