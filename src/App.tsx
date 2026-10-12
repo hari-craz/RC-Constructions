@@ -1,3 +1,4 @@
+import { Analytics } from '@vercel/analytics/react';
 import { ScrollProvider } from './app/ScrollProvider';
 import { Building } from './components/Building';
 import { LoadingLine } from './components/LoadingLine';
@@ -37,6 +38,7 @@ export function App() {
           <Contact />
         </SheetStack>
       </main>
+      <Analytics />
     </ScrollProvider>
   );
 }
