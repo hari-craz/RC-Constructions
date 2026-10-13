@@ -14,7 +14,7 @@ export function SurveyCursor() {
   const markerRef = useRef<HTMLDivElement | null>(null);
   const [isFinePointer, setIsFinePointer] = useState(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return false;
-    return window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    return window.matchMedia('(any-hover: hover) and (any-pointer: fine)').matches;
   });
   const [state, setState] = useState<CursorState>('default');
   const [tone, setTone] = useState<CursorTone>('light');
@@ -23,7 +23,7 @@ export function SurveyCursor() {
   // 1. Only mount on fine-pointer devices with hover capability (never on touch)
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return;
-    const mediaQuery = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const mediaQuery = window.matchMedia('(any-hover: hover) and (any-pointer: fine)');
 
     const handleChange = (e: MediaQueryListEvent) => {
       setIsFinePointer(e.matches);
