@@ -34,6 +34,7 @@ interface ProjectRowProps {
 function ProjectRow({ project, isActive, onActivate, onOpen }: ProjectRowProps) {
   return (
     <li
+      id={`${project.id}-row`}
       className={`projects-row-item ${isActive ? 'is-active' : ''}`}
       data-project-id={project.id}
       data-cursor="project"
@@ -174,6 +175,10 @@ export function Projects() {
     if (nextProj) {
       setOverlayProjectId(nextProj.id);
       setActiveProjectId(nextProj.id);
+      document.getElementById(`${nextProj.id}-row`)?.scrollIntoView({
+        block: 'nearest',
+        behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+      });
       const targetHash = `#project-${nextProj.slug}`;
       if (window.location.hash !== targetHash) {
         history.replaceState(null, '', targetHash);
