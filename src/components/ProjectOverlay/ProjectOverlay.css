@@ -34,6 +34,26 @@
   box-shadow: none;
 }
 
+/* Desktop: the drawer covers only the site-window region (grid columns 6-12); the list on the
+   left stays visible, with its row marked, and is inert behind the modal */
+@media (width >= 1024px) {
+  .project-overlay-portal {
+    left: var(--text-zone-width);
+  }
+
+  .project-overlay-sheet {
+    max-width: none;
+    border-radius: 0;
+  }
+}
+
+/* Phones and tablets: a full-screen bottom sheet */
+@media (width < 1024px) {
+  .project-overlay-sheet {
+    max-width: none;
+  }
+}
+
 /* Internal native scroll container with contain overscroll */
 .project-overlay-scroll-container {
   flex: 1;
@@ -199,29 +219,10 @@
 }
 
 .gallery-slot-block {
-  aspect-ratio: 16 / 10;
-  background-color: var(--color-concrete);
-  border: 1px solid var(--color-steel);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-3);
-  text-align: center;
-}
-
-.gallery-slot-placeholder-mark {
-  font-family: var(--font-body);
-  font-size: 0.875rem;
-  letter-spacing: var(--tracking-normal);
-  text-transform: none;
-  color: var(--color-ink-muted-light);
-}
-
-.gallery-slot-caption {
-  font-family: var(--font-body);
-  font-size: 0.875rem;
-  line-height: var(--line-height-normal);
-  color: var(--color-ink-muted-light);
+  align-items: flex-end;
+  aspect-ratio: 3 / 2;
+  padding: var(--space-4) var(--space-5);
 }
 
 /* Footer Adjacent Links */

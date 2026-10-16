@@ -21,8 +21,36 @@
   transition: opacity var(--duration-normal) var(--ease-standard);
 }
 
-.building-site-window.is-visible {
+/* Motion mode: the window is shown by its scrubbed slide-in (data-sync), not by a fade */
+.building-site-window[data-sync='true'] {
   opacity: 1;
+  transition: none;
+}
+
+/* Reduced motion: shown beside the sections that have it, swapped without animation */
+.building-site-window[data-static='true'].is-visible {
+  opacity: 1;
+}
+
+/* Reduced motion: the drawing shows the stage for the section or process step in view */
+.building-site-window[data-static='true'][data-stage='survey'] .stage-group,
+.building-site-window[data-static='true'][data-stage='foundation']
+  :is(#stage-structure, #stage-envelope, #stage-fitout, #stage-completion, #stage-dimensions),
+.building-site-window[data-static='true'][data-stage='structure']
+  :is(#stage-envelope, #stage-fitout, #stage-completion, #stage-dimensions),
+.building-site-window[data-static='true'][data-stage='envelope']
+  :is(#stage-fitout, #stage-completion, #stage-dimensions),
+.building-site-window[data-static='true'][data-stage='fitout']
+  :is(#stage-completion, #stage-dimensions) {
+  display: none;
+}
+
+/* Project preview layer: cross-fades over the building (opacity only) */
+.building-preview {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-standard);
 }
 
 .building-svg {
@@ -30,6 +58,15 @@
   width: 100%;
   height: 100%;
   max-width: none;
+  transition: opacity var(--duration-fast) var(--ease-standard);
+}
+
+.building-site-window[data-preview='true'] .building-preview {
+  opacity: 1;
+}
+
+.building-site-window[data-preview='true'] .building-svg {
+  opacity: 0;
 }
 
 /* Every element keeps its stroke weight at any scale */
@@ -146,7 +183,7 @@
   stroke: none;
 }
 
-.building-site-window[data-static='true'] .b-pane {
+.building-site-window[data-static='true'][data-stage='completion'] .b-pane {
   fill: var(--color-work-lamp-amber);
 }
 
@@ -175,7 +212,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .building-site-window {
+  .building-site-window,
+  .building-preview,
+  .building-svg {
     transition: none;
   }
 }
@@ -192,6 +231,10 @@
     height: var(--site-band-height);
     padding-top: var(--nav-height);
     box-sizing: border-box;
+  }
+
+  .building-preview {
+    top: var(--nav-height);
   }
 
   .b-dim-label,

@@ -1,43 +1,77 @@
 import { describe, expect, it } from 'vitest';
-import { getStageByProgress, getStageBySectionId, STAGES } from './stages';
+import {
+  getSectionById,
+  getStageInView,
+  isSiteWindowVisible,
+  NAV_SECTIONS,
+  PROCESS_STEP_STAGES,
+  SECTIONS,
+  STAGES,
+} from './stages';
 
-describe('stages config', () => {
-  it('contains exactly 6 strictly ordered building stages', () => {
-    expect(STAGES).toHaveLength(6);
-    const expectedIds = ['survey', 'foundation', 'structure', 'envelope', 'fitout', 'completion'];
-    expect(STAGES.map((s) => s.id)).toEqual(expectedIds);
+describe('story order and stage map', () => {
+  it('lists the sections in the new reading order with unchanged ids', () => {
+    expect(SECTIONS.map((s) => s.sectionId)).toEqual([
+      'hero',
+      'foundation',
+      'fitout',
+      'completion',
+      'structure',
+      'envelope',
+      'founder',
+      'contact',
+    ]);
   });
 
-  it('has unique sectionId anchors for every stage', () => {
-    const sectionIds = STAGES.map((s) => s.sectionId);
-    const uniqueIds = new Set(sectionIds);
-    expect(uniqueIds.size).toBe(STAGES.length);
+  it('has six building stages in build order', () => {
+    expect(STAGES.map((s) => s.id)).toEqual([
+      'survey',
+      'foundation',
+      'structure',
+      'envelope',
+      'fitout',
+      'completion',
+    ]);
   });
 
-  it('defines contiguous, non-overlapping scroll intervals spanning 0 to 1', () => {
-    expect(STAGES[0]?.range[0]).toBe(0.0);
-    expect(STAGES[STAGES.length - 1]?.range[1]).toBe(1.0);
-
-    for (let i = 0; i < STAGES.length - 1; i++) {
-      const current = STAGES[i];
-      const next = STAGES[i + 1];
-      if (!current || !next) continue;
-
-      expect(current.range[1]).toBe(next.range[0]);
-      expect(current.range[0]).toBeLessThan(current.range[1]);
+  it('maps the six process steps to structure, envelope and fit-out in order, two parts each', () => {
+    expect(PROCESS_STEP_STAGES.map((s) => `${s.stage}:${s.part}`)).toEqual([
+      'structure:0',
+      'structure:1',
+      'envelope:0',
+      'envelope:1',
+      'fitout:0',
+      'fitout:1',
+    ]);
+    for (const id of ['structure', 'envelope', 'fitout'] as const) {
+      expect(STAGES.find((s) => s.id === id)?.parts).toBe(
+        PROCESS_STEP_STAGES.filter((s) => s.stage === id).length,
+      );
     }
   });
 
-  it('retrieves stages correctly by progress and section id', () => {
-    expect(getStageByProgress(0.0).id).toBe('survey');
-    expect(getStageByProgress(0.2).id).toBe('foundation');
-    expect(getStageByProgress(0.4).id).toBe('structure');
-    expect(getStageByProgress(0.6).id).toBe('envelope');
-    expect(getStageByProgress(0.75).id).toBe('fitout');
-    expect(getStageByProgress(0.95).id).toBe('completion');
-    expect(getStageByProgress(1.0).id).toBe('completion');
+  it('shows the window beside About, Process, Work delivered, Services and Projects only', () => {
+    const shown = SECTIONS.filter((s) => isSiteWindowVisible(s.sectionId)).map((s) => s.sectionId);
+    expect(shown).toEqual(['foundation', 'fitout', 'completion', 'structure', 'envelope']);
+    expect(isSiteWindowVisible('about')).toBe(true);
+  });
 
-    expect(getStageBySectionId('structure')?.name).toBe('Structure');
-    expect(getStageBySectionId('nonexistent')).toBeUndefined();
+  it('holds the finished building while Services and Projects are read', () => {
+    expect(getStageInView('hero')).toBe('survey');
+    expect(getStageInView('foundation')).toBe('foundation');
+    expect(getStageInView('structure')).toBe('completion');
+    expect(getStageInView('envelope')).toBe('completion');
+  });
+
+  it('lists indicator sections in page order and resolves the about alias', () => {
+    expect(NAV_SECTIONS.map((s) => s.navLabel)).toEqual([
+      'Principles',
+      'Process',
+      'Track record',
+      'Services',
+      'Projects',
+      'Contact',
+    ]);
+    expect(getSectionById('about')?.sectionId).toBe('foundation');
   });
 });

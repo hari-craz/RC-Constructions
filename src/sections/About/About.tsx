@@ -1,12 +1,12 @@
 import { useRef } from 'react';
 import { Sheet } from '../../components/SheetStack';
 import { ABOUT_CONTENT } from '../../content/about';
-import { FOUNDATION_STAGE } from '../../data/stages';
+import { ABOUT_SECTION } from '../../data/stages';
 import { useScroll } from '../../hooks/useScroll';
 import { gsap, useGSAP } from '../../lib/gsap';
 import './About.css';
 
-const stage = FOUNDATION_STAGE;
+const stage = ABOUT_SECTION;
 const content = ABOUT_CONTENT;
 
 export function About() {

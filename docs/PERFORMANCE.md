@@ -55,3 +55,7 @@ Size: `pnpm size` about 124.8 kB brotlied across all chunks (limit 180 kB).
 - No `content-visibility` on sheets: the sheet stack and ScrollTrigger depend on exact section heights.
 - Lighthouse numbers vary by machine; CI asserts the median of five against the targets in `lighthouserc.json`.
 - The gate means a visitor who never interacts sees no building mount for 8 s. That is intentional: the window is hidden on the hero.
+
+## Phase 14
+
+Mobile median of five: performance 98, LCP 2256 ms, TBT 6 ms, CLS 0 (Phase 13: 98, about 2.26 s, 20 ms, 0). Desktop median of three: 100. `pnpm size`: 128.08 kB brotlied (124.8 kB before; limit 180 kB). The six project drawings are one lazy chunk (about 2 kB gzipped) fetched on the first hover or focus of a project row.

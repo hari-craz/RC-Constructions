@@ -135,3 +135,13 @@ This protocol validates scroll physics, dynamic viewports, and visual stability 
 - **Phone band.** Check the building fills at least 80% of the band width at 360, 390 and 412 px wide, and that the band is at most 52svh.
 - **Native cursor.** On a touch laptop with a mouse, the Windows arrow must be hidden and the survey crosshair shown.
 - **Font preload warning in WebKit (Windows test build).** The console test ignores one message there: the two font preloads reported as "not used". The fonts are loaded and used; check on a real iPhone that no such warning appears and that the fonts are not downloaded twice (Network tab).
+
+---
+
+## Phase 14 additions
+
+- **Story sync.** Scroll slowly from the top. The window slides in only after the survey plot has faded out. Through About the foundation is drawn; through each of the six Process steps the building advances in parts (structure, envelope, fit-out) and each part is complete when that step's text is centred. Scroll back up: the building un-builds exactly. Tap an anchor in the header: the building lands on the same state as scrolling there.
+- **Header indicator.** At 1024 px and below 1280 px, and on a phone, the button names the current section; the list opens full width, Escape closes it, focus returns to the button. At 1280 px and above, check the six links never touch the logo or Enquire. Targets are at least 44 px.
+- **Projects preview.** Hover a row on a laptop and tab through them on a phone with a keyboard or switch: the drawing in the window changes with a soft fade; leaving the list returns to the finished building. On a phone, check the drawer is a full-screen sheet and Previous and Next scroll the row into view behind it.
+- **Form focus.** Tab through the enquiry form: each field shows a dark outline and a thicker bottom edge, never amber, and nothing jumps.
+- **Reduced motion.** With reduce motion on, the building changes state when a section or step comes into view, with no scrubbing and no cross-fade.

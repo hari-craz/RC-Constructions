@@ -2,6 +2,7 @@ import { getSectionById, isSiteWindowVisible } from '../../data/stages';
 import { useActiveSection } from '../../hooks/useActiveSection';
 import { useScroll } from '../../hooks/useScroll';
 import { Logo } from '../Logo';
+import { SectionIndicator } from './SectionIndicator';
 import './Nav.css';
 
 export interface NavProps {
@@ -45,15 +46,18 @@ export function Nav({ className = '' }: NavProps) {
       <div className="nav-zone nav-zone-text">
         <Logo onClick={handleLogoClick} />
       </div>
-      <nav className="nav-zone nav-zone-window" aria-label="Main Navigation">
-        <ul className="nav-list">
-          <li>
-            <a href="#contact" className="nav-link" onClick={handleEnquireClick}>
-              Enquire
-            </a>
-          </li>
-        </ul>
-      </nav>
+      <div className="nav-zone nav-zone-window">
+        <SectionIndicator />
+        <nav aria-label="Main Navigation">
+          <ul className="nav-list">
+            <li>
+              <a href="#contact" className="nav-link" onClick={handleEnquireClick}>
+                Enquire
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
     </header>
   );
 }

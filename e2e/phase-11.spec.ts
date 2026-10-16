@@ -35,7 +35,8 @@ test.describe('Phase 11 — building as protagonist', () => {
           .locator('.building-site-window')
           .evaluate((el) => getComputedStyle(el).backgroundColor);
         expect(bg).toBe(SURFACE);
-        // The drawn building (roof slab) spans at least 70% of the window width
+        // The drawn building spans at least 70% of the window width. The ground slab is drawn by About (partly built there); measure where it is complete
+        if (id === 'foundation') continue;
         const ratio = await page.evaluate(() => {
           const win = document.querySelector('.building-site-window')?.getBoundingClientRect();
           const roof = document.querySelector('.b-ground-slab')?.getBoundingClientRect();
@@ -66,10 +67,11 @@ test.describe('Phase 11 — building as protagonist', () => {
     expect(ratio).toBeGreaterThanOrEqual(0.8);
   });
 
-  test('each stage is complete at rest, lit windows are flat amber, and scrolling up un-builds', async ({
+  test('each stage is complete where its text ends, lit windows are flat amber, and scrolling up un-builds', async ({
     page,
   }, testInfo) => {
     test.skip(testInfo.project.use?.contextOptions?.reducedMotion === 'reduce', 'Motion only');
+    test.setTimeout(120_000);
     const measure = () =>
       page.evaluate(() => {
         const h = (s: string) =>
@@ -86,7 +88,38 @@ test.describe('Phase 11 — building as protagonist', () => {
         };
       });
 
-    await open(page, 'completion');
+    // Scroll down from the top of About until build part k (see data-part-progress) is complete
+    const untilPartComplete = (k: number, from = 0) =>
+      page.evaluate(
+        async ([part, start]) => {
+          const lenis = (
+            window as unknown as { __lenis?: { scrollTo: (y: number, o: object) => void } }
+          ).__lenis;
+          const root = document.querySelector<HTMLElement>('.building-site-window');
+          const max = document.documentElement.scrollHeight - window.innerHeight;
+          const read = async (y: number) => {
+            lenis?.scrollTo(y, { immediate: true });
+            await new Promise((r) => setTimeout(r, 40));
+            return (root?.dataset.partProgress ?? '').split(',').map(Number);
+          };
+          for (let y = start ?? 0; y <= max; y += 20) {
+            if (((await read(y))[part] ?? 0) < 0.98) continue;
+            // Back off so the next part has not started (progress is published a frame late)
+            let at = y;
+            while (at > 0) {
+              const parts = await read(at);
+              if ((parts[part] ?? 0) >= 0.98 && (parts[part + 1] ?? 0) <= 0.02) return at;
+              at -= 2;
+            }
+            return at;
+          }
+          return -1;
+        },
+        [k, from] as const,
+      );
+
+    // Everything is complete once Work delivered has run its course (Services is beside it)
+    await open(page, 'structure');
     const ref = await measure();
     expect(ref.paneFills).toHaveLength(15);
     expect(ref.paneFills.every((f) => f === AMBER)).toBe(true);
@@ -101,40 +134,43 @@ test.describe('Phase 11 — building as protagonist', () => {
     const winW = (await page.locator('.building-svg').boundingBox())?.width ?? 1;
     expect(paneMax).toBeLessThan(winW * 0.15);
 
-    await open(page, 'foundation');
+    await open(page, 'hero');
+    let at = await untilPartComplete(0); // foundation (About)
+    expect(at).toBeGreaterThan(0);
     let m = await measure();
     expect(m.footing).toBeGreaterThan(ref.footing * 0.95);
     expect(m.col).toBeLessThan(ref.col * 0.05);
     expect(m.paneFills.some((f) => f === AMBER)).toBe(false);
 
-    await open(page, 'structure');
+    at = await untilPartComplete(2, Math.max(0, at - 40));
+    expect(at).toBeGreaterThan(0); // structure (Process steps 1 and 2)
     m = await measure();
     expect(m.col).toBeGreaterThan(ref.col * 0.95);
-    expect(m.wall).toBeLessThan(ref.wall * 0.05);
-    expect(m.frameOpacity.every((o) => o === 0)).toBe(true);
+    expect(m.wall).toBeLessThan(ref.wall * 0.15);
+    // The next part starts the moment this one ends, so allow the first 20 px of it
+    expect(Math.max(...m.frameOpacity)).toBeLessThan(0.25);
 
-    await open(page, 'envelope');
+    at = await untilPartComplete(4, Math.max(0, at - 40));
+    expect(at).toBeGreaterThan(0); // envelope (steps 3 and 4)
     m = await measure();
     expect(m.wall).toBeGreaterThan(ref.wall * 0.95);
-    expect(m.frameOpacity.every((o) => o === 0)).toBe(true);
+    // The next part starts the moment this one ends, so allow the first 20 px of it
+    expect(Math.max(...m.frameOpacity)).toBeLessThan(0.25);
 
-    await open(page, 'fitout');
+    at = await untilPartComplete(6, Math.max(0, at - 40));
+    expect(at).toBeGreaterThan(0); // fit-out (steps 5 and 6)
     m = await measure();
-    expect(m.frameOpacity.every((o) => o === 1)).toBe(true);
+    expect(Math.min(...m.frameOpacity)).toBeGreaterThan(0.9);
     expect(m.paneFills.some((f) => f === AMBER)).toBe(false);
 
-    // Reverse: from completion back up to structure
-    await open(page, 'completion');
+    // Reverse: from the finished building back to the top of the page
+    await open(page, 'structure');
     await page.evaluate(() => {
-      const sheets = [...document.querySelectorAll<HTMLElement>('.sheet-stack > .sheet')];
-      const idx = sheets.findIndex((s) => s.id === 'structure');
-      let y = 0;
-      for (let i = 0; i < idx; i++) y += sheets[i]?.offsetHeight ?? 0;
       const lenis = (
         window as unknown as { __lenis?: { scrollTo: (y: number, o: object) => void } }
       ).__lenis;
-      if (lenis) lenis.scrollTo(y, { immediate: true });
-      else window.scrollTo(0, y);
+      if (lenis) lenis.scrollTo(0, { immediate: true });
+      else window.scrollTo(0, 0);
     });
     await page.waitForTimeout(900);
     m = await measure();
@@ -142,9 +178,11 @@ test.describe('Phase 11 — building as protagonist', () => {
     expect(m.paneFills.some((f) => f === AMBER)).toBe(false);
   });
 
-  test('reduced motion shows the finished, lit building', async ({ page }, testInfo) => {
+  test('reduced motion shows the finished, lit building where Work delivered is the stage', async ({
+    page,
+  }, testInfo) => {
     test.skip(testInfo.project.use?.contextOptions?.reducedMotion !== 'reduce', 'Reduced only');
-    await open(page, 'foundation');
+    await open(page, 'completion');
     const fills = await page
       .locator('.b-pane')
       .evaluateAll((els) => els.map((e) => getComputedStyle(e).fill));
@@ -308,17 +346,20 @@ test.describe('Phase 11 — page rules', () => {
     }
   });
 
-  test('projects: image slot and register are separate, rows never render inside the slot', async ({
+  test('projects: no grey slot above the register; the active row drives the window preview', async ({
     page,
   }) => {
     await open(page, 'envelope');
-    const slot = page.locator('.projects-preview-slot');
-    await page.locator('.projects-row-btn').nth(2).hover();
+    // The old grey preview slot is gone: the right-hand window is the preview
+    expect(await page.locator('.projects-preview-slot').count()).toBe(0);
+    const row = page.locator('.projects-row-btn').nth(2);
+    await row.focus();
     await expect(page.locator('.projects-row-item').nth(2)).toHaveClass(/is-active/);
-    expect(await slot.locator('.projects-row-item, .projects-row-btn').count()).toBe(0);
-    const s = await slot.boundingBox();
+    await expect(page.locator('.building-site-window')).toHaveAttribute('data-preview', 'true');
+    // The register starts directly under the heading block
+    const head = await page.locator('.projects-header').boundingBox();
     const r = await page.locator('.projects-register').boundingBox();
-    expect(s && r && s.y + s.height <= r.y).toBe(true);
+    expect(head && r && head.y + head.height <= r.y).toBe(true);
   });
 
   test('header and logo stay legible (4.5:1) on every surface', async ({ page }) => {

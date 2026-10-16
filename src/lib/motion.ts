@@ -76,7 +76,8 @@ export const MOTION = {
     windowSwitchDuration: 0.01,
     dimensionDrawDuration: 0.5,
     dimensionLabelDelay: 0.3,
-    windowFadeSeconds: 0.3,
+    plotFadeShare: 0.5,
+    windowEnterViewport: 0.5,
   },
   stats: {
     countDuration: 1.6,

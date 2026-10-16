@@ -181,9 +181,12 @@ a.contact-channel-value:hover {
 .contact-input:focus,
 .contact-select:focus,
 .contact-textarea:focus {
+  /* 2 px ink outline offset by 2 px, and a thicker bottom edge (padding gives back the 2 px) */
+  padding-bottom: 8px;
   border-color: var(--color-formwork-dark);
+  border-bottom-width: 3px;
   outline: 2px solid var(--color-formwork-dark);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 
 .contact-input.is-invalid,

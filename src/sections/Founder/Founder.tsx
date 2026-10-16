@@ -3,6 +3,7 @@ import { Sheet } from '../../components/SheetStack';
 import { FOUNDER_CONTENT } from '../../content/founder';
 import { useScroll } from '../../hooks/useScroll';
 import { gsap, useGSAP } from '../../lib/gsap';
+import '../../styles/photo-slot.css';
 import { MOTION } from '../../lib/motion';
 import './Founder.css';
 
@@ -76,7 +77,7 @@ export function Founder() {
           <div className="founder-portrait-col">
             <div
               ref={portraitFrameRef}
-              className="founder-portrait-frame"
+              className="founder-portrait-frame photo-slot"
               data-portrait-slot="founder"
             >
               {FOUNDER_CONTENT.portraitAvailable ? (
@@ -92,7 +93,15 @@ export function Founder() {
                   />
                 </picture>
               ) : (
-                <p className="founder-portrait-note">{FOUNDER_CONTENT.portraitNote}</p>
+                <>
+                  <span className="photo-crop photo-crop-tl" />
+                  <span className="photo-crop photo-crop-tr" />
+                  <span className="photo-crop photo-crop-bl" />
+                  <span className="photo-crop photo-crop-br" />
+                  <p className="founder-portrait-note photo-slot-note">
+                    {FOUNDER_CONTENT.portraitNote}
+                  </p>
+                </>
               )}
             </div>
           </div>

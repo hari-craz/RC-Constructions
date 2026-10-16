@@ -1,9 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
-import { getStageBySectionId, isSiteWindowVisible, type StageId } from '../../data/stages';
+import { useProjectPreview } from '../../app/ProjectPreviewContext';
+import { getProjectById } from '../../content/projects';
+import {
+  ABOUT_SECTION,
+  COMPLETION_SECTION,
+  getSectionById,
+  getStageInView,
+  isSiteWindowVisible,
+  PROCESS_SECTION,
+  PROCESS_STEP_STAGES,
+  PROJECTS_SECTION,
+  STAGES,
+  type StageId,
+} from '../../data/stages';
 import { useActiveSection } from '../../hooks/useActiveSection';
 import { useScroll } from '../../hooks/useScroll';
 import { gsap, inOwnTask, motionGate, useGSAP } from '../../lib/gsap';
 import { MOTION } from '../../lib/motion';
+import { ProjectPreview } from '../ProjectPreview';
 import {
   BAYS,
   BEAM_DEPTH,
@@ -34,6 +48,7 @@ import {
   storeyBounds,
   wallBounds,
 } from './geometry';
+import { centreScroll, sheetEndScroll, sheetTop } from './stageSync';
 import './Building.css';
 
 export interface BuildingProps {
@@ -73,16 +88,24 @@ export function Building({ className = '' }: BuildingProps) {
   const containerRef = useRef<HTMLElement | null>(null);
   const [mounted, setMounted] = useState(false);
   const [phone, setPhone] = useState(() => window.matchMedia(PHONE_QUERY).matches);
+  const [staticStage, setStaticStage] = useState<StageId>('survey');
   const { reducedMotion } = useScroll();
   const activeSection = useActiveSection();
-
-  const stageFromSection = getStageBySectionId(activeSection);
-  const activeStage: StageId = stageFromSection
-    ? stageFromSection.id
-    : activeSection === 'contact' || activeSection === 'founder'
-      ? 'completion'
-      : 'survey';
+  const activeSectionRef = useRef(activeSection);
   const isVisible = isSiteWindowVisible(activeSection);
+
+  // Project preview: while Projects is in view and a row is active, the window cross-fades from
+  // the finished building to that project's drawing (opacity only, no layout shift)
+  const { activeProjectId } = useProjectPreview();
+  const activeProject = activeProjectId ? getProjectById(activeProjectId) : undefined;
+  const previewVisible = Boolean(activeProject) && activeSection === PROJECTS_SECTION.sectionId;
+  const [shownSlug, setShownSlug] = useState<string | null>(null);
+  // Keep the last drawing mounted while it fades out (derived during render, not in an effect)
+  if (activeProject && activeProject.slug !== shownSlug) setShownSlug(activeProject.slug);
+
+  useEffect(() => {
+    activeSectionRef.current = activeSection;
+  }, [activeSection]);
 
   useEffect(() => {
     const query = window.matchMedia(PHONE_QUERY);
@@ -106,6 +129,45 @@ export function Building({ className = '' }: BuildingProps) {
     };
   }, []);
 
+  // Reduced motion: no scrubbing. The building shows the state for the section (or process step)
+  // in view and swaps it without animation.
+  useEffect(() => {
+    if (!mounted || !reducedMotion) return;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const section = getSectionById(activeSectionRef.current)?.sectionId ?? 'hero';
+      let stage = getStageInView(section);
+      if (section === PROCESS_SECTION.sectionId) {
+        const steps = [...document.querySelectorAll<HTMLElement>('.process-step-item')];
+        const mid = window.innerHeight / 2;
+        let best = 0;
+        let bestDistance = Infinity;
+        steps.forEach((step, i) => {
+          const r = step.getBoundingClientRect();
+          const distance = Math.abs(r.top + r.height / 2 - mid);
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            best = i;
+          }
+        });
+        stage = PROCESS_STEP_STAGES[best]?.stage ?? 'structure';
+      }
+      setStaticStage(stage);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    document.documentElement.dataset.windowIn = 'true';
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      delete document.documentElement.dataset.windowIn;
+      window.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(frame);
+    };
+  }, [mounted, reducedMotion]);
+
   useGSAP(
     (context) => {
       if (!mounted || reducedMotion || !containerRef.current) return;
@@ -117,6 +179,12 @@ export function Building({ className = '' }: BuildingProps) {
       const amber = styles.getPropertyValue('--color-work-lamp-amber').trim();
       const raised = styles.getPropertyValue('--color-surface-raised').trim();
       const B = MOTION.building;
+      const section = (id: string) => document.getElementById(id) as HTMLElement;
+
+      root.dataset.stage = 'survey';
+      root.dataset.stageProgress = '0';
+      root.dataset.buildProgress = '0';
+      root.dataset.partProgress = '0,0,0,0,0,0,0,0';
 
       // Staggered fromTo tweens only render their first target's start state up front, so a
       // stagger is laid out as explicit per-element positions on the scrubbed timeline.
@@ -131,30 +199,151 @@ export function Building({ className = '' }: BuildingProps) {
         targets.forEach((target, i) => tl.fromTo(target, from, to, at + i * step));
       };
 
-      // Each stage's timeline is built in its own task, so setup never forms one long task
-      const scrubStage = (sectionId: string, build: (tl: gsap.core.Timeline) => void) => {
+      // Progress of every scrubbed part, published as data-stage, data-stage-progress and
+      // data-build-progress so tests (and styles) can follow the build.
+      const partProgress = new Map<string, number>();
+      const stageProgress = (id: StageId, parts: number) => {
+        let sum = 0;
+        for (let i = 0; i < parts; i++) sum += partProgress.get(`${id}:${i}`) ?? 0;
+        return sum / parts;
+      };
+      const publish = () => {
+        const built = STAGES.filter((s) => s.parts > 0);
+        let current: StageId = 'survey';
+        let currentProgress = 0;
+        for (const stage of built) {
+          const p = stageProgress(stage.id, stage.parts);
+          if (p >= 0.999) {
+            current = stage.id;
+            currentProgress = 1;
+            continue;
+          }
+          if (p > 0.001) {
+            current = stage.id;
+            currentProgress = p;
+          }
+          break;
+        }
+        let total = 0;
+        let parts = 0;
+        for (const stage of built) {
+          parts += stage.parts;
+          total += stageProgress(stage.id, stage.parts) * stage.parts;
+        }
+        root.dataset.stage = current;
+        root.dataset.stageProgress = currentProgress.toFixed(3);
+        root.dataset.buildProgress = (total / parts).toFixed(3);
+        root.dataset.partProgress = built
+          .flatMap((stage) =>
+            Array.from({ length: stage.parts }, (_, i) =>
+              (partProgress.get(`${stage.id}:${i}`) ?? 0).toFixed(3),
+            ),
+          )
+          .join(',');
+      };
+
+      const markWindowIn = (arrived: boolean) => {
+        document.documentElement.dataset.windowIn = arrived ? 'true' : 'false';
+      };
+
+      const vh = () => window.innerHeight;
+      // Scroll position at which an element's box is centred in the viewport, capped at the
+      // point where its sheet is fully scrolled (the sheet then stays pinned).
+      const centred = (el: HTMLElement) => Math.min(centreScroll(el), sheetEndScroll(el));
+
+      const aboutSheet = () => section(ABOUT_SECTION.sectionId);
+      const processSheet = () => section(PROCESS_SECTION.sectionId);
+      const completionSheet = () => section(COMPLETION_SECTION.sectionId);
+      const steps = () => [...processSheet().querySelectorAll<HTMLElement>('.process-step-item')];
+
+      // Contiguous scroll ranges: each part starts where the previous one ends, and ends when
+      // its text is centred, so a stage never finishes before its text is read and never sits
+      // idle while a mapped section scrolls.
+      const foundationRange = (): [number, number] => {
+        const start = sheetTop(aboutSheet()) - vh() * B.windowEnterViewport;
+        return [start, Math.max(centred(aboutSheet()), start + 1)];
+      };
+      const stepRanges = () => {
+        const out: [number, number][] = [];
+        let start = foundationRange()[1];
+        for (const step of steps()) {
+          const end = Math.max(centred(step), start + 1);
+          out.push([start, end]);
+          start = end;
+        }
+        return out;
+      };
+      const completionRange = (): [number, number] => {
+        const ranges = stepRanges();
+        const start = ranges[ranges.length - 1]?.[1] ?? foundationRange()[1];
+        return [start, Math.max(centred(completionSheet()), start + 1)];
+      };
+
+      // Each part's timeline is built in its own task, so setup never forms one long task
+      const scrubPart = (
+        key: string,
+        range: () => [number, number],
+        build: (tl: gsap.core.Timeline) => void,
+      ) => {
         void inOwnTask(() => {
           if (cancelled) return;
-          context.add(() => buildStage(sectionId, build));
+          context.add(() => {
+            const tl = gsap.timeline({
+              scrollTrigger: {
+                trigger: root,
+                start: () => range()[0],
+                end: () => range()[1],
+                scrub: true,
+                invalidateOnRefresh: true,
+                onUpdate: (self) => {
+                  partProgress.set(key, self.progress);
+                  publish();
+                },
+                onRefresh: (self) => {
+                  partProgress.set(key, self.progress);
+                  publish();
+                },
+              },
+            });
+            build(tl);
+          });
         });
       };
 
-      const buildStage = (sectionId: string, build: (tl: gsap.core.Timeline) => void) => {
-        const trigger = document.getElementById(sectionId);
-        if (!trigger) return;
-        const tl = gsap.timeline({
-          scrollTrigger: {
-            trigger,
-            start: B.stageStart,
-            end: B.stageEnd,
-            scrub: true,
-          },
+      // Window hand-off: the survey plot fades out first, then the window slides in from the
+      // right edge (from the top on phones), so no moving edge ever cuts the drawn plot.
+      void inOwnTask(() => {
+        if (cancelled) return;
+        context.add(() => {
+          gsap.set(root, { clearProps: 'transform' });
+          const tl = gsap.timeline({
+            scrollTrigger: {
+              trigger: root,
+              start: () => sheetTop(aboutSheet()) - vh(),
+              end: () => sheetTop(aboutSheet()),
+              scrub: true,
+              invalidateOnRefresh: true,
+              // The header takes its window colours only once the window has fully arrived
+              onUpdate: (self) => markWindowIn(self.progress >= 0.98),
+              onRefresh: (self) => markWindowIn(self.progress >= 0.98),
+            },
+          });
+          tl.to(
+            document.querySelector('.hero-plot-container'),
+            { opacity: 0, duration: B.plotFadeShare, ease: 'none' },
+            0,
+          ).fromTo(
+            root,
+            phone ? { yPercent: -100 } : { xPercent: 100 },
+            { xPercent: 0, yPercent: 0, duration: 1 - B.plotFadeShare, ease: 'none' },
+            B.plotFadeShare,
+          );
+          root.dataset.sync = 'true';
         });
-        build(tl);
-      };
+      });
 
-      // Stage 2: Foundation — excavation, footings, plinth, ground slab
-      scrubStage('foundation', (tl) => {
+      // Stage 2: Foundation (About): excavation, footings, plinth, ground slab, site set-out
+      scrubPart('foundation:0', foundationRange, (tl) => {
         tl.fromTo(
           all('.b-pit'),
           { scaleY: 0, transformOrigin: TOP_ORIGIN },
@@ -200,66 +389,95 @@ export function Building({ className = '' }: BuildingProps) {
         );
       });
 
-      // Stage 3: Structure — level by level: columns and core, then slab and beam
-      scrubStage('structure', (tl) => {
-        STOREYS.forEach((s) => {
-          const at = s * B.levelStagger;
-          tl.fromTo(
-            all(`.b-level[data-level="${s}"] .b-col, .b-level[data-level="${s}"] .b-core`),
-            { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
-            { scaleY: 1, duration: B.levelDuration, ease: B.strokeEase },
-            at,
-          ).fromTo(
-            all(`.b-level[data-level="${s}"] .b-slab, .b-level[data-level="${s}"] .b-beam`),
-            { scaleX: 0, transformOrigin: LEFT_ORIGIN },
-            { scaleX: 1, duration: B.levelDuration, ease: B.strokeEase },
-            at + B.levelDuration * 0.6,
-          );
-        });
-      });
-
-      // Stage 4: Envelope — walls rise storey by storey, openings, parapet, backfill
-      scrubStage('envelope', (tl) => {
-        STOREYS.forEach((s) => {
-          const at = s * B.wallStagger;
-          tl.fromTo(
-            all(`.b-wall[data-storey="${s}"]`),
-            { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
-            { scaleY: 1, duration: B.wallDuration, ease: B.strokeEase },
-            at,
-          ).fromTo(
-            all(`.b-opening[data-storey="${s}"]`),
-            { opacity: 0 },
-            { opacity: 1, duration: B.wallDuration, ease: B.fillEase },
-            at + B.wallDuration,
-          );
-        });
-        staggered(
-          tl,
-          all('.b-parapet'),
-          { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
-          { scaleY: 1, duration: B.wallDuration, ease: B.strokeEase },
-          STOREY_COUNT * B.wallStagger + B.wallDuration,
-          B.wallStagger,
-        );
-        tl.to(all('.b-pit'), { fill: raised, duration: B.wallDuration, ease: B.fillEase }, 0);
-        tl.to(all('.b-string'), { opacity: 0, duration: B.wallDuration, ease: B.fillEase }, 0);
-      });
-
-      // Stage 5: Fit-out — frames, mullions, doors, stair flights, railings
-      scrubStage('fitout', (tl) => {
-        staggered(
-          tl,
-          all('.b-fit'),
-          { opacity: 0 },
-          { opacity: 1, duration: B.detailDuration, ease: B.fillEase },
-          0,
-          B.detailStagger,
+      // Stage 3: Structure (process steps 1 and 2): two storeys per step, columns and core,
+      // then beams and slab
+      const storeyPairs = [STOREYS.slice(0, 2), STOREYS.slice(2)];
+      storeyPairs.forEach((levels, part) => {
+        scrubPart(
+          `structure:${part}`,
+          () => stepRanges()[part] ?? foundationRange(),
+          (tl) => {
+            levels.forEach((s, i) => {
+              const at = i * B.levelStagger;
+              tl.fromTo(
+                all(`.b-level[data-level="${s}"] .b-col, .b-level[data-level="${s}"] .b-core`),
+                { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
+                { scaleY: 1, duration: B.levelDuration, ease: B.strokeEase },
+                at,
+              ).fromTo(
+                all(`.b-level[data-level="${s}"] .b-slab, .b-level[data-level="${s}"] .b-beam`),
+                { scaleX: 0, transformOrigin: LEFT_ORIGIN },
+                { scaleX: 1, duration: B.levelDuration, ease: B.strokeEase },
+                at + B.levelDuration * 0.6,
+              );
+            });
+          },
         );
       });
 
-      // Stage 6: Completion — every window lit (flat amber), name plate, dimensions
-      scrubStage('completion', (tl) => {
+      // Stage 4: Envelope (process steps 3 and 4): walls rise two storeys per step; the last
+      // step adds the parapet, backfills the excavation and takes down the profile string
+      storeyPairs.forEach((levels, part) => {
+        scrubPart(
+          `envelope:${part}`,
+          () => stepRanges()[2 + part] ?? foundationRange(),
+          (tl) => {
+            levels.forEach((s, i) => {
+              const at = i * B.wallStagger;
+              tl.fromTo(
+                all(`.b-wall[data-storey="${s}"]`),
+                { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
+                { scaleY: 1, duration: B.wallDuration, ease: B.strokeEase },
+                at,
+              ).fromTo(
+                all(`.b-opening[data-storey="${s}"]`),
+                { opacity: 0 },
+                { opacity: 1, duration: B.wallDuration, ease: B.fillEase },
+                at + B.wallDuration,
+              );
+            });
+            if (part === 1) {
+              staggered(
+                tl,
+                all('.b-parapet'),
+                { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
+                { scaleY: 1, duration: B.wallDuration, ease: B.strokeEase },
+                levels.length * B.wallStagger + B.wallDuration,
+                B.wallStagger,
+              );
+              tl.to(all('.b-pit'), { fill: raised, duration: B.wallDuration, ease: B.fillEase }, 0);
+              tl.to(
+                all('.b-string'),
+                { opacity: 0, duration: B.wallDuration, ease: B.fillEase },
+                0,
+              );
+            }
+          },
+        );
+      });
+
+      // Stage 5: Fit-out (process steps 5 and 6): window frames and railings, then entrance,
+      // canopy and stair
+      (['a', 'b'] as const).forEach((fit, part) => {
+        scrubPart(
+          `fitout:${part}`,
+          () => stepRanges()[4 + part] ?? foundationRange(),
+          (tl) => {
+            staggered(
+              tl,
+              all(`.b-fit[data-fit="${fit}"]`),
+              { opacity: 0 },
+              { opacity: 1, duration: B.detailDuration, ease: B.fillEase },
+              0,
+              B.detailStagger,
+            );
+          },
+        );
+      });
+
+      // Stage 6: Completion (Work delivered): every window lit (flat amber), name plate,
+      // dimensions
+      scrubPart('completion:0', completionRange, (tl) => {
         // Each window switches on as one flat amber rectangle; never a blended or translucent tint
         all('.b-pane').forEach((pane, i) => {
           tl.fromTo(
@@ -299,7 +517,7 @@ export function Building({ className = '' }: BuildingProps) {
         cancelled = true;
       };
     },
-    { scope: containerRef, dependencies: [mounted, reducedMotion] },
+    { scope: containerRef, dependencies: [mounted, reducedMotion, phone] },
   );
 
   if (!mounted) return null;
@@ -313,8 +531,9 @@ export function Building({ className = '' }: BuildingProps) {
     <aside
       ref={containerRef}
       className={`building-site-window ${isVisible ? 'is-visible' : ''} ${className}`.trim()}
-      data-stage={activeStage}
+      data-stage={reducedMotion ? staticStage : undefined}
       data-static={reducedMotion ? 'true' : undefined}
+      data-preview={previewVisible ? 'true' : 'false'}
       aria-hidden="true"
     >
       <svg
@@ -511,7 +730,7 @@ export function Building({ className = '' }: BuildingProps) {
         {/* STAGE 5: FIT-OUT */}
         <g id="stage-fitout" className="stage-group">
           {WINDOWS.map((w) => (
-            <g key={`f${w.id}`} className="b-fit">
+            <g key={`f${w.id}`} className="b-fit" data-fit="a">
               <rect
                 className="b-pane"
                 x={w.x + PANE_INSET}
@@ -530,7 +749,7 @@ export function Building({ className = '' }: BuildingProps) {
               <line className="b-mullion" x1={w.x} y1={w.y + 20} x2={w.x + w.width} y2={w.y + 20} />
             </g>
           ))}
-          <g className="b-fit">
+          <g className="b-fit" data-fit="b">
             <rect
               className="b-frame"
               x={ENTRANCE.x}
@@ -560,7 +779,7 @@ export function Building({ className = '' }: BuildingProps) {
               height={CANOPY.height}
             />
           </g>
-          <g className="b-fit">
+          <g className="b-fit" data-fit="b">
             <rect
               className="b-opening b-slit"
               x={CORE_SLIT.x}
@@ -571,7 +790,7 @@ export function Building({ className = '' }: BuildingProps) {
             <polyline className="b-stair" points={STAIR_POINTS} />
           </g>
           {RAILINGS.map((r) => (
-            <path key={r.id} className="b-fit b-rail" d={r.d} />
+            <path key={r.id} className="b-fit b-rail" data-fit="a" d={r.d} />
           ))}
         </g>
 
@@ -653,6 +872,9 @@ export function Building({ className = '' }: BuildingProps) {
           </text>
         </g>
       </svg>
+      <div className="building-preview" aria-hidden="true">
+        {shownSlug && <ProjectPreview slug={shownSlug} />}
+      </div>
     </aside>
   );
 }

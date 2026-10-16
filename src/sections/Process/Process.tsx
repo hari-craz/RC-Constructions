@@ -1,12 +1,12 @@
 import { useRef } from 'react';
 import { Sheet } from '../../components/SheetStack';
 import { PROCESS_CONTENT, type ProcessStep } from '../../content/process';
-import { FITOUT_STAGE } from '../../data/stages';
+import { PROCESS_SECTION } from '../../data/stages';
 import { useScroll } from '../../hooks/useScroll';
 import { gsap, useGSAP } from '../../lib/gsap';
 import './Process.css';
 
-const stage = FITOUT_STAGE;
+const stage = PROCESS_SECTION;
 const content = PROCESS_CONTENT;
 
 export function Process() {

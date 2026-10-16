@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 test.describe('Phase 7B — Projects and Process Real Content', () => {
-  test('renders Projects register with 6 rows and updates preview slot on activation without layout shift', async ({
+  test('renders Projects register with 6 rows and marks the active row without layout shift', async ({
     page,
   }) => {
     const consoleErrors: string[] = [];
@@ -17,38 +17,35 @@ test.describe('Phase 7B — Projects and Process Real Content', () => {
     const title = page.getByRole('heading', { level: 2, name: /^selected projects$/i });
     await expect(title).toBeVisible();
 
-    // Verify preview slot
-    const previewSlot = page.locator('.projects-preview-slot');
-    await expect(previewSlot).toBeVisible();
-
     // Verify six project rows
     const rows = page.locator('.projects-row-item');
     await expect(rows).toHaveCount(6);
 
-    // Check first project is active by default
-    await expect(rows.first()).toHaveClass(/is-active/);
-    await expect(previewSlot).toHaveAttribute('aria-label', /South Enclave Residences/);
-
-    // Record preview slot bounding box
-    const initialBox = await previewSlot.boundingBox();
+    // Phase 14: no row is active until one is hovered, focused or tapped (the window shows the
+    // finished building); this replaces the old "first project active by default" behaviour
+    await expect(page.locator('.projects-row-btn[aria-current="true"]')).toHaveCount(0);
+    const initialBoxes = await rows.evaluateAll((els) =>
+      els.map((e) => e.getBoundingClientRect().height),
+    );
 
     // Focus row 2 via keyboard
     const row2Btn = rows.nth(1).locator('.projects-row-btn');
     await row2Btn.focus();
     await expect(row2Btn).toBeFocused();
     await expect(rows.nth(1)).toHaveClass(/is-active/);
-    await expect(previewSlot).toHaveAttribute('aria-label', /Apex Commercial Chambers/);
+    await expect(row2Btn).toHaveAttribute('aria-current', 'true');
 
-    // Check no layout shift on preview slot
-    const updatedBox = await previewSlot.boundingBox();
-    expect(updatedBox?.width).toBeCloseTo(initialBox?.width ?? 0, 0);
-    expect(updatedBox?.height).toBeCloseTo(initialBox?.height ?? 0, 0);
+    // Marking a row never changes any row height
+    const updatedBoxes = await rows.evaluateAll((els) =>
+      els.map((e) => e.getBoundingClientRect().height),
+    );
+    expect(updatedBoxes).toEqual(initialBoxes);
 
-    // Check click / tap activation on row 3
+    // Check click / tap activation on row 3 (opens the drawer, the row stays marked)
     const row3Btn = rows.nth(2).locator('.projects-row-btn');
     await row3Btn.click();
     await expect(rows.nth(2)).toHaveClass(/is-active/);
-    await expect(previewSlot).toHaveAttribute('aria-label', /Corridor Logistics Hub/);
+    await expect(page.getByRole('dialog')).toBeVisible();
 
     expect(consoleErrors).toEqual([]);
   });

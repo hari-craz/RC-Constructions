@@ -1,3 +1,4 @@
+import { ProjectPreviewProvider } from './app/ProjectPreviewContext';
 import { ScrollProvider } from './app/ScrollProvider';
 import { Analytics } from './components/Analytics';
 import { Building } from './components/Building';
@@ -22,23 +23,25 @@ import './App.css';
 export function App() {
   return (
     <ScrollProvider>
-      <LoadingLine />
-      <SurveyCursor />
-      <Nav />
-      <Building />
-      <main id="main">
-        <SheetStack>
-          <Hero />
-          <About />
-          <Services />
-          <Projects />
-          <Process />
-          <Completion />
-          <Founder />
-          <Contact />
-        </SheetStack>
-      </main>
-      <Analytics />
+      <ProjectPreviewProvider>
+        <LoadingLine />
+        <SurveyCursor />
+        <Nav />
+        <Building />
+        <main id="main">
+          <SheetStack>
+            <Hero />
+            <About />
+            <Process />
+            <Completion />
+            <Services />
+            <Projects />
+            <Founder />
+            <Contact />
+          </SheetStack>
+        </main>
+        <Analytics />
+      </ProjectPreviewProvider>
     </ScrollProvider>
   );
 }

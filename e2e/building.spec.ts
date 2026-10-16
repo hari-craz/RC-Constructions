@@ -33,28 +33,21 @@ test.describe('Phase 6 — Evolving Building Scroll Construction', () => {
     const foundation = page.locator('#foundation');
     await foundation.scrollIntoViewIfNeeded();
     await page.waitForTimeout(400);
-    await expect(siteWindow).toHaveAttribute('data-stage', 'foundation');
+    await expect(siteWindow).toHaveAttribute('data-stage', /foundation|structure/);
 
-    // 3. Scroll to Structure — record scrollY for reverse test
-    const structure = page.locator('#structure');
-    await structure.scrollIntoViewIfNeeded();
+    // 3. Process (id fitout) now draws structure, envelope and fit-out in parts, step by step
+    const steps = page.locator('#fitout .process-step-item');
+    await steps.first().scrollIntoViewIfNeeded();
     await page.waitForTimeout(400);
-    await expect(siteWindow).toHaveAttribute('data-stage', 'structure');
-    const structureScrollY = await page.evaluate(() => window.scrollY);
+    await expect(siteWindow).toHaveAttribute('data-stage', /foundation|structure/);
+    const processScrollY = await page.evaluate(() => window.scrollY);
 
-    // 4. Scroll to Envelope
-    const envelope = page.locator('#envelope');
-    await envelope.scrollIntoViewIfNeeded();
+    // 4. The last step is the end of the fit-out
+    await steps.last().scrollIntoViewIfNeeded();
     await page.waitForTimeout(400);
-    await expect(siteWindow).toHaveAttribute('data-stage', 'envelope');
+    await expect(siteWindow).toHaveAttribute('data-stage', /fitout|completion/);
 
-    // 5. Scroll to Fit-out
-    const fitout = page.locator('#fitout');
-    await fitout.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(400);
-    await expect(siteWindow).toHaveAttribute('data-stage', 'fitout');
-
-    // 6. Scroll to Completion
+    // 5. Scroll to Work delivered (id completion)
     const completion = page.locator('#completion');
     await completion.scrollIntoViewIfNeeded();
     await page.waitForTimeout(400);
@@ -66,7 +59,7 @@ test.describe('Phase 6 — Evolving Building Scroll Construction', () => {
     const dimensionText = page.locator('.b-dim-label');
     await expect(dimensionText).toHaveText(['15.40 m', '17.40 m']);
 
-    // 7. Reverse Scroll: Scroll back to Structure using lenis.scrollTo with recorded scroll position.
+    // 7. Reverse scroll: back to the first Process step using lenis.scrollTo with recorded scroll position.
     await page.evaluate((targetY) => {
       const lenis = (
         window as unknown as {
@@ -80,9 +73,9 @@ test.describe('Phase 6 — Evolving Building Scroll Construction', () => {
       } else {
         window.scrollTo(0, targetY);
       }
-    }, structureScrollY);
+    }, processScrollY);
     await page.waitForTimeout(800);
-    await expect(siteWindow).toHaveAttribute('data-stage', 'structure');
+    await expect(siteWindow).toHaveAttribute('data-stage', /foundation|structure/);
 
     // 8. Reversible un-build: Scroll back to Hero
     await page.evaluate(() => {
@@ -122,8 +115,8 @@ test.describe('Phase 6 — Evolving Building Scroll Construction', () => {
     const heroAxe = await new AxeBuilder({ page }).analyze();
     expect(heroAxe.violations).toEqual([]);
 
-    // Scroll to Structure and scan
-    const structure = page.locator('#structure');
+    // Scroll to Process and scan
+    const structure = page.locator('#fitout');
     await structure.scrollIntoViewIfNeeded();
     await page.waitForTimeout(400);
     const structureAxe = await new AxeBuilder({ page }).analyze();

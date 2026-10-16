@@ -1,0 +1,84 @@
+/* Project drawings: same line system as the building, on the constant window surface */
+.pv-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+
+.pv-svg :is(rect, line, path, circle) {
+  vector-effect: non-scaling-stroke;
+}
+
+.pv-soil {
+  fill: var(--color-surface-raised);
+}
+
+.pv-ground {
+  stroke: var(--color-limewash);
+  stroke-width: 3px;
+}
+
+/* Heavy section cut */
+.pv-cut {
+  fill: var(--color-concrete);
+  stroke: var(--color-limewash);
+  stroke-width: 3px;
+}
+
+/* Medium members and lines */
+.pv-member {
+  fill: var(--color-concrete);
+  stroke: var(--color-steel);
+  stroke-width: 2px;
+}
+
+.pv-line {
+  fill: none;
+  stroke: var(--color-steel);
+  stroke-width: 2px;
+}
+
+.pv-edge {
+  fill: none;
+  stroke: var(--color-limewash);
+  stroke-width: 2px;
+}
+
+.pv-wall {
+  fill: var(--color-limewash);
+  stroke: var(--color-steel);
+  stroke-width: 1px;
+}
+
+.pv-open,
+.pv-void,
+.pv-pipe {
+  fill: var(--color-formwork-dark);
+  stroke: var(--color-steel);
+  stroke-width: 2px;
+}
+
+.pv-glass {
+  fill: var(--color-surface-raised);
+}
+
+/* Hairline */
+.pv-hair {
+  fill: none;
+  stroke: var(--color-steel);
+  stroke-width: 1px;
+}
+
+.pv-label {
+  font-family: var(--font-body);
+  font-size: 24px;
+  fill: var(--color-limewash);
+}
+
+/* Too small to read in the phone band, where the list above already names the project */
+@media (width < 768px) {
+  .pv-label {
+    display: none;
+  }
+}

@@ -4,6 +4,7 @@ import { type ProjectItem, PROJECTS_CONTENT } from '../../content/projects';
 import { useScroll } from '../../hooks/useScroll';
 import { useScrollLock } from '../../hooks/useScrollLock';
 import { loadMotion } from '../../lib/gsap';
+import '../../styles/photo-slot.css';
 import { MOTION } from '../../lib/motion';
 import './ProjectOverlay.css';
 
@@ -277,13 +278,18 @@ export function ProjectOverlay({
               {project.gallery.map((slot) => (
                 <figure key={slot.id} className="project-overlay-gallery-slot">
                   <div
-                    className="gallery-slot-block"
+                    className="gallery-slot-block photo-slot"
                     role="img"
-                    aria-label={`Drawing to come: ${slot.caption}`}
+                    aria-label={`Site photo to come: ${slot.caption}`}
                   >
-                    <span className="gallery-slot-placeholder-mark">Drawing to come</span>
+                    <span className="photo-crop photo-crop-tl" />
+                    <span className="photo-crop photo-crop-tr" />
+                    <span className="photo-crop photo-crop-bl" />
+                    <span className="photo-crop photo-crop-br" />
+                    <span className="gallery-slot-placeholder-mark photo-slot-note">
+                      {slot.caption}
+                    </span>
                   </div>
-                  <figcaption className="gallery-slot-caption">{slot.caption}</figcaption>
                 </figure>
               ))}
             </div>

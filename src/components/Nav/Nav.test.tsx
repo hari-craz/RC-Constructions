@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { fireEvent, render, screen, within } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import { ScrollContext, type ScrollContextValue } from '../../app/ScrollContext';
 import { Nav } from './Nav';
 
@@ -50,5 +50,43 @@ describe('Nav', () => {
     const header = screen.getByRole('banner');
     expect(header).toHaveAttribute('data-tone', 'light');
     expect(header).toHaveAttribute('data-window', 'on');
+  });
+  it('lists the sections in story order and marks the current one', () => {
+    const scrollTo = vi.fn();
+    render(
+      <ScrollContext.Provider value={{ ...mockScroll, activeSection: 'fitout', scrollTo }}>
+        <Nav />
+      </ScrollContext.Provider>,
+    );
+
+    const sections = screen.getByRole('navigation', { name: 'Sections' });
+    const links = within(sections).getAllByRole('link');
+    expect(links.map((l) => l.textContent)).toEqual([
+      'Principles',
+      'Process',
+      'Track record',
+      'Services',
+      'Projects',
+      'Contact',
+    ]);
+    expect(links.map((l) => l.getAttribute('href'))).toEqual([
+      '#foundation',
+      '#fitout',
+      '#completion',
+      '#structure',
+      '#envelope',
+      '#contact',
+    ]);
+    const current = links.filter((l) => l.getAttribute('aria-current') === 'true');
+    expect(current.map((l) => l.textContent)).toEqual(['Process']);
+
+    fireEvent.click(links[3] as HTMLElement);
+    expect(scrollTo).toHaveBeenCalledWith('#structure');
+
+    // The compact button names the current section
+    expect(screen.getByRole('button', { name: 'Process' })).toHaveAttribute(
+      'aria-haspopup',
+      'dialog',
+    );
   });
 });

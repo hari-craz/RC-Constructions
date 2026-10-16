@@ -29,6 +29,8 @@ function watch(page: Page, browserName = 'chromium') {
     // Playwright's WebKit build on Windows reports the (used) font preloads as unused; no other engine does
     if (browserName === 'webkit' && /preloaded using link preload but not used/.test(m.text()))
       return;
+    // Firefox notes that the site window slides in with the scroll (a scroll-linked effect, by design)
+    if (browserName === 'firefox' && /scroll-linked positioning effect/.test(m.text())) return;
     if (m.type() === 'error' || m.type() === 'warning')
       problems.push(`console ${m.type()}: ${m.text()}`);
   });
@@ -168,9 +170,7 @@ test.describe('Phase 13 — copy', () => {
         if (!text || !el || el.closest('script, style, noscript, .sr-only')) continue;
         out.push({
           text,
-          inSlot: Boolean(
-            el.closest('.projects-preview-slot, .gallery-slot-block, .founder-portrait-note'),
-          ),
+          inSlot: Boolean(el.closest('.gallery-slot-block, .founder-portrait-note')),
         });
       }
       return out;

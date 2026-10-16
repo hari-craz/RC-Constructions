@@ -58,7 +58,7 @@ test.describe('Phase 12 — visible defects', () => {
     await page.waitForTimeout(1500);
     const marks = await page.locator('.gallery-slot-placeholder-mark').allTextContents();
     expect(marks.length).toBeGreaterThan(0);
-    for (const m of marks) expect(m).toBe('Drawing to come');
+    for (const m of marks) expect(m).toMatch(/^[A-Z][a-z]/); // one project-specific sentence-case line
   });
 
   test('founder portrait slot is a quiet block with one sentence and no img', async ({ page }) => {

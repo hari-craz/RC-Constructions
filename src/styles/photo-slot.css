@@ -1,0 +1,55 @@
+/*
+ * Quiet photo placeholder: a thin outline frame with four corner crop marks and one
+ * sentence-case line. Used by the project gallery and the founder portrait.
+ */
+.photo-slot {
+  position: relative;
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
+  box-sizing: border-box;
+}
+
+.photo-crop {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 0 solid currentcolor;
+  pointer-events: none;
+}
+
+.photo-crop-tl {
+  top: 8px;
+  left: 8px;
+  border-top-width: 2px;
+  border-left-width: 2px;
+}
+
+.photo-crop-tr {
+  top: 8px;
+  right: 8px;
+  border-top-width: 2px;
+  border-right-width: 2px;
+}
+
+.photo-crop-bl {
+  bottom: 8px;
+  left: 8px;
+  border-bottom-width: 2px;
+  border-left-width: 2px;
+}
+
+.photo-crop-br {
+  right: 8px;
+  bottom: 8px;
+  border-right-width: 2px;
+  border-bottom-width: 2px;
+}
+
+.photo-slot-note {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-label);
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
+  color: var(--color-ink-muted-light);
+}

@@ -1,4 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { useProjectPreview } from '../../app/ProjectPreviewContext';
+import { prefetchProjectDrawings } from '../../components/ProjectPreview';
 import { Sheet } from '../../components/SheetStack';
 import {
   getProjectById,
@@ -6,7 +8,8 @@ import {
   PROJECTS_CONTENT,
   type ProjectItem,
 } from '../../content/projects';
-import { ENVELOPE_STAGE } from '../../data/stages';
+import { PROJECTS_SECTION } from '../../data/stages';
+import { useActiveSection } from '../../hooks/useActiveSection';
 import { useScroll } from '../../hooks/useScroll';
 import { gsap, useGSAP } from '../../lib/gsap';
 import { parseProjectHash } from '../../lib/slug';
@@ -21,7 +24,7 @@ const prefetchOverlay = () => {
   import('../../components/ProjectOverlay');
 };
 
-const stage = ENVELOPE_STAGE;
+const stage = PROJECTS_SECTION;
 const content = PROJECTS_CONTENT;
 
 interface ProjectRowProps {
@@ -41,7 +44,8 @@ function ProjectRow({ project, isActive, onActivate, onOpen }: ProjectRowProps) 
       <button
         type="button"
         className="projects-row-btn"
-        aria-expanded={isActive}
+        aria-current={isActive ? 'true' : undefined}
+        aria-haspopup="dialog"
         aria-label={`Project ${project.number}: ${project.name}, ${project.type}, ${project.location}. Click to open detail sheet.`}
         onClick={(e) => {
           onActivate(project.id);
@@ -50,10 +54,12 @@ function ProjectRow({ project, isActive, onActivate, onOpen }: ProjectRowProps) 
         onFocus={() => {
           onActivate(project.id);
           prefetchOverlay();
+          prefetchProjectDrawings();
         }}
         onMouseEnter={() => {
           onActivate(project.id);
           prefetchOverlay();
+          prefetchProjectDrawings();
         }}
       >
         <div className="projects-row-top">
@@ -82,15 +88,42 @@ export function Projects() {
   const registerRef = useRef<HTMLUListElement | null>(null);
   const triggerRef = useRef<HTMLElement | null>(null);
 
-  const firstProject = content.projects[0];
-  const [activeProjectId, setActiveProjectId] = useState<string>(
-    firstProject ? firstProject.id : '',
-  );
+  // The active row drives the site window's preview. Nothing is active until a row is hovered,
+  // focused or tapped, so the window shows the finished building by default.
+  const { activeProjectId, setActiveProjectId } = useProjectPreview();
   const [overlayProjectId, setOverlayProjectId] = useState<string | null>(null);
   const { reducedMotion } = useScroll();
+  const activeSection = useActiveSection();
+  useEffect(() => {
+    if (activeSection !== stage.sectionId && !overlayProjectId) setActiveProjectId(null);
+  }, [activeSection, overlayProjectId, setActiveProjectId]);
 
-  const activeProject =
-    content.projects.find((p) => p.id === activeProjectId) ?? content.projects[0];
+  // Leaving the register (pointer or focus) goes back to the finished building, unless the drawer is open
+  useEffect(() => {
+    const list = registerRef.current;
+    if (!list || overlayProjectId !== null) return;
+    const release = () => {
+      if (!list.matches(':focus-within')) setActiveProjectId(null);
+    };
+    const onFocusOut = (e: FocusEvent) => {
+      if (!list.contains(e.relatedTarget as Node | null)) setActiveProjectId(null);
+    };
+    list.addEventListener('mouseleave', release);
+    list.addEventListener('focusout', onFocusOut);
+    return () => {
+      list.removeEventListener('mouseleave', release);
+      list.removeEventListener('focusout', onFocusOut);
+    };
+  }, [overlayProjectId, setActiveProjectId]);
+
+  // When the drawer's Previous and Next change the project, keep that row in view on the left
+  useEffect(() => {
+    if (!overlayProjectId) return;
+    document
+      .querySelector(`[data-project-id="${overlayProjectId}"]`)
+      ?.scrollIntoView({ block: 'nearest', behavior: reducedMotion ? 'auto' : 'smooth' });
+  }, [overlayProjectId, reducedMotion]);
+
   const overlayProject = overlayProjectId ? (getProjectById(overlayProjectId) ?? null) : null;
 
   // Sync state with URL hash (#project-<slug>) on direct visit, reload, or back/forward
@@ -135,7 +168,7 @@ export function Projects() {
       window.removeEventListener('hashchange', handleHashChange);
       window.removeEventListener('popstate', handleHashChange);
     };
-  }, []);
+  }, [setActiveProjectId]);
 
   const handleOpenOverlay = (projectId: string, triggerEl: HTMLElement) => {
     triggerRef.current = triggerEl;
@@ -215,19 +248,6 @@ export function Projects() {
             </h2>
             <p className="projects-sample-note">{content.sampleNote}</p>
           </header>
-
-          {/* Image slot reserved for the selected project's elevation; it never holds list rows */}
-          <div
-            className="projects-preview-slot"
-            role="img"
-            aria-label={
-              activeProject
-                ? `Elevation drawing slot for ${activeProject.name}, drawing to come`
-                : 'Elevation drawing slot, drawing to come'
-            }
-          >
-            <span className="projects-preview-badge">Elevation drawing to come, 1200 by 675</span>
-          </div>
 
           <ul ref={registerRef} className="projects-register" aria-label="Selected Projects Index">
             {content.projects.map((project) => (

@@ -79,6 +79,7 @@
   --text-column-max: 40rem;
   --wide-content-max: 75rem;
   --site-window-width: calc(100% * 7 / 12);
+  --text-zone-width: calc(100% * 5 / 12);
 
   /* Left edge of the text column: centred in grid columns 1-5, never closer than the gutter */
   --column-left: calc(

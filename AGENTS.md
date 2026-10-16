@@ -11,6 +11,10 @@ Company facts only in `src/content/company.ts` (null hides the element; never in
 
 GSAP, ScrollTrigger and Lenis load lazily through `src/lib/gsap.ts` after the first input; first paint is CSS only. Measure the production build with `node scripts/lh-median.mjs mobile 5` (see `docs/PERFORMANCE.md`). Targets: mobile performance >= 90, LCP <= 2.5 s, TBT <= 200 ms, CLS <= 0.01.
 
+## Story Sync Law
+
+Section order, the stage map and the sync rules live in `docs/BUILDING.md` section 3 and `src/data/stages.ts`. Never reorder sections or change an id without updating both and `e2e/phase-14.spec.ts`. The building must never finish a part before its text is centred, and reverse scrolling must un-build exactly.
+
 ## The Three Rules That Matter Most
 
 1. **Never Start Unrequested Phases**: Only implement the current, explicitly requested phase. Do not build forward into upcoming milestones.

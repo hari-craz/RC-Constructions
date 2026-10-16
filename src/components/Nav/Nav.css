@@ -28,7 +28,7 @@
   --nav-ink: var(--color-limewash);
 }
 
-.nav-bar[data-window='on'] {
+:root[data-window-in='true'] .nav-bar[data-window='on'] {
   --nav-window-bg: var(--color-formwork-dark);
   --nav-window-ink: var(--color-limewash);
 }
@@ -48,6 +48,7 @@
 .nav-zone-window {
   flex: 1;
   justify-content: flex-end;
+  gap: var(--space-5);
   padding-right: var(--page-gutter);
   background-color: var(--nav-window-bg);
   color: var(--nav-window-ink);
@@ -114,7 +115,7 @@
 
 /* Mobile and tablet: the whole header sits over the fixed band when it is showing */
 @media (width < 1024px) {
-  .nav-bar[data-window='on'] {
+  :root[data-window-in='true'] .nav-bar[data-window='on'] {
     --nav-bg: var(--color-formwork-dark);
     --nav-ink: var(--color-limewash);
   }
@@ -125,5 +126,144 @@
 
   .nav-zone-window {
     flex: 0 0 auto;
+  }
+}
+
+/*
+ * Section indicator. From 1280 px: sentence-case links, the current one underlined 2 px in ink.
+ * Below: a button naming the current section that opens a full-width list in a dialog.
+ */
+.nav-sections {
+  display: none;
+}
+
+.nav-sections-list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-sections-link,
+.nav-sections-toggle {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.nav-sections-link[aria-current='true'] {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.45em;
+}
+
+.nav-sections-link:hover,
+.nav-sections-toggle:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.45em;
+}
+
+.nav-sections-link[aria-current='true']:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* The compact trigger reads as a button: a hairline frame around the current section name */
+.nav-bar .nav-sections-toggle {
+  padding: 0 var(--space-4);
+  border: 1px solid currentcolor;
+}
+
+/* Full-width list, always formwork-dark with light ink whatever sheet is beneath */
+.nav-sections-dialog {
+  position: fixed;
+  inset: var(--nav-height) 0 auto;
+  width: 100%;
+  max-width: none;
+  max-height: calc(100dvh - var(--nav-height));
+  margin: 0;
+  padding: var(--space-4) var(--page-gutter) var(--space-5);
+  overflow-y: auto;
+  color: var(--color-limewash);
+  background-color: var(--color-formwork-dark);
+  border: 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.nav-sections-dialog::backdrop {
+  background-color: transparent;
+}
+
+.nav-sections-dialog-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-sections-dialog-link {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+  font-family: var(--font-body);
+  font-size: 1.25rem;
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--color-line-subtle);
+}
+
+.nav-sections-dialog-link[aria-current='true'] {
+  border-left: 3px solid currentcolor;
+  padding-left: var(--space-3);
+}
+
+.nav-sections-dialog-close {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: var(--space-4);
+  padding: 0 var(--space-4);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: inherit;
+  background: none;
+  border: 1px solid currentcolor;
+  cursor: pointer;
+}
+
+.nav-sections-link:focus-visible,
+.nav-sections-toggle:focus-visible,
+.nav-sections-dialog-link:focus-visible,
+.nav-sections-dialog-close:focus-visible {
+  outline: 2px solid currentcolor;
+  outline-offset: 2px;
+}
+
+@media (width >= 1280px) {
+  .nav-sections {
+    display: block;
+  }
+
+  .nav-sections-toggle {
+    display: none;
+  }
+}
+
+/* On the smallest phones the mark alone stands for the logo so the header never collides */
+@media (width < 480px) {
+  .nav-bar .logo-wordmark {
+    display: none;
   }
 }
