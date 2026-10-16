@@ -434,6 +434,10 @@ export function Contact() {
               © {new Date().getFullYear()} {CONTACT_CONTENT.footer.companyName}
             </span>
             <span className="contact-footer-credit">{CONTACT_CONTENT.footer.builtBy}</span>
+            <nav className="contact-footer-legal" aria-label="Legal">
+              <a href="/privacy">Privacy</a>
+              <a href="/terms">Terms</a>
+            </nav>
             <a href="#hero" className="contact-footer-top" onClick={handleBackToTop}>
               {CONTACT_CONTENT.footer.backToTopLabel}
             </a>

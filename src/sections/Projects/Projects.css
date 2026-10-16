@@ -9,25 +9,36 @@
   color: var(--color-ink);
 }
 
-/* Image slot: a fixed 16:9 frame. It holds only the placeholder note, never register rows. */
+/* Summary panel: project facts for the active row, never register rows. */
 .projects-preview-slot {
   display: grid;
-  place-items: center;
+  align-content: center;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  min-height: 12rem;
   background-color: var(--color-concrete);
   border: 1px solid var(--color-line);
   box-sizing: border-box;
   padding: var(--space-4);
 }
 
-.projects-preview-badge {
+.projects-preview-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: var(--space-3) var(--space-4);
+  margin: 0;
+}
+
+.projects-preview-facts dt {
   font-family: var(--font-body);
   font-size: var(--font-size-label);
+  color: var(--color-ink-muted);
+}
+
+.projects-preview-facts dd {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
   font-weight: 600;
-  letter-spacing: var(--tracking-normal);
-  text-align: center;
-  text-transform: none;
   color: var(--color-ink);
 }
 

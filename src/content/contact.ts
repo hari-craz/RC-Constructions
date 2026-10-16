@@ -67,7 +67,7 @@ export const CONTACT_CONTENT: ContactContent = {
     },
   ],
   privacyNotice:
-    'We use your details only to respond to this construction enquiry. We never share contact records.',
+    'We use your details only to respond to this construction enquiry. We do not sell or share your details with third parties for marketing.',
   footer: {
     companyName: 'RC Constructions',
     builtBy: 'Built by UnitaryX',

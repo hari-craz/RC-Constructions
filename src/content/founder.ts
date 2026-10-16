@@ -2,7 +2,7 @@
  * Phase 7C: Founder section content data model.
  *
  * Editorial monograph profile of Gokul, Founder.
- * All details and credentials are placeholders ("20XX", "Registered body to come").
+ * Credentials that are not yet verified are deliberately omitted rather than shown as placeholders.
  */
 
 interface FounderFact {
@@ -18,8 +18,6 @@ export interface FounderContent {
   bioParagraphs: readonly [string, string, string];
   pullQuote: string;
   facts: readonly [FounderFact, FounderFact, FounderFact];
-  portraitAlt: string;
-  portraitPlaceholder: string;
 }
 
 export const FOUNDER_CONTENT: FounderContent = {
@@ -27,7 +25,7 @@ export const FOUNDER_CONTENT: FounderContent = {
   name: 'Gokul', // PLACEHOLDER: Surname to be supplied
   role: 'Founder', // PLACEHOLDER: Official title
   bioParagraphs: [
-    'Gokul founded RC Constructions in 20XX after fifteen years directing commercial structural works.', // PLACEHOLDER
+    'Gokul founded RC Constructions after fifteen years directing commercial structural works.',
     'He oversees site operations directly, from initial setting out through structural completion and commissioning.',
     'The practice maintains a single-contract responsibility model on every build.',
   ],
@@ -37,7 +35,7 @@ export const FOUNDER_CONTENT: FounderContent = {
     {
       id: 'fact-experience',
       label: 'Experience',
-      value: 'Site practice since 20XX', // PLACEHOLDER
+      value: 'Fifteen years directing structural works before founding the firm',
     },
     {
       id: 'fact-sector',
@@ -46,10 +44,8 @@ export const FOUNDER_CONTENT: FounderContent = {
     },
     {
       id: 'fact-licence',
-      label: 'Accreditation',
-      value: 'Registered body to come (Licence ref 20XX)', // PLACEHOLDER
+      label: 'Registration',
+      value: 'Contractor registration details available on request',
     },
   ],
-  portraitAlt: 'Portrait of Gokul, founder of RC Constructions',
-  portraitPlaceholder: '// PLACEHOLDER: Founder portrait (1200 × 1500 WebP / JPEG)',
 };

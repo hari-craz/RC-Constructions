@@ -1,41 +1,11 @@
-import { useRef } from 'react';
 import { Sheet } from '../../components/SheetStack';
 import { FOUNDER_CONTENT } from '../../content/founder';
-import { useScroll } from '../../hooks/useScroll';
-import { gsap, useGSAP } from '../../lib/gsap';
-import { MOTION } from '../../lib/motion';
 import './Founder.css';
 
 export function Founder() {
-  const contentRef = useRef<HTMLDivElement | null>(null);
-  const portraitFrameRef = useRef<HTMLDivElement | null>(null);
-  const { reducedMotion } = useScroll();
-
-  useGSAP(
-    () => {
-      if (!portraitFrameRef.current || reducedMotion) return;
-
-      gsap.fromTo(
-        portraitFrameRef.current,
-        { clipPath: 'inset(100% 0% 0% 0%)' },
-        {
-          clipPath: 'inset(0% 0% 0% 0%)',
-          duration: MOTION.founder.revealDuration,
-          ease: MOTION.founder.ease,
-          scrollTrigger: {
-            trigger: portraitFrameRef.current,
-            start: 'top 80%',
-            once: true,
-          },
-        },
-      );
-    },
-    { scope: contentRef },
-  );
-
   return (
     <Sheet id={FOUNDER_CONTENT.sectionId} tone="concrete" className="founder-sheet">
-      <div ref={contentRef} className="sheet-wide founder-content">
+      <div className="sheet-wide founder-content">
         <header className="founder-header">
           <div className="founder-name-group">
             <h2 id={`${FOUNDER_CONTENT.sectionId}-heading`} className="founder-name">
@@ -67,31 +37,6 @@ export function Founder() {
                 </li>
               ))}
             </ul>
-          </div>
-
-          <div className="founder-portrait-col">
-            <div
-              ref={portraitFrameRef}
-              className="founder-portrait-frame"
-              data-portrait-slot="founder"
-            >
-              {/* PLACEHOLDER: Founder portrait photograph to be supplied (1200x1500 WebP/JPEG) */}
-              <picture className="founder-picture">
-                <source srcSet="/images/founder-gokul.webp" type="image/webp" />
-                <img
-                  src="/images/founder-gokul.jpg"
-                  alt={FOUNDER_CONTENT.portraitAlt}
-                  width="1200"
-                  height="1500"
-                  loading="lazy"
-                  className="founder-portrait-img"
-                />
-              </picture>
-              <div className="founder-portrait-placeholder" aria-hidden="true">
-                <span className="founder-portrait-spec">Portrait to come, 1200 by 1500</span>
-                <span className="founder-portrait-dimensions">4:5 ratio · WebP / JPEG</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>

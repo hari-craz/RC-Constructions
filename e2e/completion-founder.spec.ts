@@ -42,7 +42,7 @@ test.describe('Phase 7C — Completion Stats and Founder Real Content', () => {
     expect(consoleErrors).toEqual([]);
   });
 
-  test('renders Founder monograph section with editorial layout and reserved portrait slot', async ({
+  test('renders Founder monograph section with editorial layout without a broken portrait', async ({
     page,
   }) => {
     const consoleErrors: string[] = [];
@@ -81,17 +81,7 @@ test.describe('Phase 7C — Completion Stats and Founder Real Content', () => {
     const facts = founder.locator('.founder-fact-item');
     await expect(facts).toHaveCount(3);
 
-    // Verify Reserved Portrait Slot
-    const portraitSlot = founder.locator('[data-portrait-slot="founder"]');
-    await expect(portraitSlot).toBeVisible();
-
-    const img = portraitSlot.locator('img');
-    await expect(img).toHaveAttribute('alt', 'Portrait of Gokul, founder of RC Constructions');
-    await expect(img).toHaveAttribute('width', '1200');
-    await expect(img).toHaveAttribute('height', '1500');
-
-    const placeholderText = portraitSlot.locator('.founder-portrait-placeholder');
-    await expect(placeholderText).toContainText('Portrait to come');
+    await expect(founder.locator('img')).toHaveCount(0);
 
     expect(consoleErrors).toEqual([]);
   });

@@ -214,17 +214,38 @@ export function Projects() {
             </h2>
           </header>
 
-          {/* Image slot reserved for the selected project's elevation; it never holds list rows */}
+          {/* Summary panel for the selected project; it never holds list rows */}
           <div
             className="projects-preview-slot"
-            role="img"
+            role="group"
             aria-label={
-              activeProject
-                ? `Elevation drawing slot for ${activeProject.name}, drawing to come`
-                : 'Elevation drawing slot, drawing to come'
+              activeProject ? `Project summary for ${activeProject.name}` : 'Project summary'
             }
           >
-            <span className="projects-preview-badge">Elevation drawing to come, 1200 by 675</span>
+            {activeProject && (
+              <dl className="projects-preview-facts">
+                <div>
+                  <dt>Location</dt>
+                  <dd>{activeProject.location}</dd>
+                </div>
+                <div>
+                  <dt>Completed</dt>
+                  <dd>{activeProject.year}</dd>
+                </div>
+                <div>
+                  <dt>Size</dt>
+                  <dd>{activeProject.builtArea}</dd>
+                </div>
+                <div>
+                  <dt>Duration</dt>
+                  <dd>{activeProject.duration}</dd>
+                </div>
+                <div>
+                  <dt>Role</dt>
+                  <dd>{activeProject.role}</dd>
+                </div>
+              </dl>
+            )}
           </div>
 
           <ul ref={registerRef} className="projects-register" aria-label="Selected Projects Index">

@@ -68,13 +68,10 @@ All temporary section stubs have been completely replaced with real content as o
 
 ## 7. Phase 7C Founder Placeholders (`src/content/founder.ts`)
 
-| Key                                | Current Placeholder Value                      | Source File              | Replacement Target / Action                                                        |
-| :--------------------------------- | :--------------------------------------------- | :----------------------- | :--------------------------------------------------------------------------------- |
-| `FOUNDER_CONTENT.name`             | `"Gokul"`                                      | `src/content/founder.ts` | Full legal name and verified titles.                                               |
-| `FOUNDER_CONTENT.bioParagraphs[0]` | `"founded RC Constructions in 20XX"`           | `src/content/founder.ts` | Verified incorporation year.                                                       |
-| `FOUNDER_CONTENT.facts[0]`         | `"Site practice since 20XX"`                   | `src/content/founder.ts` | Verified career start year.                                                        |
-| `FOUNDER_CONTENT.facts[2]`         | `"Registered body to come (Licence ref 20XX)"` | `src/content/founder.ts` | Verified contractor registration body and licence serial.                          |
-| `Founder.portrait-slot`            | 1200 × 1500 px (4:5 ratio) WebP / JPEG         | `src/sections/Founder`   | Supply professional portrait photo (WebP and JPEG, 1200×1500 px, monochrome/tint). |
+| Key                     | Current Placeholder Value              | Source File              | Replacement Target / Action                                                        |
+| :---------------------- | :------------------------------------- | :----------------------- | :--------------------------------------------------------------------------------- |
+| `FOUNDER_CONTENT.name`  | `"Gokul"`                              | `src/content/founder.ts` | Full legal name and verified titles.                                               |
+| `Founder.portrait-slot` | 1200 × 1500 px (4:5 ratio) WebP / JPEG | `src/sections/Founder`   | Supply professional portrait photo (WebP and JPEG, 1200×1500 px, monochrome/tint). |
 
 ---
 
@@ -110,3 +107,9 @@ All temporary section stubs have been completely replaced with real content as o
 | Favicons & App Icons          | Architectural geometric monogram (180, 192, 512 px) | `public/`                                               | Final client company trademark icon set.                                                             |
 | JSON-LD structured data       | Schema.org `GeneralContractor` placeholder data     | `index.html`                                            | Official verified business legal name, headquarters coordinates, official telephone, and web domain. |
 | Production Domain & Canonical | `https://rc-constructions.example.com`              | `index.html`, `public/robots.txt`, `public/sitemap.xml` | Registered public primary production domain.                                                         |
+
+## Resolved in the site-hardening pass
+
+- Founder portrait slot removed (no image asset exists). Re-add a `<picture>` to `Founder.tsx` once a real photo is supplied.
+- Founding year and licence reference ("20XX", "to come") removed from copy. Add them back to `about.ts` / `founder.ts` once verified.
+- Still unverified and must be confirmed by the client: Completion stats (`completion.ts`), all project records (`projects.ts`), phone, address and email (`site.ts`).

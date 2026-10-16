@@ -231,14 +231,14 @@ describe('Founder content model', () => {
       expect(fact.label.trim()).not.toBe('');
       expect(fact.value.trim()).not.toBe('');
     });
-
-    expect(FOUNDER_CONTENT.portraitAlt).toBe('Portrait of Gokul, founder of RC Constructions');
   });
 
-  it('contains obvious placeholders and no invented specific credentials', () => {
-    expect(FOUNDER_CONTENT.bioParagraphs[0]).toContain('20XX');
-    const licenceFact = FOUNDER_CONTENT.facts.find((f) => f.id === 'fact-licence');
-    expect(licenceFact?.value).toContain('Registered body to come');
+  it('contains no unfilled year or registration placeholders', () => {
+    const text = [
+      ...FOUNDER_CONTENT.bioParagraphs,
+      ...FOUNDER_CONTENT.facts.map((f) => f.value),
+    ].join(' ');
+    expect(text).not.toMatch(/20XX|to come/i);
   });
 
   it('contains no banned marketing words and no exclamation marks', () => {

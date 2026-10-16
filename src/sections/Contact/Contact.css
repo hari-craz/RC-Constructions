@@ -344,6 +344,15 @@ a.contact-channel-value:hover {
   color: var(--color-formwork-dark);
 }
 
+.contact-footer-legal {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.contact-footer-legal a {
+  color: inherit;
+}
+
 .contact-footer-credit {
   font-family: var(--font-body);
   font-size: 0.875rem;

@@ -49,8 +49,7 @@ export const PROJECTS_CONTENT: ProjectsContent = {
         'Poured cast-in-place concrete slabs and erected load-bearing brick masonry partitions across all living quarters.',
         'Completed concealed plumbing mains, electrical conduit routing, and terrace waterproofing before the seasonal rains.',
       ],
-      outcome:
-        'Delivered eight residential units with zero structural handover defects in 14 months',
+      outcome: 'Delivered eight residential units in 14 months',
       gallery: [
         {
           id: 'gallery-res-1',
