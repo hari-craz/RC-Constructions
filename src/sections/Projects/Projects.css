@@ -14,7 +14,8 @@
   display: grid;
   align-content: center;
   width: 100%;
-  min-height: 12rem;
+  height: 15rem;
+  overflow: hidden;
   background-color: var(--color-concrete);
   border: 1px solid var(--color-line);
   box-sizing: border-box;

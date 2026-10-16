@@ -38,7 +38,7 @@ export function App() {
           <Contact />
         </SheetStack>
       </main>
-      <Analytics />
+      {import.meta.env.VITE_ENABLE_ANALYTICS === 'true' && <Analytics />}
     </ScrollProvider>
   );
 }
