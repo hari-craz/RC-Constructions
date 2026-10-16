@@ -18,8 +18,9 @@ One 12-column grid governs the page (`src/components/SheetStack/SheetStack.css`,
 
 ## 2. Drawing
 
-- ViewBox 1200 x 800, `preserveAspectRatio="xMidYMax slice"`: the ground line (y = 700) and soil run the full width of the window; the building (about 65% of the window height) is cropped intentionally, never floating.
-- Geometry lives in `src/components/Building/geometry.ts` (storeys, bays, windows, slabs, footings). Change proportions there.
+- Geometry lives in `src/components/Building/geometry.ts` (storeys, bays, windows, slabs, footings, pit, pegs). Change proportions there.
+- Four storeys on a four-bay frame, 800 units wide, stair core on the right. `preserveAspectRatio="xMidYMax meet"`; the `viewBox` is chosen in `Building.tsx` by a media query (`VIEWBOXES.desktop`, `VIEWBOXES.mobile`). The drawn building (ground slab width) is about 78% of the window width on desktop and 80% or more of the band width on phones; tests assert at least 70% (1440, 1904, 2560) and 80% (phones).
+- The ground line and soil are drawn far beyond the viewBox so they always run the full window width. Mobile band height: `--site-band-height` (`min(max(42svh, nav + 70vw), 52svh)`).
 - Solid masses: limewash walls, concrete slabs / columns / core / footings, formwork-dark openings, `#2c302b` soil and glass.
 - Line system (CSS vars on `.building-site-window`, `non-scaling-stroke`): heavy section cut 3 px (limewash), medium 2 px (steel), hairline 1 px (steel), dimension lines 1 px (amber). On mobile heavy 2.5 px, medium 1.5 px.
 - All strokes must reach 3:1 against the window surface (limewash, concrete, steel or amber only). An e2e test enforces it.
@@ -27,18 +28,18 @@ One 12-column grid governs the page (`src/components/SheetStack/SheetStack.css`,
 
 ## 3. The six stages (each complete at rest)
 
-| #   | Stage        | Anchor        | What is drawn at rest                                                                                                     |
-| --- | ------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| 1   | `survey`     | `#hero`       | Hero plan view (window hidden). Hands off to the elevation.                                                               |
-| 2   | `foundation` | `#foundation` | Excavation, four footings, pedestal stubs, tie beam, ground slab.                                                         |
-| 3   | `structure`  | `#structure`  | Four storeys, level by level: columns and stair core, then beam and slab. Roof slab last.                                 |
-| 4   | `envelope`   | `#envelope`   | Limewash walls storey by storey, window openings, parapet and coping; excavation backfilled.                              |
-| 5   | `fitout`     | `#fitout`     | Window frames and mullions, entrance doors and canopy, stair flights in the core slit, railings.                          |
-| 6   | `completion` | `#completion` | Every window lit as one flat amber rectangle, name plate, height and width dimension lines with two sentence-case labels. |
+| #   | Stage        | Anchor        | What is drawn at rest                                                                                                                                                                                  |
+| --- | ------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | `survey`     | `#hero`       | Hero plan view (window hidden). Hands off to the elevation.                                                                                                                                            |
+| 2   | `foundation` | `#foundation` | Stepped excavation (formation level -3.20 m), five footings, stubs, tie beam, ground slab, set-out pegs with profile string, level staff with marks, reinforcement cages (starter bars with stirrups). |
+| 3   | `structure`  | `#structure`  | Four storeys, level by level: columns and stair core, then beam and slab. Roof slab last.                                                                                                              |
+| 4   | `envelope`   | `#envelope`   | Limewash walls storey by storey, window openings, parapet and coping; excavation backfilled.                                                                                                           |
+| 5   | `fitout`     | `#fitout`     | Window frames and mullions, entrance doors and canopy, stair flights in the core slit, railings.                                                                                                       |
+| 6   | `completion` | `#completion` | Fifteen windows lit, each one flat amber rectangle, name plate, height and width dimension lines with two sentence-case labels.                                                                        |
 
 ## 4. Motion architecture
 
-- `Building.tsx` builds one scrubbed timeline per stage with `scrubStage(sectionId, build)`: `ScrollTrigger` `scrub: true` from `MOTION.building.stageStart` to `stageEnd`. Scrubbing makes every stage reversible and seekable by anchor.
+- The building mounts after `motionGate()` (first input or an anchor in the URL). `Building.tsx` builds one scrubbed timeline per stage, each in its own task (`inOwnTask`), with `scrubStage(sectionId, build)`: `ScrollTrigger` `scrub: true` from `MOTION.building.stageStart` to `stageEnd`. Scrubbing makes every stage reversible and seekable by anchor.
 - Use `fromTo` so each stage's start state is applied up front. Do not use GSAP `stagger` with `fromTo` on scrubbed timelines (only the first target gets its start state); use the `staggered` helper (explicit positions).
 - Lit windows use a 0.01 s `fromTo` per pane (a flat switch, reversible), never a colour blend over scroll distance.
 - All durations, staggers and trigger strings are in `MOTION.building` (`src/lib/motion.ts`).
@@ -46,4 +47,4 @@ One 12-column grid governs the page (`src/components/SheetStack/SheetStack.css`,
 
 ## 5. Tests
 
-`e2e/phase-11.spec.ts`: window size and constant surface, mobile band, stage state per anchor and reverse scroll, flat lit windows, reduced-motion state, stroke contrast, no labels, one headline per section, no text under 14 px or uppercase micro-labels, sheets never crop content, amber allowlist, Projects slot, header contrast. `src/styles/banned-patterns.test.ts` checks banned CSS patterns and the amber allowlist in source.
+`e2e/phase-11.spec.ts` and `e2e/phase-12.spec.ts` (no broken images, no `//` or placeholder text, quiet portrait slot, readable disabled send button, centred wide layouts): window size and constant surface, mobile band, stage state per anchor and reverse scroll, flat lit windows, reduced-motion state, stroke contrast, no labels, one headline per section, no text under 14 px or uppercase micro-labels, sheets never crop content, amber allowlist, Projects slot, header contrast. `src/styles/banned-patterns.test.ts` checks banned CSS patterns and the amber allowlist in source.

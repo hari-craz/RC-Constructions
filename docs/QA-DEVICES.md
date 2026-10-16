@@ -16,7 +16,7 @@ This protocol validates scroll physics, dynamic viewports, and visual stability 
 - [ ] **Fast Inertial Flicks**:
   - Rapidly flick up and down. Verify Lenis / GSAP smooth scroll dampens cleanly with zero blank tile gaps, zero white flickering, and zero horizontal drift.
 - [ ] **Sticky Sheet Rounding**:
-  - Scroll past the hero into Section 02. Verify the outgoing hero sheet rounds to 32px smoothly while the dimming overlay darkens without stutter.
+  - Scroll past the hero into the About section. Verify the incoming sheet's top corners start at 32px and square off as it covers the hero, the hero dims (formwork at 10%), and there are no dark side bars or grey strips.
 
 ---
 
@@ -125,3 +125,12 @@ This protocol validates scroll physics, dynamic viewports, and visual stability 
 - [ ] **Honeypot Bot Defense**: Submit form with hidden `_gotcha` field populated. Confirm submission is dropped silently without initiating a network request.
 - [ ] **Double-Submit Lockout**: Rapidly double-click "Send enquiry". Confirm only one network submission occurs and button enters disabled state.
 - [ ] **Network Fallback**: Disconnect network and submit. Confirm user-entered values are preserved and direct phone/email fallback channels display.
+
+---
+
+## Phase 12 additions
+
+- **Motion starts on first input.** The building mounts and Lenis starts on the first pointer, wheel, touch, key or scroll event (or immediately for an anchor URL). On every device: load the page, wait, then scroll once; the first scroll must not stutter and the building must appear by the About section.
+- **WebKit variable fonts.** Playwright's WebKit build on Windows renders Big Shoulders Display (variable) at a hairline weight with wide tracking. This is a limitation of that test build, not seen in Chromium or Firefox; confirm on a real iPhone that headings are bold and condensed.
+- **Phone band.** Check the building fills at least 80% of the band width at 360, 390 and 412 px wide, and that the band is at most 52svh.
+- **Native cursor.** On a touch laptop with a mouse, the Windows arrow must be hidden and the survey crosshair shown.

@@ -77,6 +77,7 @@
   --page-gutter: clamp(1rem, 0.5rem + 2.5vw, 3rem);
   --max-content-width: 78rem;
   --text-column-max: 40rem;
+  --wide-content-max: 75rem;
   --site-window-width: calc(100% * 7 / 12);
 
   /* Left edge of the text column: centred in grid columns 1-5, never closer than the gutter */
@@ -84,7 +85,7 @@
     max(0px, (100% * 5 / 12 - var(--text-column-max) - 2 * var(--page-gutter)) / 2) +
       var(--page-gutter)
   );
-  --site-band-height: 42svh;
+  --site-band-height: min(max(42svh, calc(var(--nav-height) + 70vw)), 52svh);
   --nav-height: 4.25rem;
   --sheet-bottom-pad: max(12vh, var(--space-10));
 
@@ -111,6 +112,13 @@
   --duration-fast: 150ms;
   --duration-normal: 250ms;
   --duration-deliberate: 400ms;
+
+  /* Mirrors MOTION.hero.headline* in src/lib/motion.ts (the headline rises via CSS) */
+  --hero-headline-start: 0.5s;
+  --hero-headline-duration: 0.9s;
+  --hero-headline-stagger: 0.12s;
+  --loading-draw: 0.8s;
+  --loading-retract: 0.4s;
 }
 
 @media (width < 1024px) {

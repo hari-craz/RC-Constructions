@@ -6,7 +6,7 @@ import {
   resolveCursorState,
   resolveCursorTone,
 } from '../../lib/cursor';
-import { gsap } from '../../lib/gsap';
+import { loadMotion, motionGate } from '../../lib/gsap';
 import { MOTION } from '../../lib/motion';
 import './SurveyCursor.css';
 
@@ -38,46 +38,58 @@ export function SurveyCursor() {
     if (!isFinePointer || !markerRef.current) return;
 
     const el = markerRef.current;
-    const quickX = gsap.quickTo(el, 'x', {
-      duration: reducedMotion ? 0 : MOTION.cursor.quickToDuration,
-      ease: MOTION.cursor.quickToEase,
-    });
-    const quickY = gsap.quickTo(el, 'y', {
-      duration: reducedMotion ? 0 : MOTION.cursor.quickToDuration,
-      ease: MOTION.cursor.quickToEase,
-    });
+    let cancelled = false;
+    let teardown: (() => void) | undefined;
 
-    let isVisible = false;
+    void motionGate()
+      .then(loadMotion)
+      .then(({ gsap }) => {
+        if (cancelled) return;
+        const quickX = gsap.quickTo(el, 'x', {
+          duration: reducedMotion ? 0 : MOTION.cursor.quickToDuration,
+          ease: MOTION.cursor.quickToEase,
+        });
+        const quickY = gsap.quickTo(el, 'y', {
+          duration: reducedMotion ? 0 : MOTION.cursor.quickToDuration,
+          ease: MOTION.cursor.quickToEase,
+        });
 
-    const handlePointerMove = (e: PointerEvent) => {
-      if (!isVisible) {
-        isVisible = true;
-        el.style.opacity = '1';
-      }
+        let isVisible = false;
 
-      quickX(e.clientX);
-      quickY(e.clientY);
+        const handlePointerMove = (e: PointerEvent) => {
+          if (!isVisible) {
+            isVisible = true;
+            el.style.opacity = '1';
+          }
 
-      // Determine state and surface tone from target element
-      const target = document.elementFromPoint(e.clientX, e.clientY);
-      const nextState = resolveCursorState(target);
-      const nextTone = resolveCursorTone(target);
+          quickX(e.clientX);
+          quickY(e.clientY);
 
-      setState(nextState);
-      setTone(nextTone);
-    };
+          // Determine state and surface tone from target element
+          const target = document.elementFromPoint(e.clientX, e.clientY);
+          setState(resolveCursorState(target));
+          setTone(resolveCursorTone(target));
+        };
 
-    const handlePointerLeave = () => {
-      isVisible = false;
-      el.style.opacity = '0';
-    };
+        const handlePointerLeave = () => {
+          isVisible = false;
+          el.style.opacity = '0';
+        };
 
-    window.addEventListener('pointermove', handlePointerMove, { passive: true });
-    document.documentElement.addEventListener('mouseleave', handlePointerLeave, { passive: true });
+        window.addEventListener('pointermove', handlePointerMove, { passive: true });
+        document.documentElement.addEventListener('mouseleave', handlePointerLeave, {
+          passive: true,
+        });
+
+        teardown = () => {
+          window.removeEventListener('pointermove', handlePointerMove);
+          document.documentElement.removeEventListener('mouseleave', handlePointerLeave);
+        };
+      });
 
     return () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      document.documentElement.removeEventListener('mouseleave', handlePointerLeave);
+      cancelled = true;
+      teardown?.();
     };
   }, [isFinePointer, reducedMotion]);
 

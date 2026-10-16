@@ -38,7 +38,7 @@ test.describe('Phase 3 — Sheet Stack and Motion Foundation', () => {
     await expect(terminal).toBeInViewport();
   });
 
-  test('scrubs sheet-stack scaling, border-radius, and restores on scroll back', async ({
+  test('scrubs the slide-over (incoming corner radius, outgoing dim), never scales, and restores on scroll back', async ({
     page,
   }, testInfo) => {
     // Only test scrub transformations on non-reduced-motion projects
@@ -47,7 +47,7 @@ test.describe('Phase 3 — Sheet Stack and Motion Foundation', () => {
     }
 
     const sheet1 = page.locator('#hero');
-    const sheet2 = page.locator('#about');
+    const sheet2 = page.locator('#foundation');
 
     // 0% transition screenshot
     await page.screenshot({ path: 'test-results/phase-3/transition-0pct.png' });
@@ -90,28 +90,24 @@ test.describe('Phase 3 — Sheet Stack and Motion Foundation', () => {
       await page.waitForTimeout(600);
       await page.screenshot({ path: 'test-results/phase-3/transition-100pct.png' });
 
-      // At 100%, sheet1 scale should be ~0.94 and border radius ~32px
-      const scale100 = await sheet1.evaluate((el) => {
-        const style = window.getComputedStyle(el);
-        const matrix = style.transform;
-        if (!matrix || matrix === 'none') return 1;
-        const values = matrix.match(/matrix\(([^)]+)\)/);
-        if (!values || !values[1]) return 1;
-        const parts = values[1].split(',').map((p) => parseFloat(p.trim()));
-        return parts[0];
+      // At 100% the outgoing sheet is dimmed (formwork at low opacity), never scaled,
+      // and the incoming sheet's top corners are square.
+      const state = await page.evaluate(() => {
+        const hero = document.getElementById('hero');
+        const next = document.getElementById('foundation');
+        const dim = hero?.querySelector('.sheet-dim-overlay');
+        return {
+          transform: hero ? getComputedStyle(hero).transform : '',
+          dim: dim ? Number(getComputedStyle(dim).opacity) : -1,
+          radius: next ? parseFloat(getComputedStyle(next).borderTopLeftRadius) : -1,
+        };
       });
-
-      // Expect scale to be within [0.93, 0.95]
-      expect(scale100).toBeLessThanOrEqual(0.96);
-      expect(scale100).toBeGreaterThanOrEqual(0.92);
-
-      // Sheet 1 border radius should approach 32px (allowing subpixel rounding)
-      const radius100 = await sheet1.evaluate((el) => {
-        return window.getComputedStyle(el).borderRadius;
-      });
-      const radiusPx = parseInt(radius100, 10);
-      expect(radiusPx).toBeGreaterThanOrEqual(30);
-      expect(radiusPx).toBeLessThanOrEqual(32);
+      expect(state.transform === 'none' || state.transform.startsWith('matrix(1, 0, 0, 1')).toBe(
+        true,
+      );
+      expect(state.dim).toBeGreaterThan(0.05);
+      expect(state.dim).toBeLessThanOrEqual(0.11);
+      expect(state.radius).toBeLessThanOrEqual(1);
 
       // Scroll back up to 0
       await page.evaluate(() => {
@@ -126,17 +122,12 @@ test.describe('Phase 3 — Sheet Stack and Motion Foundation', () => {
 
       await page.waitForTimeout(600);
 
-      const restoredScale = await sheet1.evaluate((el) => {
-        const style = window.getComputedStyle(el);
-        const matrix = style.transform;
-        if (!matrix || matrix === 'none') return 1;
-        const values = matrix.match(/matrix\(([^)]+)\)/);
-        if (!values || !values[1]) return 1;
-        const parts = values[1].split(',').map((p) => parseFloat(p.trim()));
-        return parts[0];
-      });
-
-      expect(restoredScale).toBeCloseTo(1, 1);
+      const restoredDim = await page.evaluate(() =>
+        Number(
+          getComputedStyle(document.querySelector('#hero .sheet-dim-overlay') as Element).opacity,
+        ),
+      );
+      expect(restoredDim).toBeLessThan(0.01);
     }
   });
 

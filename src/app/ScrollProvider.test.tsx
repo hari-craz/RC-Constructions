@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { gsap } from '../lib/gsap';
+import { gsap, loadMotion } from '../lib/gsap';
 import { useScroll } from './ScrollContext';
 import { ScrollProvider } from './ScrollProvider';
 
@@ -51,7 +51,8 @@ describe('ScrollProvider', () => {
     vi.restoreAllMocks();
   });
 
-  it('creates and cleans up Lenis and ticker callback on unmount', () => {
+  it('creates and cleans up Lenis and ticker callback on unmount', async () => {
+    await loadMotion();
     const tickerAddSpy = vi.spyOn(gsap.ticker, 'add');
     const tickerRemoveSpy = vi.spyOn(gsap.ticker, 'remove');
 
@@ -61,7 +62,7 @@ describe('ScrollProvider', () => {
       </ScrollProvider>,
     );
 
-    expect(screen.getByTestId('lenis-status')).toHaveTextContent('active');
+    await waitFor(() => expect(screen.getByTestId('lenis-status')).toHaveTextContent('active'));
     expect(screen.getByTestId('reduced-motion')).toHaveTextContent('false');
     expect(tickerAddSpy).toHaveBeenCalled();
 

@@ -36,9 +36,6 @@ export function SheetStack({ children, className = '' }: SheetStackProps) {
           // reachable; the next sheet then slides over padding, never over content.
           const tall = height > vh;
           sheet.style.top = tall ? `${vh - height}px` : '0px';
-          sheet.style.transformOrigin = tall
-            ? MOTION.sheetStack.transformOriginTall
-            : MOTION.sheetStack.transformOrigin;
         });
       };
 
@@ -72,21 +69,10 @@ export function SheetStack({ children, className = '' }: SheetStackProps) {
             invalidateOnRefresh: true,
             onToggle: (self) => {
               const active = self.isActive;
-              currentSheet.style.willChange = active ? 'transform, border-radius' : 'auto';
               nextSheet.style.willChange = active ? 'border-radius' : 'auto';
             },
           },
         });
-
-        tl.to(
-          currentSheet,
-          {
-            scale: MOTION.sheetStack.scaleMin,
-            borderRadius: MOTION.sheetStack.radiusSheetPx,
-            ease: MOTION.sheetStack.ease,
-          },
-          0,
-        );
 
         if (dimOverlay) {
           tl.to(

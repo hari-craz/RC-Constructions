@@ -48,7 +48,30 @@
 
 .hero-headline-line {
   display: block;
-  will-change: transform;
+  animation: hero-line-rise var(--hero-headline-duration) var(--ease-entrance) both;
+  animation-delay: calc(
+    var(--hero-headline-start) + var(--line-index, 0) * var(--hero-headline-stagger)
+  );
+}
+
+.hero-headline-line-mask:nth-of-type(2) .hero-headline-line {
+  --line-index: 1;
+}
+
+@keyframes hero-line-rise {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-headline-line {
+    animation: none;
+  }
 }
 
 .hero-tagline {

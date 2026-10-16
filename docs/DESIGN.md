@@ -213,3 +213,9 @@ The custom cursor evokes a surveyor's optical level crosshair. It is engineered 
 - **Projects**: the image slot (16:9) and the register are separate blocks; register rows never render inside the slot.
 - **Header**: two zones that follow the grid. The logo sits on the sheet surface; the action sits on the window surface once the window shows. No blur.
 - **Amber** appears only on dimension lines, lit windows, primary buttons and the loading line (`e2e/phase-11.spec.ts`, `src/styles/banned-patterns.test.ts`).
+
+## 9. Phase 12 — Wide layouts, sheets and placeholders
+
+- **Panel-less sections** (Founder, Contact) use a centred grid: `.sheet-wide`, max `--wide-content-max` (75rem) plus gutters. On phones they do not reserve the building band. Sections with the site window keep text in grid columns 1-5.
+- **Sheet stack**: sheets no longer scale (scaling revealed the dark body as side bars). The outgoing sheet is dimmed with formwork at `MOTION.sheetStack.dimOverlayOpacity`; the incoming sheet's top corners go from `radiusSheetPx` to square.
+- **Placeholders**: never a broken image and never code-comment text. Founder portrait: `FOUNDER_CONTENT.portraitAvailable` (false until the photo files are committed) switches between a quiet concrete block with one sentence and the `<picture>`. Drawing slots read "Drawing to come". The form's missing-ID note is a plain sentence beside a flat, readable disabled button.

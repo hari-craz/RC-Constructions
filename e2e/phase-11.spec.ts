@@ -18,9 +18,12 @@ test.describe('Phase 11 — building as protagonist', () => {
     isMobile,
   }) => {
     test.skip(isMobile, 'Desktop window geometry');
+    // Three viewports x five anchors, each a fresh seek
+    test.setTimeout(120_000);
     for (const viewport of [
       { width: 1440, height: 900 },
       { width: 1904, height: 1080 },
+      { width: 2560, height: 1080 },
     ]) {
       await page.setViewportSize(viewport);
       for (const id of STAGE_IDS) {
@@ -32,18 +35,35 @@ test.describe('Phase 11 — building as protagonist', () => {
           .locator('.building-site-window')
           .evaluate((el) => getComputedStyle(el).backgroundColor);
         expect(bg).toBe(SURFACE);
+        // The drawn building (roof slab) spans at least 70% of the window width
+        const ratio = await page.evaluate(() => {
+          const win = document.querySelector('.building-site-window')?.getBoundingClientRect();
+          const roof = document.querySelector('.b-ground-slab')?.getBoundingClientRect();
+          return win && roof ? roof.width / win.width : 0;
+        });
+        expect(ratio, `${viewport.width}: building/window width`).toBeGreaterThanOrEqual(0.7);
       }
     }
   });
 
-  test('mobile: fixed band at the top, 38 to 42 svh', async ({ page, isMobile }) => {
+  test('mobile: fixed band at the top, building at least 80% of its width', async ({
+    page,
+    isMobile,
+  }) => {
     test.skip(!isMobile, 'Mobile band');
     await open(page, 'structure');
     const box = await page.locator('.building-site-window').boundingBox();
     const vh = page.viewportSize()?.height ?? 0;
     expect(box?.y ?? -1).toBe(0);
     expect(box?.height ?? 0).toBeGreaterThanOrEqual(vh * 0.37);
-    expect(box?.height ?? 0).toBeLessThanOrEqual(vh * 0.43);
+    expect(box?.height ?? 0).toBeLessThanOrEqual(vh * 0.53);
+    // The drawn building spans at least 80% of the band width
+    const ratio = await page.evaluate(() => {
+      const win = document.querySelector('.building-site-window')?.getBoundingClientRect();
+      const roof = document.querySelector('.b-ground-slab')?.getBoundingClientRect();
+      return win && roof ? roof.width / win.width : 0;
+    });
+    expect(ratio).toBeGreaterThanOrEqual(0.8);
   });
 
   test('each stage is complete at rest, lit windows are flat amber, and scrolling up un-builds', async ({
@@ -68,7 +88,7 @@ test.describe('Phase 11 — building as protagonist', () => {
 
     await open(page, 'completion');
     const ref = await measure();
-    expect(ref.paneFills).toHaveLength(11);
+    expect(ref.paneFills).toHaveLength(15);
     expect(ref.paneFills.every((f) => f === AMBER)).toBe(true);
     expect(ref.frameOpacity.every((o) => o === 1)).toBe(true);
     expect(ref.plate).toBe(1);
@@ -128,7 +148,7 @@ test.describe('Phase 11 — building as protagonist', () => {
     const fills = await page
       .locator('.b-pane')
       .evaluateAll((els) => els.map((e) => getComputedStyle(e).fill));
-    expect(fills).toHaveLength(11);
+    expect(fills).toHaveLength(15);
     expect(fills.every((f) => f === AMBER)).toBe(true);
     const ops = await page
       .locator('.b-fit')

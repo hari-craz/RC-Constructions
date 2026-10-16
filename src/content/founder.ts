@@ -19,7 +19,9 @@ export interface FounderContent {
   pullQuote: string;
   facts: readonly [FounderFact, FounderFact, FounderFact];
   portraitAlt: string;
-  portraitPlaceholder: string;
+  portraitNote: string;
+  /** Set true once /images/founder-gokul.webp and .jpg are committed. Until then no <img> renders. */
+  portraitAvailable: boolean;
 }
 
 export const FOUNDER_CONTENT: FounderContent = {
@@ -51,5 +53,6 @@ export const FOUNDER_CONTENT: FounderContent = {
     },
   ],
   portraitAlt: 'Portrait of Gokul, founder of RC Constructions',
-  portraitPlaceholder: '// PLACEHOLDER: Founder portrait (1200 × 1500 WebP / JPEG)',
+  portraitAvailable: false,
+  portraitNote: 'Photo to come, 1200 by 1500',
 };

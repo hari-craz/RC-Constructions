@@ -75,22 +75,21 @@ export function Founder() {
               className="founder-portrait-frame"
               data-portrait-slot="founder"
             >
-              {/* PLACEHOLDER: Founder portrait photograph to be supplied (1200x1500 WebP/JPEG) */}
-              <picture className="founder-picture">
-                <source srcSet="/images/founder-gokul.webp" type="image/webp" />
-                <img
-                  src="/images/founder-gokul.jpg"
-                  alt={FOUNDER_CONTENT.portraitAlt}
-                  width="1200"
-                  height="1500"
-                  loading="lazy"
-                  className="founder-portrait-img"
-                />
-              </picture>
-              <div className="founder-portrait-placeholder" aria-hidden="true">
-                <span className="founder-portrait-spec">Portrait to come, 1200 by 1500</span>
-                <span className="founder-portrait-dimensions">4:5 ratio · WebP / JPEG</span>
-              </div>
+              {FOUNDER_CONTENT.portraitAvailable ? (
+                <picture className="founder-picture">
+                  <source srcSet="/images/founder-gokul.webp" type="image/webp" />
+                  <img
+                    src="/images/founder-gokul.jpg"
+                    alt={FOUNDER_CONTENT.portraitAlt}
+                    width="1200"
+                    height="1500"
+                    loading="lazy"
+                    className="founder-portrait-img"
+                  />
+                </picture>
+              ) : (
+                <p className="founder-portrait-note">{FOUNDER_CONTENT.portraitNote}</p>
+              )}
             </div>
           </div>
         </div>

@@ -241,16 +241,18 @@ export function Projects() {
         </div>
       </Sheet>
 
-      {/* Lazy-loaded Project Detail Sheet */}
-      <Suspense fallback={null}>
-        <ProjectOverlay
-          project={overlayProject}
-          isOpen={Boolean(overlayProjectId && overlayProject)}
-          onClose={handleCloseOverlay}
-          onSelectProject={handleSelectAdjacent}
-          returnFocusRef={triggerRef}
-        />
-      </Suspense>
+      {/* Lazy-loaded Project Detail Sheet: its chunk is only requested once a project is opened */}
+      {overlayProject && (
+        <Suspense fallback={null}>
+          <ProjectOverlay
+            project={overlayProject}
+            isOpen
+            onClose={handleCloseOverlay}
+            onSelectProject={handleSelectAdjacent}
+            returnFocusRef={triggerRef}
+          />
+        </Suspense>
+      )}
     </>
   );
 }

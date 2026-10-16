@@ -7,12 +7,10 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  min-height: calc(100dvh - var(--space-8));
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   gap: var(--space-8);
-  padding-block: var(--space-8);
+  padding-block: var(--space-4) var(--space-6);
   color: var(--color-formwork-dark);
 }
 
@@ -232,7 +230,9 @@ a.contact-channel-value:hover {
 }
 
 .contact-submit-btn:disabled {
-  opacity: 0.5;
+  background-color: transparent;
+  border-color: var(--color-ink-muted-light);
+  color: var(--color-ink-muted-light);
   cursor: not-allowed;
 }
 
@@ -318,13 +318,19 @@ a.contact-channel-value:hover {
   text-decoration: underline;
 }
 
-.contact-config-warning {
-  padding: var(--space-3) var(--space-4);
-  border: 1px dashed var(--color-steel);
+.contact-submit-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+}
+
+.contact-config-note {
+  margin: 0;
   font-family: var(--font-body);
-  font-size: 0.875rem;
-  color: var(--color-formwork-dark);
-  background-color: rgb(122 126 120 / 10%);
+  font-size: var(--font-size-label);
+  line-height: var(--line-height-normal);
+  color: var(--color-ink-muted-light);
 }
 
 /* Minimal Footer */

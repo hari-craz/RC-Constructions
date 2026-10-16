@@ -85,13 +85,11 @@ test.describe('Phase 7C — Completion Stats and Founder Real Content', () => {
     const portraitSlot = founder.locator('[data-portrait-slot="founder"]');
     await expect(portraitSlot).toBeVisible();
 
-    const img = portraitSlot.locator('img');
-    await expect(img).toHaveAttribute('alt', 'Portrait of Gokul, founder of RC Constructions');
-    await expect(img).toHaveAttribute('width', '1200');
-    await expect(img).toHaveAttribute('height', '1500');
-
-    const placeholderText = portraitSlot.locator('.founder-portrait-placeholder');
-    await expect(placeholderText).toContainText('Portrait to come');
+    // No photo is committed yet, so the slot is a quiet block with one sentence and no <img>
+    await expect(portraitSlot.locator('img')).toHaveCount(0);
+    await expect(portraitSlot.locator('.founder-portrait-note')).toHaveText(
+      'Photo to come, 1200 by 1500',
+    );
 
     expect(consoleErrors).toEqual([]);
   });

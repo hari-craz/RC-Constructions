@@ -1,27 +1,35 @@
 /**
  * Building elevation geometry (viewBox units). One source of truth for the SVG and its tests.
- * Ground line at y = 700; four storeys on a three-bay frame with a stair core on the right.
+ * Ground line at y = 620; four storeys on a four-bay frame with a stair core on the right.
+ * The frame is 800 units wide, so the building fills about 78% of the window on desktop
+ * (viewBox 1020 wide) and about 80% of the band on phones (viewBox 1000 wide).
  */
-export const VIEWBOX = { width: 1200, height: 800 } as const;
-export const GROUND_Y = 700;
+export const VIEWBOXES = {
+  desktop: { x: 60, y: -20, width: 1020, height: 820 },
+  mobile: { x: 50, y: 60, width: 1000, height: 700 },
+} as const;
+export const GROUND_Y = 620;
 export const SLAB_THICKNESS = 12;
 export const BEAM_DEPTH = 14;
 
 /** Top y of the ground slab, level 1, level 2, level 3 and the roof slab. */
-export const SLAB_TOPS = [688, 568, 448, 328, 208] as const;
+export const SLAB_TOPS = [608, 480, 352, 224, 96] as const;
 
-export const FRAME = { left: 340, right: 860, coreLeft: 760 } as const;
+export const FRAME = { left: 160, right: 960, coreLeft: 860 } as const;
 export const COLUMN_WIDTH = 16;
-export const COLUMN_LEFTS = [340, 480, 620] as const;
+export const COLUMN_LEFTS = [160, 335, 510, 685] as const;
 export const BAYS = [
-  { left: 356, right: 480 },
-  { left: 496, right: 620 },
-  { left: 636, right: 760 },
+  { left: 176, right: 335 },
+  { left: 351, right: 510 },
+  { left: 526, right: 685 },
+  { left: 701, right: 860 },
 ] as const;
 
-const WINDOW_SIZE = { width: 72, height: 56 } as const;
+const WINDOW_SIZE = { width: 96, height: 62 } as const;
 export const PANE_INSET = 5;
 export const STOREY_COUNT = 4;
+/** The bay that carries the entrance on the ground storey. */
+const ENTRANCE_BAY = 2;
 
 /** Storey s runs between slab s (floor) and slab s + 1 (ceiling). */
 export function storeyBounds(storey: number) {
@@ -36,7 +44,7 @@ export function wallBounds(storey: number) {
   return { top, bottom: floor, height: floor - top };
 }
 
-export interface WindowRect {
+interface WindowRect {
   id: string;
   storey: number;
   bay: number;
@@ -46,10 +54,10 @@ export interface WindowRect {
   height: number;
 }
 
-/** Storeys 1-3 carry a window in every bay; the ground storey has two windows and the entrance. */
+/** Every bay carries a window on the upper storeys; the ground storey swaps one bay for the entrance. */
 export const WINDOWS: readonly WindowRect[] = Array.from({ length: STOREY_COUNT }, (_, storey) =>
   BAYS.flatMap((bay, bayIndex) => {
-    if (storey === 0 && bayIndex === 1) return [];
+    if (storey === 0 && bayIndex === ENTRANCE_BAY) return [];
     const wall = wallBounds(storey);
     return [
       {
@@ -57,7 +65,7 @@ export const WINDOWS: readonly WindowRect[] = Array.from({ length: STOREY_COUNT 
         storey,
         bay: bayIndex,
         x: (bay.left + bay.right) / 2 - WINDOW_SIZE.width / 2,
-        y: wall.top + 16,
+        y: wall.top + 18,
         width: WINDOW_SIZE.width,
         height: WINDOW_SIZE.height,
       },
@@ -65,23 +73,41 @@ export const WINDOWS: readonly WindowRect[] = Array.from({ length: STOREY_COUNT 
   }),
 ).flat();
 
-export const ENTRANCE = { x: 520, y: 612, width: 76, height: 76 } as const;
-export const CANOPY = { x: 508, y: 600, width: 100, height: 8 } as const;
-export const CORE_SLIT = { x: 790, y: 232, width: 40, height: 340 } as const;
-export const NAME_PLATE = { x: 765, y: 622, width: 90, height: 28 } as const;
-export const BUILDING_TOP = 182;
+export const ENTRANCE = { x: 557, y: 524, width: 96, height: 84 } as const;
+export const CANOPY = { x: 543, y: 510, width: 124, height: 8 } as const;
+export const CORE_SLIT = { x: 890, y: 122, width: 40, height: 350 } as const;
+export const NAME_PLATE = { x: 864, y: 540, width: 92, height: 28 } as const;
+export const BUILDING_TOP = 70;
 
-export const PIT = {
-  topLeft: 280,
-  topRight: 920,
-  bottomLeft: 300,
-  bottomRight: 900,
-  depth: 72,
-} as const;
-export const FOOTINGS = [
-  { x: 313, width: 70 },
-  { x: 453, width: 70 },
-  { x: 593, width: 70 },
-  { x: 745, width: 130 },
+/** Stepped excavation: sloped sides with a bench halfway down. */
+export const PIT_POINTS = [
+  [120, 620],
+  [128, 695],
+  [142, 695],
+  [148, 770],
+  [972, 770],
+  [978, 695],
+  [992, 695],
+  [1000, 620],
 ] as const;
-export const FOOTING = { top: 744, height: 28 } as const;
+export const PIT_BOTTOM = 770;
+export const FOOTINGS = [
+  { x: 150, width: 76 },
+  { x: 305, width: 76 },
+  { x: 480, width: 76 },
+  { x: 655, width: 76 },
+  { x: 840, width: 130 },
+] as const;
+export const FOOTING = { top: 742, height: 28 } as const;
+export const TIE_BEAM = { y: 662, height: 16 } as const;
+
+/** Site set-out: batter-board pegs either side of the pit and a level staff with marks. */
+export const PEGS = [
+  { x: 100, height: 74 },
+  { x: 1020, height: 74 },
+] as const;
+/** The profile string runs between the pegs at this height above the ground line. */
+export const STRING_HEIGHT = 58;
+export const DATUM_STAFF = { x: 68, height: 325, tickGap: 25 } as const;
+/** Starter bars rise from each pedestal stub into the first storey. */
+export const STARTER_HEIGHT = 240;

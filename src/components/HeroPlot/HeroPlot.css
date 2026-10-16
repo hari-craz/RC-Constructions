@@ -22,6 +22,8 @@
   stroke: var(--color-formwork-dark);
   stroke-width: 1.5px;
   stroke-linejoin: round;
+  stroke-dasharray: none;
+  animation: hero-draw 1s var(--ease-entrance) 0s backwards;
 }
 
 /* Layer 2: Stakes */
@@ -38,6 +40,7 @@
   fill: none;
   stroke: var(--color-steel);
   stroke-width: 1.2px;
+  animation: hero-fade 0.8s linear 0.6s backwards;
 }
 
 /* Layer 4: Building Footprint */
@@ -45,7 +48,9 @@
   fill: transparent;
   stroke: var(--color-formwork-dark);
   stroke-width: 2px;
+  stroke-dasharray: none;
   transition: fill 0.4s ease;
+  animation: hero-draw 0.8s var(--ease-entrance) 1s backwards;
 }
 
 /* Layer 5: Column Grid Crosses */
@@ -59,6 +64,8 @@
   fill: none;
   stroke: var(--color-accent);
   stroke-width: 1.5px;
+  stroke-dasharray: none;
+  animation: hero-draw 0.8s var(--ease-entrance) 1.8s backwards;
 }
 
 .hero-dim-badge {
@@ -84,5 +91,46 @@
 
   .hero-dim-lateral {
     display: none;
+  }
+}
+
+/*
+ * Load sequence (mirrors MOTION.hero): pure CSS, plays from first paint. Every keyframe is a
+ * `from` state only and uses fill-mode `backwards`, so after the sequence the element returns to
+ * its finished base style and the scroll-linked GSAP layer can take over without a conflict.
+ */
+.hero-plot-stakes {
+  animation: hero-fade 0.2s linear 0.8s backwards;
+}
+
+.hero-grid-cross {
+  animation: hero-fade 0.6s linear calc(1.4s + var(--cross-index, 0) * 0.04s) backwards;
+}
+
+.hero-dim-label-group {
+  animation: hero-fade 0.4s linear calc(2.2s + var(--label-index, 0) * 0.1s) backwards;
+}
+
+@keyframes hero-draw {
+  from {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes hero-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-plot-svg * {
+    animation: none;
   }
 }

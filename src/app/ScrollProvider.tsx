@@ -1,4 +1,4 @@
-import Lenis from 'lenis';
+import type Lenis from 'lenis';
 import {
   useCallback,
   useEffect,
@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { useReducedMotion } from '../hooks/useReducedMotion';
-import { gsap, ScrollTrigger } from '../lib/gsap';
+import { inOwnTask, loadMotion, motionGate } from '../lib/gsap';
 import { MOTION } from '../lib/motion';
 import { ScrollContext, type ScrollContextValue, type ScrollToOptions } from './ScrollContext';
 
@@ -102,10 +102,10 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
         if (typeof target === 'string') {
           const el = document.querySelector(target);
           if (el) {
-            el.scrollIntoView({ behavior: 'auto' });
+            el.scrollIntoView?.({ behavior: 'auto' });
           }
         } else if (target instanceof HTMLElement) {
-          target.scrollIntoView({ behavior: 'auto' });
+          target.scrollIntoView?.({ behavior: 'auto' });
         }
       }
     },
@@ -134,45 +134,53 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
     }
 
     const listeners = listenersRef.current;
+    let cancelled = false;
+    let teardown: (() => void) | undefined;
 
-    const lenis = new Lenis({
-      autoRaf: false,
-      smoothWheel: true,
-      duration: MOTION.scroll.duration,
-    });
-    lenisRef.current = lenis;
-    listeners.forEach((listener) => listener());
-    if (typeof window !== 'undefined') {
-      (window as unknown as { __lenis?: Lenis }).__lenis = lenis;
-    }
+    // Lenis, GSAP and ScrollTrigger load after first paint, in their own chunks
+    void motionGate()
+      .then(() => Promise.all([import('lenis'), loadMotion()]))
+      .then(([lenisModule, motion]) =>
+        inOwnTask(() => {
+          if (cancelled) return;
+          const { gsap, ScrollTrigger } = motion;
+          const lenis = new lenisModule.default({
+            autoRaf: false,
+            smoothWheel: true,
+            duration: MOTION.scroll.duration,
+          });
+          lenisRef.current = lenis;
+          listeners.forEach((listener) => listener());
+          (window as unknown as { __lenis?: Lenis }).__lenis = lenis;
 
-    gsap.ticker.lagSmoothing(MOTION.scroll.lagSmoothing);
+          gsap.ticker.lagSmoothing(MOTION.scroll.lagSmoothing);
+          const onTick = (time: number) => {
+            lenis.raf(time * 1000);
+          };
+          gsap.ticker.add(onTick);
 
-    const onTick = (time: number) => {
-      lenis.raf(time * 1000);
-    };
+          lenis.on('scroll', () => {
+            ScrollTrigger.update();
+            throttledProgress();
+          });
 
-    gsap.ticker.add(onTick);
-
-    const onLenisScroll = () => {
-      ScrollTrigger.update();
-      throttledProgress();
-    };
-
-    lenis.on('scroll', onLenisScroll);
+          teardown = () => {
+            delete (window as unknown as { __lenis?: Lenis }).__lenis;
+            lenis.destroy();
+            lenisRef.current = null;
+            listeners.forEach((listener) => listener());
+            gsap.ticker.remove(onTick);
+          };
+        }),
+      );
 
     // Initial calculation
     throttledProgress();
 
     return () => {
+      cancelled = true;
       window.removeEventListener('scroll', throttledProgress);
-      if (typeof window !== 'undefined') {
-        delete (window as unknown as { __lenis?: Lenis }).__lenis;
-      }
-      lenis.destroy();
-      lenisRef.current = null;
-      listeners.forEach((listener) => listener());
-      gsap.ticker.remove(onTick);
+      teardown?.();
     };
   }, [reducedMotion, updatePageProgress, updateActiveSection]);
 
@@ -181,16 +189,18 @@ export function ScrollProvider({ children }: ScrollProviderProps) {
     if (reducedMotion) return;
 
     if (document.fonts?.ready) {
-      document.fonts.ready.then(() => {
-        ScrollTrigger.refresh();
-      });
+      void Promise.all([document.fonts.ready, motionGate()])
+        .then(loadMotion)
+        .then((m) => m.ScrollTrigger.refresh());
     }
 
     let resizeTimer: ReturnType<typeof setTimeout> | undefined;
     const onResize = () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
-        ScrollTrigger.refresh();
+        void motionGate()
+          .then(loadMotion)
+          .then((m) => m.ScrollTrigger.refresh());
       }, MOTION.scroll.resizeDebounceMs);
     };
 

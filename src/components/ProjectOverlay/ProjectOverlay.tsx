@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { type ProjectItem, PROJECTS_CONTENT } from '../../content/projects';
 import { useScroll } from '../../hooks/useScroll';
 import { useScrollLock } from '../../hooks/useScrollLock';
-import { gsap } from '../../lib/gsap';
+import { loadMotion } from '../../lib/gsap';
 import { MOTION } from '../../lib/motion';
 import './ProjectOverlay.css';
 
@@ -122,47 +122,58 @@ export function ProjectOverlay({
 
   // Entrance & Exit animation (0.7s power2.out sheet rise, instant under reduced motion)
   useEffect(() => {
-    if (!sheetRef.current || !backdropRef.current) return;
+    const sheet = sheetRef.current;
+    const backdrop = backdropRef.current;
+    if (!sheet || !backdrop) return;
+    let cancelled = false;
 
-    if (!isOpen) {
-      if (!reducedMotion) {
-        gsap.to(sheetRef.current, {
-          yPercent: 100,
-          duration: MOTION.overlay.sheetFallDuration,
-          ease: 'power2.in',
-        });
-        gsap.to(backdropRef.current, {
-          opacity: 0,
-          duration: MOTION.overlay.sheetFallDuration,
-          ease: 'power2.in',
-        });
+    void loadMotion().then(({ gsap }) => {
+      if (cancelled) return;
+
+      if (!isOpen) {
+        if (!reducedMotion) {
+          gsap.to(sheet, {
+            yPercent: 100,
+            duration: MOTION.overlay.sheetFallDuration,
+            ease: 'power2.in',
+          });
+          gsap.to(backdrop, {
+            opacity: 0,
+            duration: MOTION.overlay.sheetFallDuration,
+            ease: 'power2.in',
+          });
+        }
+        return;
       }
-      return;
-    }
 
-    if (reducedMotion) {
-      gsap.set(sheetRef.current, { yPercent: 0 });
-      gsap.set(backdropRef.current, { opacity: MOTION.overlay.backdropDimOpacity });
-    } else {
-      gsap.fromTo(
-        sheetRef.current,
-        { yPercent: 100 },
-        {
-          yPercent: 0,
-          duration: MOTION.overlay.sheetRiseDuration,
-          ease: MOTION.overlay.ease,
-        },
-      );
-      gsap.fromTo(
-        backdropRef.current,
-        { opacity: 0 },
-        {
-          opacity: MOTION.overlay.backdropDimOpacity,
-          duration: MOTION.overlay.sheetRiseDuration,
-          ease: MOTION.overlay.ease,
-        },
-      );
-    }
+      if (reducedMotion) {
+        gsap.set(sheet, { yPercent: 0 });
+        gsap.set(backdrop, { opacity: MOTION.overlay.backdropDimOpacity });
+      } else {
+        gsap.fromTo(
+          sheet,
+          { yPercent: 100 },
+          {
+            yPercent: 0,
+            duration: MOTION.overlay.sheetRiseDuration,
+            ease: MOTION.overlay.ease,
+          },
+        );
+        gsap.fromTo(
+          backdrop,
+          { opacity: 0 },
+          {
+            opacity: MOTION.overlay.backdropDimOpacity,
+            duration: MOTION.overlay.sheetRiseDuration,
+            ease: MOTION.overlay.ease,
+          },
+        );
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen, reducedMotion]);
 
   if (!isOpen || !project) {
@@ -276,11 +287,9 @@ export function ProjectOverlay({
                   <div
                     className="gallery-slot-block"
                     role="img"
-                    aria-label={`Drawing placeholder: ${slot.caption}`}
+                    aria-label={`Drawing to come: ${slot.caption}`}
                   >
-                    <span className="gallery-slot-placeholder-mark">
-                      {'// ARCHITECTURAL DRAWING SLOT'}
-                    </span>
+                    <span className="gallery-slot-placeholder-mark">Drawing to come</span>
                   </div>
                   <figcaption className="gallery-slot-caption">{slot.caption}</figcaption>
                 </figure>

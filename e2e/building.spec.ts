@@ -18,7 +18,9 @@ test.describe('Phase 6 — Evolving Building Scroll Construction', () => {
 
     await page.goto('/');
 
-    // Wait for Hero intro and lazy Building mount
+    // The building mounts on the first input (or an anchor in the URL), not at load
+    await page.waitForTimeout(600);
+    await page.mouse.move(100, 100);
     await page.waitForTimeout(2000);
 
     const siteWindow = page.locator('.building-site-window');
@@ -59,7 +61,7 @@ test.describe('Phase 6 — Evolving Building Scroll Construction', () => {
     await expect(siteWindow).toHaveAttribute('data-stage', 'completion');
 
     // Verify lit windows and dimension callout in Completion stage
-    await expect(page.locator('.b-pane')).toHaveCount(11);
+    await expect(page.locator('.b-pane')).toHaveCount(15);
 
     const dimensionText = page.locator('.b-dim-label');
     await expect(dimensionText).toHaveText(['15.40 m', '17.40 m']);
@@ -143,6 +145,8 @@ test.describe('Phase 6 — Evolving Building Scroll Construction', () => {
     }
 
     await page.goto('/');
+    await page.waitForTimeout(600);
+    await page.mouse.move(100, 100);
     await page.waitForTimeout(1500);
 
     const siteWindow = page.locator('.building-site-window');

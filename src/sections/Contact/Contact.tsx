@@ -208,14 +208,6 @@ export function Contact() {
               {liveAnnouncement}
             </div>
 
-            {isMissingConfig && (
-              <div role="alert" className="contact-config-warning">
-                {
-                  '// Non-production environment: Form submissions are disabled because VITE_FORMSPREE_ID is not configured.'
-                }
-              </div>
-            )}
-
             {status === 'error' && (
               <div role="alert" className="contact-status-error">
                 Unable to deliver your enquiry right now. Please call us at{' '}
@@ -415,13 +407,20 @@ export function Contact() {
 
                 <p className="contact-privacy-note">{CONTACT_CONTENT.privacyNotice}</p>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting || isMissingConfig}
-                  className="contact-submit-btn"
-                >
-                  {isSubmitting ? 'Sending' : 'Send enquiry'}
-                </button>
+                <div className="contact-submit-row">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || isMissingConfig}
+                    className="contact-submit-btn"
+                  >
+                    {isSubmitting ? 'Sending' : 'Send enquiry'}
+                  </button>
+                  {isMissingConfig && (
+                    <p role="status" className="contact-config-note">
+                      Sending is switched off until the form ID is set.
+                    </p>
+                  )}
+                </div>
               </form>
             )}
           </div>

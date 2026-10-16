@@ -10,6 +10,8 @@
   display: flex;
   align-items: center;
   padding-inline: var(--space-4);
+  animation: loading-retract var(--loading-retract) var(--ease-standard) var(--loading-draw)
+    forwards;
 }
 
 .loading-line-track {
@@ -27,6 +29,7 @@
   background-color: var(--color-accent);
   transform-origin: left center;
   transform: scaleX(0);
+  animation: loading-draw var(--loading-draw) var(--ease-entrance) forwards;
 }
 
 .loading-line-start-tick {
@@ -46,4 +49,23 @@
   height: 9px;
   background-color: var(--color-accent);
   opacity: 0;
+  animation: loading-tick-in var(--duration-fast) linear var(--loading-draw) forwards;
+}
+
+@keyframes loading-draw {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes loading-tick-in {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes loading-retract {
+  to {
+    opacity: 0;
+  }
 }

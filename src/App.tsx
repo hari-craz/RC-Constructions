@@ -1,5 +1,5 @@
-import { Analytics } from '@vercel/analytics/react';
 import { ScrollProvider } from './app/ScrollProvider';
+import { Analytics } from './components/Analytics';
 import { Building } from './components/Building';
 import { LoadingLine } from './components/LoadingLine';
 import { Nav } from './components/Nav';

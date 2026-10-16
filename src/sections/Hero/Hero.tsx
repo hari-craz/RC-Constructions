@@ -13,214 +13,37 @@ export function Hero() {
   const plotRef = useRef<HeroPlotHandle | null>(null);
   const { reducedMotion } = useScroll();
 
+  // The load sequence (plot drawing and headline rise) is pure CSS and plays from first paint.
+  // Only the scroll-linked layer below needs the motion chunk.
   useGSAP(
     () => {
-      if (!containerRef.current) return;
-
-      const lines = containerRef.current.querySelectorAll('.hero-headline-line');
       const plot = plotRef.current;
+      if (reducedMotion || !plot) return;
 
-      if (reducedMotion) {
-        // Immediate static layout for reduced motion
-        gsap.set(lines, { yPercent: 0, opacity: 1 });
-        if (plot?.svgElement) {
-          const allStrokes = plot.svgElement.querySelectorAll<SVGPathElement>('path');
-          allStrokes.forEach((p) => {
-            gsap.set(p, { strokeDashoffset: 0 });
-          });
-          gsap.set(
-            [plot.stakes, plot.gridGroup, ...plot.dimensionLines, ...plot.dimensionLabels].filter(
-              Boolean,
-            ),
-            { opacity: 1, scale: 1 },
-          );
-        }
-        return;
-      }
+      const aboutTrigger = document.getElementById('foundation');
+      if (!aboutTrigger) return;
 
-      // Initial state preparation for load sequence
-      gsap.set(lines, { yPercent: 100 });
-
-      if (plot) {
-        if (plot.boundaryPath) {
-          gsap.set(plot.boundaryPath, { strokeDasharray: 1, strokeDashoffset: 1 });
-        }
-        if (plot.stakes) {
-          gsap.set(plot.stakes, { opacity: 0, scale: 0.7, transformOrigin: 'center center' });
-        }
-        if (plot.setbackPath) {
-          // Setback has dashed pattern, animate offset
-          gsap.set(plot.setbackPath, { strokeDasharray: '6 6', opacity: 0 });
-        }
-        if (plot.footprintPath) {
-          gsap.set(plot.footprintPath, { strokeDasharray: 1, strokeDashoffset: 1 });
-        }
-        if (plot.gridGroup) {
-          const crosses = plot.gridGroup.querySelectorAll('.hero-grid-cross');
-          gsap.set(crosses, { opacity: 0, scale: 0, transformOrigin: 'center center' });
-        }
-        if (plot.dimensionLines.length > 0) {
-          gsap.set(plot.dimensionLines, { strokeDasharray: 1, strokeDashoffset: 1 });
-        }
-        if (plot.dimensionLabels.length > 0) {
-          gsap.set(plot.dimensionLabels, {
-            opacity: 0,
-            scale: 0.8,
-            transformOrigin: 'center center',
-          });
-        }
-      }
-
-      // 1. Orchestrated Load Timeline (played once)
-      const tl = gsap.timeline({
-        defaults: { ease: MOTION.hero.ease },
-      });
-
-      // 0.0s – 1.0s: Plot boundary draws & corner stakes appear
-      if (plot?.boundaryPath) {
-        tl.to(
-          plot.boundaryPath,
-          {
-            strokeDashoffset: 0,
-            duration: MOTION.hero.boundaryDuration,
-          },
-          MOTION.hero.boundaryStart,
-        );
-      }
-      if (plot?.stakes) {
-        tl.to(
-          plot.stakes,
-          {
-            opacity: 1,
-            scale: 1,
-            duration: MOTION.hero.stakesDuration,
-          },
-          MOTION.hero.stakesStart,
-        );
-      }
-
-      // from 0.5s: Headline reveals out of clipped mask
-      tl.to(
-        lines,
-        {
-          yPercent: 0,
-          duration: MOTION.hero.headlineDuration,
-          stagger: MOTION.hero.headlineStagger,
-        },
-        MOTION.hero.headlineStart,
-      );
-
-      // 0.6s – 1.4s: Setback lines draw
-      if (plot?.setbackPath) {
-        tl.to(
-          plot.setbackPath,
-          {
-            opacity: 1,
-            duration: MOTION.hero.setbackDuration,
-          },
-          MOTION.hero.setbackStart,
-        );
-      }
-
-      // 1.0s – 1.8s: Building footprint draws
-      if (plot?.footprintPath) {
-        tl.to(
-          plot.footprintPath,
-          {
-            strokeDashoffset: 0,
-            duration: MOTION.hero.footprintDuration,
-          },
-          MOTION.hero.footprintStart,
-        );
-      }
-
-      // 1.4s – 2.0s: Column grid crosses appear in quick stagger
-      if (plot?.gridGroup) {
-        const crosses = plot.gridGroup.querySelectorAll('.hero-grid-cross');
-        tl.to(
-          crosses,
-          {
-            opacity: 1,
-            scale: 1,
-            duration: MOTION.hero.gridDuration,
-            stagger: MOTION.hero.gridStagger,
-          },
-          MOTION.hero.gridStart,
-        );
-      }
-
-      // 1.8s – 2.6s: Dimension lines and values appear in amber
-      if (plot?.dimensionLines && plot.dimensionLines.length > 0) {
-        tl.to(
-          plot.dimensionLines,
-          {
-            strokeDashoffset: 0,
-            duration: MOTION.hero.dimensionsDuration,
-          },
-          MOTION.hero.dimensionsStart,
-        );
-      }
-      if (plot?.dimensionLabels && plot.dimensionLabels.length > 0) {
-        tl.to(
-          plot.dimensionLabels,
-          {
-            opacity: 1,
-            scale: 1,
-            duration: MOTION.hero.dimensionLabelsDuration,
-            stagger: MOTION.hero.dimensionLabelsStagger,
-          },
-          MOTION.hero.dimensionsStart + MOTION.hero.dimensionLabelsDelay,
-        );
-      }
-
-      // Scroll Interrupt: if user scrolls before sequence completes, jump to end
-      const handleScrollInterrupt = () => {
-        if (tl.isActive()) {
-          tl.progress(1);
-        }
+      const scrub = {
+        trigger: aboutTrigger,
+        start: MOTION.hero.scrollLinked.start,
+        end: MOTION.hero.scrollLinked.end,
+        scrub: true,
       };
-      window.addEventListener('scroll', handleScrollInterrupt, { passive: true, once: true });
 
-      // 2. Scroll-Linked Scrub Layer: Footprint fills with limewash and grid crosses grow
-      const aboutTrigger =
-        document.getElementById('foundation') || document.getElementById('about');
-      if (aboutTrigger) {
-        if (plot?.footprintPath) {
-          const limewash =
-            getComputedStyle(document.documentElement)
-              .getPropertyValue('--color-limewash')
-              .trim() || 'var(--color-limewash)';
-
-          gsap.to(plot.footprintPath, {
-            fill: limewash,
-            scrollTrigger: {
-              trigger: aboutTrigger,
-              start: 'top bottom',
-              end: 'top top',
-              scrub: true,
-            },
-          });
-        }
-
-        if (plot?.gridGroup) {
-          const crosses = plot.gridGroup.querySelectorAll('.hero-grid-cross');
-          gsap.to(crosses, {
-            scale: MOTION.hero.scrollLinked.gridScaleMax,
-            transformOrigin: 'center center',
-            scrollTrigger: {
-              trigger: aboutTrigger,
-              start: 'top bottom',
-              end: 'top top',
-              scrub: true,
-            },
-          });
-        }
+      if (plot.footprintPath) {
+        const limewash =
+          getComputedStyle(document.documentElement).getPropertyValue('--color-limewash').trim() ||
+          'var(--color-limewash)';
+        gsap.to(plot.footprintPath, { fill: limewash, scrollTrigger: scrub });
       }
 
-      return () => {
-        window.removeEventListener('scroll', handleScrollInterrupt);
-        tl.kill();
-      };
+      if (plot.gridGroup) {
+        gsap.to(plot.gridGroup.querySelectorAll('.hero-grid-cross'), {
+          scale: MOTION.hero.scrollLinked.gridScaleMax,
+          transformOrigin: 'center center',
+          scrollTrigger: scrub,
+        });
+      }
     },
     { scope: containerRef, dependencies: [reducedMotion] },
   );

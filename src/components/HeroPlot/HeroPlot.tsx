@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useRef } from 'react';
+import { forwardRef, useImperativeHandle, useRef, type CSSProperties } from 'react';
 import './HeroPlot.css';
 
 export interface HeroPlotHandle {
@@ -104,8 +104,15 @@ export const HeroPlot = forwardRef<HeroPlotHandle, HeroPlotProps>(function HeroP
         {/* Layer 5: Column Grid Crosses */}
         <g ref={gridRef} className="hero-plot-grid">
           {gridCols.map((x) =>
-            gridRows.map((y) => (
-              <g key={`${x}-${y}`} className="hero-grid-cross" transform={`translate(${x}, ${y})`}>
+            gridRows.map((y, r) => (
+              <g
+                key={`${x}-${y}`}
+                className="hero-grid-cross"
+                style={
+                  { '--cross-index': gridCols.indexOf(x) * gridRows.length + r } as CSSProperties
+                }
+                transform={`translate(${x}, ${y})`}
+              >
                 <line x1="-8" y1="0" x2="8" y2="0" vectorEffect="non-scaling-stroke" />
                 <line x1="0" y1="-8" x2="0" y2="8" vectorEffect="non-scaling-stroke" />
               </g>
@@ -130,6 +137,7 @@ export const HeroPlot = forwardRef<HeroPlotHandle, HeroPlotProps>(function HeroP
               dimLabelRefs.current[0] = el;
             }}
             className="hero-dim-label-group"
+            style={{ '--label-index': 0 } as CSSProperties}
             transform="translate(680, 615)"
           >
             <rect x="-44" y="-14" width="88" height="28" rx="2" className="hero-dim-badge" />
@@ -153,6 +161,7 @@ export const HeroPlot = forwardRef<HeroPlotHandle, HeroPlotProps>(function HeroP
               dimLabelRefs.current[1] = el;
             }}
             className="hero-dim-label-group hero-dim-lateral"
+            style={{ '--label-index': 1 } as CSSProperties}
             transform="translate(885, 390)"
           >
             <rect x="-44" y="-14" width="88" height="28" rx="2" className="hero-dim-badge" />

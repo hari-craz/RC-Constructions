@@ -53,6 +53,32 @@
   stroke-width: var(--lw-medium);
 }
 
+/* Site set-out: pegs, level staff and starter bars */
+.b-peg rect {
+  fill: var(--color-concrete);
+  stroke: var(--color-limewash);
+  stroke-width: var(--lw-medium);
+}
+
+.b-datum line,
+.b-string,
+.b-starter {
+  stroke: var(--color-steel);
+  stroke-width: var(--lw-medium);
+  fill: none;
+}
+
+.b-string,
+.b-starter {
+  stroke-width: var(--lw-hair);
+}
+
+.b-level-label {
+  font-family: var(--font-body);
+  font-size: 14px;
+  fill: var(--color-limewash);
+}
+
 /* Heavy section cuts: concrete mass with a limewash outline */
 .b-footing,
 .b-stub,
@@ -132,7 +158,7 @@
 
 .b-plate-text {
   font-family: var(--font-body);
-  font-size: 10.5px;
+  font-size: 11.5px;
   fill: var(--color-limewash);
 }
 
@@ -169,6 +195,7 @@
   }
 
   .b-dim-label,
+  .b-level-label,
   .b-plate {
     display: none;
   }

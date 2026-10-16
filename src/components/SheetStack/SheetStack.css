@@ -80,9 +80,11 @@
 }
 
 .sheet-inner > .sheet-wide {
-  padding-left: var(--column-left);
-  padding-right: var(--page-gutter);
-  max-width: 120rem;
+  width: 100%;
+  max-width: calc(var(--wide-content-max) + 2 * var(--page-gutter));
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
+  box-sizing: border-box;
 }
 
 .sheet-inner > .sheet-column {
@@ -102,8 +104,9 @@
     padding-top: calc(var(--site-band-height) + var(--space-6));
   }
 
-  .sheet-inner > .sheet-wide {
-    padding-left: var(--page-gutter);
+  /* Sections without the site window do not reserve the band */
+  .sheet-inner:has(> .sheet-wide) {
+    padding-top: calc(var(--nav-height) + var(--space-6));
   }
 
   .sheet-inner > .sheet-column {

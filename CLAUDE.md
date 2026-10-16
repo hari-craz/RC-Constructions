@@ -44,6 +44,13 @@ Single-page scroll-driven portfolio site where a building is progressively const
 3. **CI Gate**: Branch protection requires the unified `ci-pass` aggregate check and security checks.
 4. **Version Pins**: Never bump `typescript` to 7 or `eslint` to 10 until plugin ecosystem matures.
 
+## Performance Rules
+
+1. **GSAP, ScrollTrigger and Lenis are lazy**: import `gsap`, `ScrollTrigger` and `useGSAP` only from `src/lib/gsap.ts` (forwards to the `gsapCore` chunk, loaded after the first input via `motionGate()`). Never import `gsap` or `lenis` directly elsewhere.
+2. **First paint is CSS only**: the hero intro and loading line are CSS; nothing above the fold waits on the motion chunk.
+3. **Split setup into small tasks** (`inOwnTask`); no task over about 50 ms on first scroll.
+4. **Measure the production build**: `node scripts/lh-median.mjs mobile 5` (see `docs/PERFORMANCE.md`). Targets: mobile performance >= 90, LCP <= 2.5 s, TBT <= 200 ms, CLS <= 0.01.
+
 ## Layout & Building Rules
 
 - One 12-column grid: text in columns 1-5, fixed site window (constant formwork) in columns 6-12; mobile band 42svh. Details in `docs/BUILDING.md` and `docs/DESIGN.md` section 8.

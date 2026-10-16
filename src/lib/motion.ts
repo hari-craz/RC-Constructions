@@ -4,14 +4,14 @@
  */
 export const MOTION = {
   sheetStack: {
-    scaleMin: 0.94,
-    scaleMax: 1,
     radiusSheetPx: 32,
     radiusSquarePx: 0,
     dimOverlayOpacity: 0.1,
-    transformOrigin: 'center top',
-    transformOriginTall: 'center bottom',
     ease: 'power2.out',
+  },
+  motionGate: {
+    idleMs: 8000,
+    mountDelayMs: 150,
   },
   scroll: {
     duration: 1.2,
@@ -19,6 +19,7 @@ export const MOTION = {
     lagSmoothing: 0,
     resizeDebounceMs: 150,
   },
+  /* hero.* load-sequence timings are mirrored by the CSS in HeroPlot.css and Hero.css */
   hero: {
     boundaryStart: 0.0,
     boundaryDuration: 1.0,
@@ -42,6 +43,8 @@ export const MOTION = {
     totalDuration: 2.6,
     ease: 'power2.out',
     scrollLinked: {
+      start: 'top bottom',
+      end: 'top top',
       gridScaleMax: 1.35,
       ease: 'none',
     },
@@ -63,6 +66,7 @@ export const MOTION = {
     slabDrawStagger: 0.55,
     memberDuration: 0.3,
     memberStagger: 0.06,
+    starterStagger: 0.02,
     wallDuration: 0.4,
     wallStagger: 0.12,
     wallFillDuration: 0.4,
@@ -80,11 +84,6 @@ export const MOTION = {
   },
   founder: {
     revealDuration: 0.9,
-    ease: 'power2.out',
-  },
-  loading: {
-    maxDuration: 1.2,
-    retractDuration: 0.4,
     ease: 'power2.out',
   },
   cursor: {

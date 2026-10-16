@@ -210,9 +210,10 @@
 }
 
 .gallery-slot-placeholder-mark {
-  font-family: var(--font-headline);
+  font-family: var(--font-body);
   font-size: 0.875rem;
-  letter-spacing: var(--tracking-wide);
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
   color: var(--color-ink-muted-light);
 }
 

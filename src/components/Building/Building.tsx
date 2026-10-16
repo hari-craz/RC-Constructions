@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { getStageBySectionId, isSiteWindowVisible, type StageId } from '../../data/stages';
 import { useActiveSection } from '../../hooks/useActiveSection';
 import { useScroll } from '../../hooks/useScroll';
-import { gsap, useGSAP } from '../../lib/gsap';
+import { gsap, inOwnTask, motionGate, useGSAP } from '../../lib/gsap';
 import { MOTION } from '../../lib/motion';
 import {
   BAYS,
@@ -12,6 +12,7 @@ import {
   COLUMN_LEFTS,
   COLUMN_WIDTH,
   CORE_SLIT,
+  DATUM_STAFF,
   ENTRANCE,
   FOOTING,
   FOOTINGS,
@@ -19,11 +20,16 @@ import {
   GROUND_Y,
   NAME_PLATE,
   PANE_INSET,
-  PIT,
+  PEGS,
+  PIT_BOTTOM,
+  PIT_POINTS,
+  STRING_HEIGHT,
+  TIE_BEAM,
   SLAB_THICKNESS,
   SLAB_TOPS,
+  STARTER_HEIGHT,
   STOREY_COUNT,
-  VIEWBOX,
+  VIEWBOXES,
   WINDOWS,
   storeyBounds,
   wallBounds,
@@ -34,6 +40,7 @@ export interface BuildingProps {
   className?: string;
 }
 
+const PHONE_QUERY = '(width < 1024px)';
 const STOREYS = Array.from({ length: STOREY_COUNT }, (_, s) => s);
 const LEFT_ORIGIN = '0% 50%';
 const TOP_ORIGIN = '50% 0%';
@@ -43,6 +50,15 @@ const STAIR_POINTS = Array.from({ length: 7 }, (_, k) => {
   const x = k % 2 === 0 ? CORE_SLIT.x + 6 : CORE_SLIT.x + CORE_SLIT.width - 6;
   return `${x},${CORE_SLIT.y + CORE_SLIT.height - 52 * k}`;
 }).join(' ');
+
+/** Reinforcement cage for a column starter: three bars with stirrups every 22 units. */
+function starterCage(x: number) {
+  let d = '';
+  for (const dx of [3, 8, 13]) d += `M${x + dx} ${GROUND_Y}V${GROUND_Y - STARTER_HEIGHT}`;
+  for (let y = GROUND_Y - 14; y > GROUND_Y - STARTER_HEIGHT; y -= 22)
+    d += `M${x + 3} ${y}H${x + 13}`;
+  return d;
+}
 
 const RAILINGS = WINDOWS.filter((w) => w.storey > 0).map((w) => {
   const rail = w.y + 36;
@@ -56,6 +72,7 @@ const RAILINGS = WINDOWS.filter((w) => w.storey > 0).map((w) => {
 export function Building({ className = '' }: BuildingProps) {
   const containerRef = useRef<HTMLElement | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [phone, setPhone] = useState(() => window.matchMedia(PHONE_QUERY).matches);
   const { reducedMotion } = useScroll();
   const activeSection = useActiveSection();
 
@@ -67,26 +84,32 @@ export function Building({ className = '' }: BuildingProps) {
       : 'survey';
   const isVisible = isSiteWindowVisible(activeSection);
 
-  // Lazy mount after initial idle period to stay completely off the Hero LCP critical path
   useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    let idleId: number | null = null;
+    const query = window.matchMedia(PHONE_QUERY);
+    const onChange = (e: MediaQueryListEvent) => setPhone(e.matches);
+    query.addEventListener('change', onChange);
+    return () => query.removeEventListener('change', onChange);
+  }, []);
 
-    if ('requestIdleCallback' in window) {
-      idleId = window.requestIdleCallback(() => setMounted(true), { timeout: 1500 });
-    } else {
-      timeoutId = setTimeout(() => setMounted(true), 500);
-    }
-
+  // The building mounts only once motion is needed (first input or an anchor in the URL),
+  // keeping its markup and timelines off the first-paint critical path.
+  useEffect(() => {
+    let cancelled = false;
+    // A short pause keeps the mount out of the same task as the input that opened the gate
+    void motionGate()
+      .then(() => new Promise((resolve) => setTimeout(resolve, MOTION.motionGate.mountDelayMs)))
+      .then(() => {
+        if (!cancelled) setMounted(true);
+      });
     return () => {
-      if (idleId !== null && 'cancelIdleCallback' in window) window.cancelIdleCallback(idleId);
-      if (timeoutId !== null) clearTimeout(timeoutId);
+      cancelled = true;
     };
   }, []);
 
   useGSAP(
-    () => {
+    (context) => {
       if (!mounted || reducedMotion || !containerRef.current) return;
+      let cancelled = false;
 
       const root = containerRef.current;
       const all = (selector: string) => gsap.utils.toArray<SVGElement>(selector, root);
@@ -108,7 +131,15 @@ export function Building({ className = '' }: BuildingProps) {
         targets.forEach((target, i) => tl.fromTo(target, from, to, at + i * step));
       };
 
+      // Each stage's timeline is built in its own task, so setup never forms one long task
       const scrubStage = (sectionId: string, build: (tl: gsap.core.Timeline) => void) => {
+        void inOwnTask(() => {
+          if (cancelled) return;
+          context.add(() => buildStage(sectionId, build));
+        });
+      };
+
+      const buildStage = (sectionId: string, build: (tl: gsap.core.Timeline) => void) => {
         const trigger = document.getElementById(sectionId);
         if (!trigger) return;
         const tl = gsap.timeline({
@@ -134,6 +165,22 @@ export function Building({ className = '' }: BuildingProps) {
           { scaleX: 0, transformOrigin: LEFT_ORIGIN },
           { scaleX: 1, duration: B.memberDuration, ease: B.strokeEase },
           B.digDuration + B.footingDuration + B.memberDuration,
+        );
+        staggered(
+          tl,
+          all('.b-peg, .b-datum'),
+          { opacity: 0 },
+          { opacity: 1, duration: B.memberDuration, ease: B.fillEase },
+          0,
+          B.memberStagger,
+        );
+        staggered(
+          tl,
+          all('.b-starter'),
+          { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
+          { scaleY: 1, duration: B.memberDuration, ease: B.strokeEase },
+          B.digDuration + B.footingDuration + B.memberDuration,
+          B.starterStagger,
         );
         staggered(
           tl,
@@ -196,6 +243,7 @@ export function Building({ className = '' }: BuildingProps) {
           B.wallStagger,
         );
         tl.to(all('.b-pit'), { fill: raised, duration: B.wallDuration, ease: B.fillEase }, 0);
+        tl.to(all('.b-string'), { opacity: 0, duration: B.wallDuration, ease: B.fillEase }, 0);
       });
 
       // Stage 5: Fit-out — frames, mullions, doors, stair flights, railings
@@ -246,15 +294,20 @@ export function Building({ className = '' }: BuildingProps) {
             B.dimensionLabelDelay + B.dimensionDrawDuration,
           );
       });
+
+      return () => {
+        cancelled = true;
+      };
     },
     { scope: containerRef, dependencies: [mounted, reducedMotion] },
   );
 
   if (!mounted) return null;
 
+  const view = phone ? VIEWBOXES.mobile : VIEWBOXES.desktop;
   const frameWidth = FRAME.right - FRAME.left;
   const dimX = FRAME.right + 28;
-  const dimWidthY = BUILDING_TOP - 36;
+  const dimWidthY = BUILDING_TOP - 34;
 
   return (
     <aside
@@ -266,21 +319,57 @@ export function Building({ className = '' }: BuildingProps) {
     >
       <svg
         className="building-svg"
-        viewBox={`0 0 ${VIEWBOX.width} ${VIEWBOX.height}`}
-        preserveAspectRatio="xMidYMax slice"
+        viewBox={`${view.x} ${view.y} ${view.width} ${view.height}`}
+        preserveAspectRatio="xMidYMax meet"
         role="presentation"
         focusable="false"
       >
         {/* Ground: soil mass and the ground line run the full width of the window */}
-        <rect className="b-soil" x={-400} y={GROUND_Y} width={2000} height={400} />
-        <line className="b-ground-line" x1={-400} y1={GROUND_Y} x2={1600} y2={GROUND_Y} />
+        <rect className="b-soil" x={-4000} y={GROUND_Y} width={9000} height={4000} />
+        <line className="b-ground-line" x1={-4000} y1={GROUND_Y} x2={5000} y2={GROUND_Y} />
 
         {/* STAGE 2: FOUNDATION */}
         <g id="stage-foundation" className="stage-group">
-          <polygon
-            className="b-pit"
-            points={`${PIT.topLeft},${GROUND_Y} ${PIT.bottomLeft},${GROUND_Y + PIT.depth} ${PIT.bottomRight},${GROUND_Y + PIT.depth} ${PIT.topRight},${GROUND_Y}`}
+          <polygon className="b-pit" points={PIT_POINTS.map((pt) => pt.join(',')).join(' ')} />
+          <line
+            className="b-string"
+            x1={PEGS[0].x}
+            x2={PEGS[1].x}
+            y1={GROUND_Y - STRING_HEIGHT}
+            y2={GROUND_Y - STRING_HEIGHT}
           />
+          {PEGS.map((peg) => (
+            <g key={peg.x} className="b-peg">
+              <rect x={peg.x - 3} y={GROUND_Y - peg.height} width={6} height={peg.height + 14} />
+              <rect x={peg.x - 16} y={GROUND_Y - peg.height} width={32} height={6} />
+            </g>
+          ))}
+          <g className="b-datum">
+            <line
+              x1={DATUM_STAFF.x}
+              y1={GROUND_Y}
+              x2={DATUM_STAFF.x}
+              y2={GROUND_Y - DATUM_STAFF.height}
+            />
+            {Array.from({ length: DATUM_STAFF.height / DATUM_STAFF.tickGap }, (_, i) => (
+              <line
+                key={i}
+                x1={DATUM_STAFF.x}
+                x2={DATUM_STAFF.x + (i % 2 === 0 ? 16 : 9)}
+                y1={GROUND_Y - (i + 1) * DATUM_STAFF.tickGap}
+                y2={GROUND_Y - (i + 1) * DATUM_STAFF.tickGap}
+              />
+            ))}
+            <text className="b-level-label" x={DATUM_STAFF.x - 6} y={GROUND_Y + 36}>
+              0.00 m
+            </text>
+            <text className="b-level-label" x={DATUM_STAFF.x - 6} y={PIT_BOTTOM - 6}>
+              -3.20 m
+            </text>
+          </g>
+          {COLUMN_LEFTS.map((x) => (
+            <path key={x} className="b-starter" d={starterCage(x)} />
+          ))}
           {FOOTINGS.map((f) => (
             <rect
               key={f.x}
@@ -311,9 +400,9 @@ export function Building({ className = '' }: BuildingProps) {
           <rect
             className="b-tie"
             x={COLUMN_LEFTS[0]}
-            y={GROUND_Y + 22}
+            y={TIE_BEAM.y}
             width={FRAME.coreLeft - COLUMN_LEFTS[0]}
-            height={16}
+            height={TIE_BEAM.height}
           />
           <rect
             className="b-ground-slab"
@@ -557,7 +646,7 @@ export function Building({ className = '' }: BuildingProps) {
           <text
             className="b-dim-label"
             x={(FRAME.left + FRAME.right) / 2}
-            y={dimWidthY - 12}
+            y={dimWidthY + 18}
             textAnchor="middle"
           >
             17.40 m
