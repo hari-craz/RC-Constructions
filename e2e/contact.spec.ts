@@ -250,7 +250,11 @@ test.describe('Phase 7D — Contact Section and Formspree Integration', () => {
     await page.keyboard.press('Tab'); // to location
     await page.keyboard.press('Tab'); // to message
     await page.keyboard.type('Full keyboard navigation verification description.');
-    await page.keyboard.press('Tab'); // to submit button
+    // The privacy link sits before the button; Safari-family browsers skip links when tabbing
+    const submit = contact.locator('.contact-submit-btn');
+    for (let i = 0; i < 3 && !(await submit.evaluate((el) => el === document.activeElement)); i++) {
+      await page.keyboard.press('Tab');
+    }
     await page.keyboard.press('Enter');
 
     const successRegion = contact.locator('[role="status"]');

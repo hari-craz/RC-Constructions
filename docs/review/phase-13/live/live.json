@@ -1,0 +1,252 @@
+{
+  "url": "https://rc.unitaryx.org",
+  "date": "2026-10-16T10:01:27.180Z",
+  "profiles": {
+    "desktop": {
+      "console": [
+        {
+          "type": "warning",
+          "text": "Element not found: #foundation",
+          "location": "https://rc.unitaryx.org/assets/index-CxyC5i0h.js"
+        },
+        {
+          "type": "warning",
+          "text": "Element not found: #structure",
+          "location": "https://rc.unitaryx.org/assets/index-CxyC5i0h.js"
+        },
+        {
+          "type": "warning",
+          "text": "Element not found: #envelope",
+          "location": "https://rc.unitaryx.org/assets/index-CxyC5i0h.js"
+        },
+        {
+          "type": "warning",
+          "text": "Element not found: #fitout",
+          "location": "https://rc.unitaryx.org/assets/index-CxyC5i0h.js"
+        }
+      ],
+      "pageErrors": [],
+      "failed": [],
+      "nonOk": [],
+      "violations": []
+    },
+    "mobile": {
+      "console": [
+        {
+          "type": "warning",
+          "text": "Element not found: #foundation",
+          "location": "https://rc.unitaryx.org/assets/index-CxyC5i0h.js"
+        },
+        {
+          "type": "warning",
+          "text": "Element not found: #structure",
+          "location": "https://rc.unitaryx.org/assets/index-CxyC5i0h.js"
+        },
+        {
+          "type": "warning",
+          "text": "Element not found: #envelope",
+          "location": "https://rc.unitaryx.org/assets/index-CxyC5i0h.js"
+        },
+        {
+          "type": "warning",
+          "text": "Element not found: #fitout",
+          "location": "https://rc.unitaryx.org/assets/index-CxyC5i0h.js"
+        }
+      ],
+      "pageErrors": [],
+      "failed": [],
+      "nonOk": [],
+      "violations": []
+    }
+  },
+  "headers": {
+    "/ /": {
+      "status": 200,
+      "headers": {
+        "access-control-allow-origin": "*",
+        "age": "88",
+        "cache-control": "public, max-age=0, must-revalidate",
+        "content-disposition": "inline",
+        "content-encoding": "br",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://formspree.io; form-action 'self' https://formspree.io; base-uri 'self'; frame-ancestors 'none'; object-src 'none';",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Fri, 16 Oct 2026 10:02:24 GMT",
+        "etag": "W/\"6094ede6c416ad458d5c5832c2f6cfd4\"",
+        "last-modified": "Fri, 16 Oct 2026 10:00:55 GMT",
+        "permissions-policy": "camera=(), microphone=(), geolocation=()",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "server": "Vercel",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-vercel-cache": "HIT",
+        "x-vercel-id": "bom1::nlm7p-1792144944759-733c055ca985"
+      }
+    },
+    "asset /assets/index-CxyC5i0h.js": {
+      "status": 200,
+      "headers": {
+        "access-control-allow-origin": "*",
+        "age": "54",
+        "cache-control": "public, max-age=31536000, immutable",
+        "content-disposition": "inline; filename=\"index-CxyC5i0h.js\"",
+        "content-encoding": "br",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://formspree.io; form-action 'self' https://formspree.io; base-uri 'self'; frame-ancestors 'none'; object-src 'none';",
+        "content-type": "application/javascript; charset=utf-8",
+        "date": "Fri, 16 Oct 2026 10:02:24 GMT",
+        "etag": "W/\"3878ab81209834197ca051d90ca1cf16\"",
+        "last-modified": "Fri, 16 Oct 2026 10:01:30 GMT",
+        "permissions-policy": "camera=(), microphone=(), geolocation=()",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "server": "Vercel",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-vercel-cache": "HIT",
+        "x-vercel-id": "bom1::hprq6-1792144944890-c605ee0461c8"
+      }
+    },
+    "/robots.txt /robots.txt": {
+      "status": 200,
+      "headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-origin": "*",
+        "age": "0",
+        "cache-control": "public, max-age=0, must-revalidate",
+        "content-disposition": "inline; filename=\"robots.txt\"",
+        "content-length": "73",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://formspree.io; form-action 'self' https://formspree.io; base-uri 'self'; frame-ancestors 'none'; object-src 'none';",
+        "content-type": "text/plain; charset=utf-8",
+        "date": "Fri, 16 Oct 2026 10:02:25 GMT",
+        "etag": "\"b1d8232dc19640d4337b2f7a13edd8f9\"",
+        "last-modified": "Fri, 16 Oct 2026 10:02:25 GMT",
+        "permissions-policy": "camera=(), microphone=(), geolocation=()",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "server": "Vercel",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-vercel-cache": "MISS",
+        "x-vercel-id": "bom1::rd9kb-1792144944939-05067ab46997"
+      }
+    },
+    "/sitemap.xml /sitemap.xml": {
+      "status": 200,
+      "headers": {
+        "accept-ranges": "bytes",
+        "access-control-allow-origin": "*",
+        "age": "0",
+        "cache-control": "public, max-age=0, must-revalidate",
+        "content-disposition": "inline; filename=\"sitemap.xml\"",
+        "content-length": "237",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://formspree.io; form-action 'self' https://formspree.io; base-uri 'self'; frame-ancestors 'none'; object-src 'none';",
+        "content-type": "application/xml",
+        "date": "Fri, 16 Oct 2026 10:02:25 GMT",
+        "etag": "\"003f09786dddaea18b7a40a761135785\"",
+        "last-modified": "Fri, 16 Oct 2026 10:02:25 GMT",
+        "permissions-policy": "camera=(), microphone=(), geolocation=()",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "server": "Vercel",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-vercel-cache": "MISS",
+        "x-vercel-id": "bom1::vqg4f-1792144945295-1726c62c5904"
+      }
+    },
+    "/.well-known/security.txt /.well-known/security.txt": {
+      "status": 404,
+      "headers": {
+        "access-control-allow-origin": "*",
+        "age": "88",
+        "cache-control": "public, max-age=0, must-revalidate",
+        "content-disposition": "inline; filename=\"404\"",
+        "content-encoding": "br",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://formspree.io; form-action 'self' https://formspree.io; base-uri 'self'; frame-ancestors 'none'; object-src 'none';",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Fri, 16 Oct 2026 10:02:25 GMT",
+        "etag": "W/\"5ec541f265930c40dbf8e20a6cb0dbf9\"",
+        "last-modified": "Fri, 16 Oct 2026 10:00:56 GMT",
+        "permissions-policy": "camera=(), microphone=(), geolocation=()",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "server": "Vercel",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-vercel-cache": "HIT",
+        "x-vercel-id": "bom1::czgwn-1792144945618-5240d13a4371"
+      }
+    },
+    "/nonexistent-path /nonexistent-path": {
+      "status": 404,
+      "headers": {
+        "access-control-allow-origin": "*",
+        "age": "88",
+        "cache-control": "public, max-age=0, must-revalidate",
+        "content-disposition": "inline; filename=\"404\"",
+        "content-encoding": "br",
+        "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'self' https://formspree.io; form-action 'self' https://formspree.io; base-uri 'self'; frame-ancestors 'none'; object-src 'none';",
+        "content-type": "text/html; charset=utf-8",
+        "date": "Fri, 16 Oct 2026 10:02:25 GMT",
+        "etag": "W/\"5ec541f265930c40dbf8e20a6cb0dbf9\"",
+        "last-modified": "Fri, 16 Oct 2026 10:00:56 GMT",
+        "permissions-policy": "camera=(), microphone=(), geolocation=()",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "server": "Vercel",
+        "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+        "x-content-type-options": "nosniff",
+        "x-frame-options": "DENY",
+        "x-vercel-cache": "HIT",
+        "x-vercel-id": "bom1::dxtqn-1792144945737-c54dfed5f66e"
+      }
+    }
+  },
+  "hashLinks": [
+    {
+      "href": "#main",
+      "text": "Skip to main content",
+      "targetExists": true
+    },
+    {
+      "href": "#hero",
+      "text": "RC Constructions",
+      "targetExists": true
+    },
+    {
+      "href": "#contact",
+      "text": "Enquire",
+      "targetExists": true
+    },
+    {
+      "href": "#contact",
+      "text": "Request a quote",
+      "targetExists": true
+    },
+    {
+      "href": "#hero",
+      "text": "Back to top",
+      "targetExists": true
+    }
+  ],
+  "sectionIds": [
+    "hero",
+    "foundation",
+    "structure",
+    "envelope",
+    "fitout",
+    "completion",
+    "founder",
+    "contact"
+  ],
+  "images": [
+    {
+      "src": "https://rc.unitaryx.org/images/founder-gokul.jpg",
+      "w": 0
+    }
+  ],
+  "formDisabled": {
+    "found": true,
+    "disabled": true,
+    "note": null
+  }
+}

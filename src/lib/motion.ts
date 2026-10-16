@@ -87,11 +87,11 @@ export const MOTION = {
     ease: 'power2.out',
   },
   cursor: {
-    quickToDuration: 0.15,
+    quickToDuration: 0.1,
     quickToEase: 'power2.out',
     frameSize: 28,
-    dotSize: 2,
-    crosshairLength: 8,
+    dotSize: 3,
+    crosshairLength: 12,
   },
   overlay: {
     sheetRiseDuration: 0.7,

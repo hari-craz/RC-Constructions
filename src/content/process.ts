@@ -2,71 +2,69 @@ export interface ProcessStep {
   readonly id: string;
   readonly number: string;
   readonly title: string;
+  /** One short paragraph (about two sentences). */
   readonly description: string;
+  /** The single thing the client receives at this step. */
   readonly deliverable: string;
 }
 
 export interface ProcessContent {
   readonly title: string;
+  readonly deliverableLabel: string;
   readonly steps: readonly ProcessStep[];
 }
 
 export const PROCESS_CONTENT: ProcessContent = {
-  title: 'Construction Process',
+  title: 'Construction process',
+  deliverableLabel: 'You receive',
   steps: [
     {
       id: 'step-01-enquiry',
       number: '01',
-      title: 'Enquiry & Site Visit',
+      title: 'Enquiry and site visit',
       description:
-        'We inspect the plot, review boundary markings, and assess access roads and soil strata. Our founder Gokul meets the client on site to record structural intentions and physical site constraints.',
-      deliverable:
-        'Site inspection notes, topographical baseline, and boundary verification report.',
+        'We visit the plot, check the boundary markings, and look at access roads and soil. We meet you on site to note what you want built and what limits the site.',
+      deliverable: 'Site visit notes and a boundary check.',
     },
     {
       id: 'step-02-scope',
       number: '02',
-      title: 'Scope & Estimate',
+      title: 'Scope and estimate',
       description:
-        'We prepare an itemised bill of quantities based on structural Bay dimensions and material grades. Every quantity of steel, cement, aggregate, and labour is priced transparently before signing.',
-      deliverable:
-        'Itemised bill of quantities with fixed line-item rates and stage payment milestones.',
+        'We prepare an itemised bill of quantities from the structural dimensions and material grades. Steel, cement, aggregate and labour are priced as separate lines before you sign.',
+      deliverable: 'An itemised estimate with stage payment milestones.',
     },
     {
       id: 'step-03-design',
       number: '03',
-      title: 'Design & Approvals',
+      title: 'Design and approvals',
       description:
-        'Our structural engineers draft working drawings, reinforcement schedules, and foundation layouts. We coordinate statutory building permits and municipal planning clearances.',
-      deliverable:
-        'Signed municipal planning approval, structural drawings, and bar-bending schedules.',
+        'Our engineers draft working drawings, reinforcement schedules and foundation layouts. We prepare the permit and planning applications and follow them through.',
+      deliverable: 'Structural drawings and bar-bending schedules.',
     },
     {
       id: 'step-04-mobilisation',
       number: '04',
       title: 'Mobilisation',
       description:
-        'We erect site fencing, set up water and electrical supplies, and mobilise earthmoving machinery. Laser-calibrated survey pegs establish the building grid on ground.',
-      deliverable:
-        'Established survey grid markers, safety perimeter, and material test certificates.',
+        'We put up site fencing, arrange water and power, and bring in earthmoving machinery. Survey pegs mark the building grid on the ground.',
+      deliverable: 'A marked building grid and a fenced site.',
     },
     {
       id: 'step-05-build',
       number: '05',
-      title: 'Build & Supervision',
+      title: 'Build and supervision',
       description:
-        'Our permanent site supervisors manage daily formwork, column casting, and curing schedules on the slab. Daily photo logs and concrete test results are shared directly with the client.',
-      deliverable:
-        'Daily site pour logs, seven-day cube test reports, and milestone stage inspections.',
+        'Our site supervisors manage formwork, column casting and curing on the slab. We share daily photos and concrete test results with you.',
+      deliverable: 'Pour records and cube test reports.',
     },
     {
       id: 'step-06-handover',
       number: '06',
-      title: 'Handover & Care',
+      title: 'Handover and care',
       description:
-        'We conduct complete MEP testing, drainage flow verification, and door-window operational checks. Keys are handed over with structural as-built drawings and an ongoing defects liability commitment.',
-      deliverable:
-        'As-built structural dossier, testing completion certificates, and physical keys handover.',
+        'We test mechanical, electrical and plumbing systems, check drainage flow, and operate doors and windows. We walk the building with you and list any snags.',
+      deliverable: 'As-built drawings, test records and the keys.',
     },
   ],
 };

@@ -38,15 +38,32 @@ export function resolveCursorState(target: Element | null): CursorState {
   return 'default';
 }
 
+function luminanceOf(color: string): { luminance: number; alpha: number } | null {
+  const m = color.match(/rgba?\(([^)]+)\)/);
+  if (!m?.[1]) return null;
+  const parts = m[1]
+    .split(/[\s,/]+/)
+    .filter(Boolean)
+    .map(Number);
+  const [r = 0, g = 0, b = 0, alpha = 1] = parts;
+  const channel = (v: number) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  return { luminance: 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b), alpha };
+}
+
 /**
- * Resolves cursor tone based on surface underneath.
- * 'dark' tone means the surface is dark (e.g. formwork) so cursor is light (limewash).
- * 'light' tone means surface is light (e.g. limewash, concrete) so cursor is dark (ink).
+ * Resolves cursor tone from the surface underneath.
+ * 'dark' tone means the surface is dark (formwork) so the marker is light (limewash).
+ * 'light' tone means the surface is light (limewash, concrete) so the marker is dark (ink).
+ * An explicit `data-cursor-tone` or dark sheet class wins; otherwise the first opaque
+ * background colour up the tree decides, so every surface (sheets, the building window,
+ * the header, dialogs) gets a marker with at least 3:1 contrast.
  */
 export function resolveCursorTone(target: Element | null): CursorTone {
   if (!target) return 'light';
 
-  // Check closest element declaring explicit tone
   const toneEl = target.closest('[data-cursor-tone], [data-sheet-tone], .sheet-tone-dark');
   if (toneEl) {
     const cursorTone = toneEl.getAttribute('data-cursor-tone');
@@ -56,6 +73,15 @@ export function resolveCursorTone(target: Element | null): CursorTone {
     const sheetTone = toneEl.getAttribute('data-sheet-tone');
     if (sheetTone === 'dark' || toneEl.classList.contains('sheet-tone-dark')) {
       return 'dark';
+    }
+  }
+
+  for (let el: Element | null = target; el; el = el.parentElement) {
+    const parsed = luminanceOf(getComputedStyle(el).backgroundColor);
+    if (parsed && parsed.alpha > 0.5) {
+      // Marker colours are formwork (L about 0.02) and limewash (L about 0.8): pick the one
+      // with the higher contrast against this surface.
+      return parsed.luminance < 0.2 ? 'dark' : 'light';
     }
   }
 

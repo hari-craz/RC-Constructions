@@ -38,8 +38,8 @@
 /* Center 2px precision dot */
 .cursor-dot {
   position: absolute;
-  width: 2px;
-  height: 2px;
+  width: 3px;
+  height: 3px;
   background-color: var(--cur-color);
   border-radius: 50%;
   transition:
@@ -50,8 +50,8 @@
 /* Hairline crosshairs (default state: visible, expand away in frame states) */
 .cursor-hairline-h {
   position: absolute;
-  width: 16px;
-  height: 1px;
+  width: 24px;
+  height: 1.5px;
   background-color: var(--cur-color);
   transition:
     transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
@@ -60,8 +60,8 @@
 
 .cursor-hairline-v {
   position: absolute;
-  width: 1px;
-  height: 16px;
+  width: 1.5px;
+  height: 24px;
   background-color: var(--cur-color);
   transition:
     transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),

@@ -405,7 +405,12 @@ export function Contact() {
                   )}
                 </div>
 
-                <p className="contact-privacy-note">{CONTACT_CONTENT.privacyNotice}</p>
+                <div className="contact-privacy-block">
+                  <p className="contact-privacy-note">{CONTACT_CONTENT.privacyNotice}</p>
+                  <a href={CONTACT_CONTENT.privacyLink.href} className="contact-privacy-link">
+                    {CONTACT_CONTENT.privacyLink.label}
+                  </a>
+                </div>
 
                 <div className="contact-submit-row">
                   <button
@@ -432,6 +437,13 @@ export function Contact() {
             <span className="contact-footer-copy">
               © {new Date().getFullYear()} {CONTACT_CONTENT.footer.companyName}
             </span>
+            <nav className="contact-footer-links" aria-label="Legal">
+              {CONTACT_CONTENT.footer.links.map((link) => (
+                <a key={link.href} href={link.href} className="contact-footer-link">
+                  {link.label}
+                </a>
+              ))}
+            </nav>
             <span className="contact-footer-credit">{CONTACT_CONTENT.footer.builtBy}</span>
             <a href="#hero" className="contact-footer-top" onClick={handleBackToTop}>
               {CONTACT_CONTENT.footer.backToTopLabel}

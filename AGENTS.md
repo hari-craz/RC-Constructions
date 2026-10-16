@@ -3,6 +3,10 @@
 All non-Claude AI agents working in this repository must strictly adhere to the project rules and standards defined in the canonical guide:
 👉 **Read and follow [CLAUDE.md](CLAUDE.md) before performing any work.**
 
+## Content and Launch Law
+
+Company facts only in `src/content/company.ts` (null hides the element; never invent a fact). No guarantee-style claims (`src/content/claims.ts`). One canonical URL in `src/config/site.json`. Sample contact details are flagged and listed in `docs/BEFORE-GOING-LIVE.md`. After a deploy run `node scripts/check-live.mjs`.
+
 ## Performance Law
 
 GSAP, ScrollTrigger and Lenis load lazily through `src/lib/gsap.ts` after the first input; first paint is CSS only. Measure the production build with `node scripts/lh-median.mjs mobile 5` (see `docs/PERFORMANCE.md`). Targets: mobile performance >= 90, LCP <= 2.5 s, TBT <= 200 ms, CLS <= 0.01.

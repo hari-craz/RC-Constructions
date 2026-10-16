@@ -47,9 +47,11 @@ export function Founder() {
 
         <div className="founder-grid">
           <div className="founder-editorial-col">
-            <blockquote className="founder-quote">
-              <p>{FOUNDER_CONTENT.pullQuote}</p>
-            </blockquote>
+            {FOUNDER_CONTENT.pullQuote && (
+              <blockquote className="founder-quote">
+                <p>{FOUNDER_CONTENT.pullQuote}</p>
+              </blockquote>
+            )}
 
             <div className="founder-bio">
               {FOUNDER_CONTENT.bioParagraphs.map((sentence) => (
@@ -59,14 +61,16 @@ export function Founder() {
               ))}
             </div>
 
-            <ul className="founder-facts-list" aria-label="Founder credentials and facts">
-              {FOUNDER_CONTENT.facts.map((fact) => (
-                <li key={fact.id} className="founder-fact-item">
-                  <span className="founder-fact-label">{fact.label}</span>
-                  <span className="founder-fact-value">{fact.value}</span>
-                </li>
-              ))}
-            </ul>
+            {FOUNDER_CONTENT.facts.length > 0 && (
+              <ul className="founder-facts-list" aria-label="Founder facts">
+                {FOUNDER_CONTENT.facts.map((fact) => (
+                  <li key={fact.id} className="founder-fact-item">
+                    <span className="founder-fact-label">{fact.label}</span>
+                    <span className="founder-fact-value">{fact.value}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="founder-portrait-col">

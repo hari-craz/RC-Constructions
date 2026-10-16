@@ -28,7 +28,8 @@ export function About() {
         ease: 'power3.out',
         stagger: 0.1,
         scrollTrigger: {
-          trigger: `#${stage.sectionId}`,
+          // An element, not a selector: a selector would be resolved inside the context scope only
+          trigger: document.getElementById(stage.sectionId),
           start: 'top 75%',
           toggleActions: 'play none none reverse',
         },

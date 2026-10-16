@@ -108,19 +108,16 @@ describe('Projects content model', () => {
       numbers.add(project.number);
 
       expect(project.name.trim()).not.toBe('');
-      expect(project.category.trim()).not.toBe('');
+      expect(project.type.trim()).not.toBe('');
+      expect(project.clientType.trim()).not.toBe('');
       expect(project.location.trim()).not.toBe('');
       expect(project.year.trim()).not.toBe('');
       expect(project.builtArea.trim()).not.toBe('');
       expect(project.slug.trim()).not.toBe('');
       expect(project.duration.trim()).not.toBe('');
-      expect(project.role.trim()).not.toBe('');
-      expect(project.brief.trim()).not.toBe('');
-      const wordCount = project.brief.trim().split(/\s+/).length;
-      expect(wordCount).toBeGreaterThanOrEqual(60);
-      expect(wordCount).toBeLessThanOrEqual(90);
-      expect(project.scope).toHaveLength(3);
-      project.scope.forEach((s) => expect(s.trim().endsWith('.')).toBe(true));
+      expect(project.challenge.trim()).not.toBe('');
+      expect(project.response.trim()).not.toBe('');
+      expect(project.outcome.trim()).not.toBe('');
       expect(project.gallery).toHaveLength(3);
       project.gallery.forEach((g) => {
         expect(g.id.trim()).not.toBe('');
@@ -129,19 +126,48 @@ describe('Projects content model', () => {
     });
   });
 
+  it('gives every project a distinct situation, not template text', () => {
+    const projects = PROJECTS_CONTENT.projects;
+    for (const field of [
+      'challenge',
+      'response',
+      'outcome',
+      'location',
+      'type',
+      'clientType',
+    ] as const) {
+      expect(new Set(projects.map((p) => p[field])).size, field).toBe(projects.length);
+    }
+    // No two challenges share more than a third of their words
+    const words = (t: string) => new Set(t.toLowerCase().match(/[a-z]{5,}/g) ?? []);
+    for (let i = 0; i < projects.length; i++) {
+      for (let j = i + 1; j < projects.length; j++) {
+        const a = words(projects[i]?.challenge ?? '');
+        const b = words(projects[j]?.challenge ?? '');
+        const shared = [...a].filter((w) => b.has(w)).length;
+        expect(shared / Math.min(a.size, b.size)).toBeLessThan(0.34);
+      }
+    }
+  });
+
+  it('labels the set once as sample content', () => {
+    expect(PROJECTS_CONTENT.sampleNote).toBe('Sample projects for this demo.');
+  });
+
   it('contains no banned marketing words and no exclamation marks', () => {
     const fullProjectsText = [
       PROJECTS_CONTENT.title,
+      PROJECTS_CONTENT.sampleNote,
       ...PROJECTS_CONTENT.projects.flatMap((p) => [
         p.name,
-        p.category,
+        p.type,
         p.location,
         p.year,
         p.builtArea,
         p.duration,
-        p.role,
-        p.brief,
-        ...p.scope,
+        p.clientType,
+        p.challenge,
+        p.response,
         p.outcome,
         ...p.gallery.map((g) => g.caption),
       ]),
@@ -185,15 +211,16 @@ describe('Process content model', () => {
 });
 
 describe('Completion content model', () => {
-  it('contains exactly four completion stats with non-empty values and captions', () => {
-    expect(COMPLETION_CONTENT.stats).toHaveLength(4);
+  it('has a plain title, a one-sentence lead and four handover items', () => {
+    expect(COMPLETION_CONTENT.title).toBe('Work delivered');
+    expect(COMPLETION_CONTENT.lead.split(/[.!?]/).filter((x) => x.trim()).length).toBe(1);
+    expect(COMPLETION_CONTENT.handover).toHaveLength(4);
+    expect(new Set(COMPLETION_CONTENT.handover.map((h) => h.id)).size).toBe(4);
+  });
 
-    const ids = new Set<string>();
+  it('only lists figures the company supplied (none are invented)', () => {
+    expect(COMPLETION_CONTENT.stats.length).toBe(0);
     COMPLETION_CONTENT.stats.forEach((stat) => {
-      expect(stat.id.trim()).not.toBe('');
-      expect(ids.has(stat.id)).toBe(false);
-      ids.add(stat.id);
-
       expect(stat.value.trim()).not.toBe('');
       expect(stat.caption.trim()).not.toBe('');
     });
@@ -203,6 +230,8 @@ describe('Completion content model', () => {
     const fullCompletionText = [
       COMPLETION_CONTENT.title,
       COMPLETION_CONTENT.lead,
+      COMPLETION_CONTENT.handoverTitle,
+      ...COMPLETION_CONTENT.handover.flatMap((h) => [h.title, h.text]),
       ...COMPLETION_CONTENT.stats.flatMap((s) => [s.value, s.caption]),
     ].join(' ');
 
@@ -212,33 +241,27 @@ describe('Completion content model', () => {
 });
 
 describe('Founder content model', () => {
-  it('contains name, role, 3-sentence bio, pull quote, and exactly 3 facts', () => {
+  it('contains name, role, bio and only known facts', () => {
     expect(FOUNDER_CONTENT.name.trim()).not.toBe('');
     expect(FOUNDER_CONTENT.role.trim()).not.toBe('');
-    expect(FOUNDER_CONTENT.bioParagraphs).toHaveLength(3);
-    FOUNDER_CONTENT.bioParagraphs.forEach((sentence) => {
-      expect(sentence.trim()).not.toBe('');
-    });
-    expect(FOUNDER_CONTENT.pullQuote.trim()).not.toBe('');
-    expect(FOUNDER_CONTENT.facts).toHaveLength(3);
-
-    const factIds = new Set<string>();
+    expect(FOUNDER_CONTENT.bioParagraphs.length).toBeGreaterThanOrEqual(2);
+    FOUNDER_CONTENT.bioParagraphs.forEach((sentence) => expect(sentence.trim()).not.toBe(''));
     FOUNDER_CONTENT.facts.forEach((fact) => {
-      expect(fact.id.trim()).not.toBe('');
-      expect(factIds.has(fact.id)).toBe(false);
-      factIds.add(fact.id);
-
       expect(fact.label.trim()).not.toBe('');
       expect(fact.value.trim()).not.toBe('');
     });
-
     expect(FOUNDER_CONTENT.portraitAlt).toBe('Portrait of Gokul, founder of RC Constructions');
   });
 
-  it('contains obvious placeholders and no invented specific credentials', () => {
-    expect(FOUNDER_CONTENT.bioParagraphs[0]).toContain('20XX');
-    const licenceFact = FOUNDER_CONTENT.facts.find((f) => f.id === 'fact-licence');
-    expect(licenceFact?.value).toContain('Registered body to come');
+  it('has no placeholder text, invented years, quotes or credentials', () => {
+    const text = [
+      ...FOUNDER_CONTENT.bioParagraphs,
+      ...FOUNDER_CONTENT.facts.flatMap((f) => [f.label, f.value]),
+      FOUNDER_CONTENT.pullQuote ?? '',
+    ].join(' ');
+    expect(text).not.toMatch(/20XX|\bXX\b|to come|PLACEHOLDER/);
+    expect(FOUNDER_CONTENT.pullQuote).toBeNull();
+    expect(FOUNDER_CONTENT.facts.find((f) => f.id === 'fact-licence')).toBeUndefined();
   });
 
   it('contains no banned marketing words and no exclamation marks', () => {
@@ -246,7 +269,7 @@ describe('Founder content model', () => {
       FOUNDER_CONTENT.name,
       FOUNDER_CONTENT.role,
       ...FOUNDER_CONTENT.bioParagraphs,
-      FOUNDER_CONTENT.pullQuote,
+      FOUNDER_CONTENT.pullQuote ?? '',
       ...FOUNDER_CONTENT.facts.flatMap((f) => [f.label, f.value]),
     ].join(' ');
 
@@ -265,6 +288,7 @@ describe('Contact content model', () => {
     expect(CONTACT_CONTENT.footer.backToTopLabel.trim()).not.toBe('');
 
     expect(CONTACT_CONTENT.channels.length).toBeGreaterThanOrEqual(4);
+    expect(CONTACT_CONTENT.privacyLink.href).toBe('/privacy');
     CONTACT_CONTENT.channels.forEach((channel) => {
       expect(channel.id.trim()).not.toBe('');
       expect(channel.label.trim()).not.toBe('');
@@ -277,7 +301,7 @@ describe('Contact content model', () => {
     expect(phoneChannel?.href).toMatch(/^tel:\+/);
 
     const waChannel = CONTACT_CONTENT.channels.find((c) => c.id === 'whatsapp');
-    expect(waChannel?.href).toMatch(/^https:\/\/wa\.me\/\d+/);
+    if (waChannel) expect(waChannel.href).toMatch(/^https:\/\/wa\.me\/\d+/);
 
     const emailChannel = CONTACT_CONTENT.channels.find((c) => c.id === 'email');
     expect(emailChannel?.href).toMatch(/^mailto:.+@.+/);

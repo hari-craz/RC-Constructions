@@ -209,7 +209,7 @@ export function ProjectOverlay({
             <h2 id="project-overlay-title" className="project-overlay-title">
               {project.name}
             </h2>
-            <p className="project-overlay-role">{project.role}</p>
+            <p className="project-overlay-role">{project.clientType}</p>
 
             <button
               ref={closeBtnRef}
@@ -226,7 +226,7 @@ export function ProjectOverlay({
           <dl className="project-overlay-specs" aria-label="Project specifications">
             <div className="project-spec-item">
               <dt className="project-spec-key">Type</dt>
-              <dd className="project-spec-val">{project.category}</dd>
+              <dd className="project-spec-val">{project.type}</dd>
             </div>
             <div className="project-spec-item">
               <dt className="project-spec-key">Location</dt>
@@ -237,7 +237,7 @@ export function ProjectOverlay({
               <dd className="project-spec-val">{project.year}</dd>
             </div>
             <div className="project-spec-item">
-              <dt className="project-spec-key">Built Area</dt>
+              <dt className="project-spec-key">Built area</dt>
               <dd className="project-spec-val">{project.builtArea}</dd>
             </div>
             <div className="project-spec-item">
@@ -246,32 +246,24 @@ export function ProjectOverlay({
             </div>
           </dl>
 
-          {/* Project Brief */}
-          <section className="project-overlay-section" aria-labelledby="project-brief-heading">
-            <h3 id="project-brief-heading" className="project-overlay-section-title">
-              Contractor Brief
+          {/* The challenge, what we did, the outcome */}
+          <section className="project-overlay-section" aria-labelledby="project-challenge-heading">
+            <h3 id="project-challenge-heading" className="project-overlay-section-title">
+              The challenge
             </h3>
-            <p className="project-overlay-brief-text">{project.brief}</p>
+            <p className="project-overlay-brief-text">{project.challenge}</p>
           </section>
 
-          {/* Scope of Works */}
-          <section className="project-overlay-section" aria-labelledby="project-scope-heading">
-            <h3 id="project-scope-heading" className="project-overlay-section-title">
-              Scope of Works
+          <section className="project-overlay-section" aria-labelledby="project-response-heading">
+            <h3 id="project-response-heading" className="project-overlay-section-title">
+              What we did
             </h3>
-            <ul className="project-overlay-scope-list">
-              {project.scope.map((item, idx) => (
-                <li key={idx} className="project-overlay-scope-item">
-                  {item}
-                </li>
-              ))}
-            </ul>
+            <p className="project-overlay-brief-text">{project.response}</p>
           </section>
 
-          {/* Handover Outcome */}
           <section className="project-overlay-section" aria-labelledby="project-outcome-heading">
             <h3 id="project-outcome-heading" className="project-overlay-section-title">
-              Delivered Outcome
+              Outcome
             </h3>
             <p className="project-overlay-outcome-text">{project.outcome}</p>
           </section>
@@ -279,7 +271,7 @@ export function ProjectOverlay({
           {/* Reserved Concrete Gallery Slots */}
           <section className="project-overlay-section" aria-labelledby="project-gallery-heading">
             <h3 id="project-gallery-heading" className="project-overlay-section-title">
-              Construction Record Drawings
+              Site photos
             </h3>
             <div className="project-overlay-gallery-grid">
               {project.gallery.map((slot) => (

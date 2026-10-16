@@ -22,7 +22,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["vite/client", "@testing-library/jest-dom/vitest"]
+    "types": ["vite/client", "@testing-library/jest-dom/vitest", "node"]
   },
   "include": ["src", "e2e"]
 }

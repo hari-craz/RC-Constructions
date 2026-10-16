@@ -51,6 +51,14 @@ Single-page scroll-driven portfolio site where a building is progressively const
 3. **Split setup into small tasks** (`inOwnTask`); no task over about 50 ms on first scroll.
 4. **Measure the production build**: `node scripts/lh-median.mjs mobile 5` (see `docs/PERFORMANCE.md`). Targets: mobile performance >= 90, LCP <= 2.5 s, TBT <= 200 ms, CLS <= 0.01.
 
+## Content Rules
+
+1. **Company facts live only in `src/content/company.ts`.** A missing fact is `null` and the element is hidden (`hasContent`); never invent a year, licence, figure, quote, client or address, and never show "20XX", "XX" or "to come" in body copy.
+2. **No absolute or guarantee-style wording** (`src/content/claims.ts`; tests fail on it). Use factual, process-based statements.
+3. **One canonical URL**: `src/config/site.json`. Meta tags, sitemap, robots, security.txt and JSON-LD are generated from it (`vite.config.ts`, `src/lib/siteFiles.ts`).
+4. Sample contact details are flagged (`contact.isSample`) and listed first in `docs/BEFORE-GOING-LIVE.md`.
+5. New pages: Vite inputs (`privacy.html`, `terms.html`), no router. Console must stay clean (`e2e/phase-13.spec.ts`).
+
 ## Layout & Building Rules
 
 - One 12-column grid: text in columns 1-5, fixed site window (constant formwork) in columns 6-12; mobile band 42svh. Details in `docs/BUILDING.md` and `docs/DESIGN.md` section 8.

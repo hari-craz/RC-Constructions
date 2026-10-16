@@ -30,7 +30,8 @@ export function Process() {
             '--spine-progress': 1,
             ease: 'none',
             scrollTrigger: {
-              trigger: `#${stage.sectionId}`,
+              // An element, not a selector: a selector would be resolved inside the context scope only
+              trigger: document.getElementById(stage.sectionId),
               start: 'top 70%',
               end: 'bottom 85%',
               scrub: true,
@@ -79,7 +80,9 @@ export function Process() {
                 </div>
                 <p className="process-step-desc">{step.description}</p>
                 <p className="process-step-deliverable">
-                  <span className="process-step-deliverable-label">Client Deliverable:</span>
+                  <span className="process-step-deliverable-label">
+                    {content.deliverableLabel}:
+                  </span>
                   {step.deliverable}
                 </p>
               </li>

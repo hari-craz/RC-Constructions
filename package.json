@@ -30,6 +30,8 @@
     "docker:run": "docker run --rm -p 8080:8080 rc-constructions:latest",
     "docker:dev": "docker compose --profile dev up",
     "compare:headers": "node scripts/compare-headers.mjs",
+    "check:live": "node scripts/check-live.mjs",
+    "check:security-txt": "node scripts/check-security-txt.mjs",
     "generate:og": "node scripts/generate-og-image.mjs",
     "generate:favicons": "node scripts/generate-favicons.mjs"
   },

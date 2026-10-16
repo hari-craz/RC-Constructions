@@ -134,3 +134,4 @@ This protocol validates scroll physics, dynamic viewports, and visual stability 
 - **WebKit variable fonts.** Playwright's WebKit build on Windows renders Big Shoulders Display (variable) at a hairline weight with wide tracking. This is a limitation of that test build, not seen in Chromium or Firefox; confirm on a real iPhone that headings are bold and condensed.
 - **Phone band.** Check the building fills at least 80% of the band width at 360, 390 and 412 px wide, and that the band is at most 52svh.
 - **Native cursor.** On a touch laptop with a mouse, the Windows arrow must be hidden and the survey crosshair shown.
+- **Font preload warning in WebKit (Windows test build).** The console test ignores one message there: the two font preloads reported as "not used". The fonts are loaded and used; check on a real iPhone that no such warning appears and that the fonts are not downloaded twice (Network tab).

@@ -143,6 +143,9 @@ jobs:
       - name: Verify bundle size limit
         run: pnpm size
 
+      - name: Verify security.txt expiry (must be more than 30 days ahead)
+        run: pnpm check:security-txt
+
       - name: Upload production dist artifact
         uses: actions/upload-artifact@v4
         with:

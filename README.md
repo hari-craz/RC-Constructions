@@ -110,6 +110,16 @@ RC Constructions/
 └── playwright.config.ts # Playwright configuration
 ```
 
+## Checking a deployed site
+
+```bash
+node scripts/check-live.mjs https://<live host>      # headers, canonical URL, robots, sitemap, security.txt, legal pages, clean console
+node scripts/check-live.mjs http://localhost:4173    # the same against a local preview or Docker image
+pnpm check:security-txt                              # dist/.well-known/security.txt must expire in more than 30 days
+```
+
+The checker is read-only and never submits the form. Company facts live in `src/content/company.ts`; the canonical URL in `src/config/site.json`.
+
 ## Running Checks
 
 Before submitting any code, verify all gates:

@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://rcconstructions.com/sitemap.xml

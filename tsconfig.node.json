@@ -9,6 +9,7 @@
     "moduleResolution": "bundler",
     "isolatedModules": true,
     "moduleDetection": "force",
+    "resolveJsonModule": true,
     "noEmit": true,
     "strict": true,
     "noUncheckedIndexedAccess": true,
@@ -17,5 +18,16 @@
     "verbatimModuleSyntax": true,
     "types": ["node"]
   },
-  "include": ["vite.config.ts", "playwright.config.ts", "commitlint.config.js", "eslint.config.js"]
+  "include": [
+    "vite.config.ts",
+    "playwright.config.ts",
+    "commitlint.config.js",
+    "eslint.config.js",
+    "src/config/site.json",
+    "src/content/company.ts",
+    "src/legal/html.ts",
+    "src/legal/privacy.ts",
+    "src/legal/terms.ts",
+    "src/lib/siteFiles.ts"
+  ]
 }

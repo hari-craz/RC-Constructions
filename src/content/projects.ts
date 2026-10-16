@@ -8,14 +8,18 @@ export interface ProjectItem {
   slug: string;
   number: string;
   name: string;
-  category: string;
+  type: string;
+  /** Area and city. */
   location: string;
   year: string;
   builtArea: string;
   duration: string;
-  role: string;
-  brief: string;
-  scope: string[];
+  clientType: string;
+  /** The one specific problem the site presented. */
+  challenge: string;
+  /** What the company did about it. */
+  response: string;
+  /** What came out of it, in plain terms. */
   outcome: string;
   gallery: ProjectGallerySlot[];
 }
@@ -23,47 +27,41 @@ export interface ProjectItem {
 export interface ProjectsContent {
   sectionId: string;
   title: string;
+  /** One quiet line shown once for the whole set. */
+  sampleNote: string;
   projects: ProjectItem[];
 }
 
-// All project records below represent client portfolio placeholders to be replaced with verified records before live release.
+/*
+ * SAMPLE CONTENT. These six records are written for this demo and describe no real client.
+ * Replace them with real projects before launch (docs/CONTENT-INTAKE.md, "Projects"):
+ * one entry per project, photos named by the gallery ids below.
+ */
 export const PROJECTS_CONTENT: ProjectsContent = {
   sectionId: 'projects',
-  title: 'Selected Projects Register',
+  title: 'Selected projects',
+  sampleNote: 'Sample projects for this demo.',
   projects: [
     {
       id: 'project-residential-enclave',
       slug: 'residential-enclave',
       number: '01',
       name: 'South Enclave Residences',
-      category: 'Residential',
-      location: 'South Suburban Sector', // PLACEHOLDER: Location
-      year: '2024', // Completion year
-      builtArea: '14,200 sq ft', // PLACEHOLDER: Built area
-      duration: '14 months', // PLACEHOLDER: Contract duration
-      role: 'Main contractor', // PLACEHOLDER: Role
-      brief:
-        'Constructed as a four-storey residential block comprising eight individual family units over ground-level vehicle bays. The assignment required reinforced concrete frame construction on alluvial ground conditions, necessitating cast-in-place bored piling and continuous grade beams. RC Constructions managed all structural formwork, masonry infill, electrical conduits, and service risers. The structural shell completed within fourteen months, allowing interior carpentry and finishing trades to commence on schedule.',
-      scope: [
-        'Installed eighteen bored piles and cast continuous reinforced concrete grade beams to support the four-storey superstructure.',
-        'Poured cast-in-place concrete slabs and erected load-bearing brick masonry partitions across all living quarters.',
-        'Completed concealed plumbing mains, electrical conduit routing, and terrace waterproofing before the seasonal rains.',
-      ],
-      outcome:
-        'Delivered eight residential units with zero structural handover defects in 14 months',
+      type: 'Residential',
+      location: 'Eastern suburb, Chennai',
+      year: '2024',
+      builtArea: '14,200 sq ft',
+      duration: '14 months',
+      clientType: 'Family group',
+      challenge:
+        'The plot sat on soft alluvial soil beside a seasonal stream, with groundwater about a metre and a half below the surface.',
+      response:
+        'We bored eighteen piles and tied them with grade beams, and pumped the pile cap excavations dry before each pour. The ground floor was left open for parking.',
+      outcome: 'Eight flats on four floors, handed over after a joint snag walk with the owners.',
       gallery: [
-        {
-          id: 'gallery-res-1',
-          caption: 'Bored piling and grade beam rebar inspection',
-        },
-        {
-          id: 'gallery-res-2',
-          caption: 'Second-floor structural slab casting and formwork removal',
-        },
-        {
-          id: 'gallery-res-3',
-          caption: 'Exterior brick masonry completion and terrace screed',
-        },
+        { id: 'gallery-res-1', caption: 'Pile cap reinforcement before the pour' },
+        { id: 'gallery-res-2', caption: 'Second-floor slab shuttering' },
+        { id: 'gallery-res-3', caption: 'Terrace screed and brick infill' },
       ],
     },
     {
@@ -71,33 +69,21 @@ export const PROJECTS_CONTENT: ProjectsContent = {
       slug: 'commercial-tower',
       number: '02',
       name: 'Apex Commercial Chambers',
-      category: 'Commercial',
-      location: 'Central Ring Road', // PLACEHOLDER: Location
-      year: '2023', // Completion year
-      builtArea: '28,500 sq ft', // PLACEHOLDER: Built area
-      duration: '18 months', // PLACEHOLDER: Contract duration
-      role: 'Main contractor', // PLACEHOLDER: Role
-      brief:
-        'A five-storey commercial office facility designed for open floor plates and basement vehicle parking. RC Constructions operated as the principal structural contractor, executing earth retention shoring, deep basement excavation, post-tensioned floor slabs, and twin passenger lift shafts. The tight site boundary along a major arterial road demanded phased material deliveries and night-shift concrete pours to maintain transit clearances throughout the eighteen-month construction sequence.',
-      scope: [
-        'Executed soldier pile shoring and basement excavation adjacent to active public utility lines.',
-        'Constructed post-tensioned reinforced concrete slabs allowing column-free commercial office floor layouts.',
-        'Cast reinforced concrete core walls for twin lift shafts and emergency egress stairs.',
-      ],
-      outcome: 'Completed 28,500 square feet of commercial space and basement parking in 18 months',
+      type: 'Commercial',
+      location: 'Central business district, Chennai',
+      year: '2023',
+      builtArea: '28,500 sq ft',
+      duration: '18 months',
+      clientType: 'Private company',
+      challenge:
+        'The basement excavation ran two metres from a live water main and telecom ducts, on a street that could not be closed.',
+      response:
+        'We shored the cut with soldier piles, exposed and propped the main, and read settlement pegs each morning. Post-tensioned slabs gave open office floors.',
+      outcome: 'A five-storey office block with one level of basement parking.',
       gallery: [
-        {
-          id: 'gallery-com-1',
-          caption: 'Basement retention shoring and excavation base slab',
-        },
-        {
-          id: 'gallery-com-2',
-          caption: 'Post-tensioned tendon placement across second office level',
-        },
-        {
-          id: 'gallery-com-3',
-          caption: 'Concrete core wall formwork jump sequence at roof height',
-        },
+        { id: 'gallery-com-1', caption: 'Soldier pile shoring beside the water main' },
+        { id: 'gallery-com-2', caption: 'Post-tensioning cables on the second floor' },
+        { id: 'gallery-com-3', caption: 'Lift core wall formwork at roof level' },
       ],
     },
     {
@@ -105,135 +91,87 @@ export const PROJECTS_CONTENT: ProjectsContent = {
       slug: 'industrial-warehouse',
       number: '03',
       name: 'Corridor Logistics Hub',
-      category: 'Industrial',
-      location: 'Western Industrial Zone', // PLACEHOLDER: Location
-      year: '2023', // Completion year
-      builtArea: '45,000 sq ft', // PLACEHOLDER: Built area
-      duration: '10 months', // PLACEHOLDER: Contract duration
-      role: 'Main contractor', // PLACEHOLDER: Role
-      brief:
-        'An industrial logistics warehouse featuring twenty-four bays of structural steel portal framing on reinforced pedestal footings. The facility required high-tolerance laser-screed concrete flooring to accommodate reach trucks and heavy static rack loadings. External works included reinforced concrete apron paving, heavy vehicle drainage trenches, and perimeter security walls. Construction completed in ten months through simultaneous foundation pours and off-site structural steel fabrication.',
-      scope: [
-        'Excavated and cast sixty-four isolated reinforced pedestal footings on compacted sub-base.',
-        'Erected structural steel portal frames with hot-dip galvanised purlins and insulated sheeting.',
-        'Installed laser-screed burnished concrete floor slab with steel fibre reinforcement.',
-      ],
-      outcome: 'Delivered 45,000 square feet industrial storage depot in 10 months',
+      type: 'Industrial',
+      location: 'Western industrial estate, Coimbatore',
+      year: '2023',
+      builtArea: '45,000 sq ft',
+      duration: '10 months',
+      clientType: 'Logistics operator',
+      challenge:
+        'Reach trucks need a very flat floor, and the floor slab had to be cast while the monsoon was still on.',
+      response:
+        'We erected the steel frame and roof sheeting first, then cast the slab in bays under cover. A laser screed set the levels and joints were saw-cut the next day.',
+      outcome: 'A twenty-four bay warehouse with a floor ready for racking.',
       gallery: [
-        {
-          id: 'gallery-ind-1',
-          caption: 'Pedestal footing layout and holding-down bolt alignment',
-        },
-        {
-          id: 'gallery-ind-2',
-          caption: 'Steel portal frame erection and bracing connection',
-        },
-        {
-          id: 'gallery-ind-3',
-          caption: 'Laser-screed burnished floor pour with joint saw-cutting',
-        },
+        { id: 'gallery-ind-1', caption: 'Footing layout and holding-down bolts' },
+        { id: 'gallery-ind-2', caption: 'Portal frame erection' },
+        { id: 'gallery-ind-3', caption: 'Laser screed pass on a floor bay' },
       ],
     },
     {
       id: 'project-institutional-campus',
       slug: 'institutional-campus',
       number: '04',
-      name: 'St. Jude Educational Block',
-      category: 'Institutional',
-      location: 'East District Hub', // PLACEHOLDER: Location
-      year: '2022', // Completion year
-      builtArea: '22,000 sq ft', // PLACEHOLDER: Built area
-      duration: '12 months', // PLACEHOLDER: Contract duration
-      role: 'Main contractor', // PLACEHOLDER: Role
-      brief:
-        'A three-storey academic building housing sixteen standard classrooms, physics and chemistry laboratories, administrative offices, and a central covered assembly quadrangle. Built within an active educational campus, the works required rigorous safety hoarding, noise controls during examination periods, and designated material corridors. The reinforced concrete framed structure features wide verandahs, exposed concrete sunshades, and durable stone flooring intended for heavy student footfall.',
-      scope: [
-        'Constructed reinforced concrete framed building with cantilevered verandah corridors.',
-        'Integrated specialist laboratory plumbing, gas distribution pipework, and exhaust duct shafts.',
-        'Poured cast-in-place concrete louvres and external architectural sunshade projections.',
-      ],
-      outcome: 'Handed over 22,000 square feet of academic and laboratory facilities in 12 months',
+      name: 'Lakeside School Block',
+      type: 'Institutional',
+      location: 'Eastern district, Madurai',
+      year: '2022',
+      builtArea: '22,000 sq ft',
+      duration: '12 months',
+      clientType: 'Trust-run school',
+      challenge:
+        'The new block went up inside a working school campus, with children crossing the site daily.',
+      response:
+        'We fenced the works from the playground, gave deliveries a separate gate, and kept noisy work to hours agreed with the school. Laboratory services were laid in shafts before the slabs.',
+      outcome: 'Sixteen classrooms and three laboratories, in use from the next school year.',
       gallery: [
-        {
-          id: 'gallery-inst-1',
-          caption: 'Assembly quadrangle ground slab and column starter bars',
-        },
-        {
-          id: 'gallery-inst-2',
-          caption: 'Cantilevered corridor formwork and beam rebar tying',
-        },
-        {
-          id: 'gallery-inst-3',
-          caption: 'Finished classroom masonry and external concrete louvres',
-        },
+        { id: 'gallery-inst-1', caption: 'Hoarding between the site and the playground' },
+        { id: 'gallery-inst-2', caption: 'Corridor beam reinforcement' },
+        { id: 'gallery-inst-3', caption: 'Concrete louvres on the west face' },
       ],
     },
     {
       id: 'project-infrastructure-culvert',
       slug: 'infrastructure-culvert',
       number: '05',
-      name: 'Industrial Trunk Road & Drain',
-      category: 'Infrastructure',
-      location: 'North Bypass Sector', // PLACEHOLDER: Location
-      year: '2021', // Completion year
-      builtArea: '1.8 km road length', // PLACEHOLDER: Built area
-      duration: '8 months', // PLACEHOLDER: Contract duration
-      role: 'Main contractor', // PLACEHOLDER: Role
-      brief:
-        'A heavy-duty civil infrastructure assignment encompassing 1.8 kilometres of dual-lane industrial road pavement and twin reinforced concrete box culverts. The alignment crossed low-lying drainage channels, requiring granular sub-base stabilisation, geotextile fabric installation, and precast concrete slab bridges. Stormwater runoff is managed by cast-in-place trapezoidal side drains leading into municipal discharge canals. The project finished within eight months ahead of the monsoon.',
-      scope: [
-        'Excavated and poured twin 2.4-metre reinforced concrete stormwater box culverts.',
-        'Prepared sub-grade with lime stabilisation and laid wet-mix macadam base course.',
-        'Paved dense bituminous macadam and wearing course with concrete kerb channels.',
-      ],
-      outcome: 'Completed 1.8 km heavy-haul pavement and stormwater drainage in 8 months',
+      name: 'Industrial Trunk Road and Drain',
+      type: 'Infrastructure',
+      location: 'North bypass, Salem',
+      year: '2021',
+      builtArea: '1.8 km of road',
+      duration: '8 months',
+      clientType: 'Industrial park authority',
+      challenge:
+        'The road crossed black cotton soil, which swells in the wet season and cracks road surfaces built straight on it.',
+      response:
+        'We trialled lime stabilisation on a test strip, laid the sub-base in layers with density checks, and cast two box culverts for the stormwater crossing before paving.',
+      outcome: 'A dual-lane road with a paired box culvert, opened to trucks at month eight.',
       gallery: [
-        {
-          id: 'gallery-infra-1',
-          caption: 'Twin box culvert base slab rebar and formwork installation',
-        },
-        {
-          id: 'gallery-infra-2',
-          caption: 'Sub-grade stabilisation and granular sub-base roller compaction',
-        },
-        {
-          id: 'gallery-infra-3',
-          caption: 'Bituminous wearing course paving and precast kerb edging',
-        },
+        { id: 'gallery-infra-1', caption: 'Culvert base slab reinforcement' },
+        { id: 'gallery-infra-2', caption: 'Lime-treated sub-grade under the roller' },
+        { id: 'gallery-infra-3', caption: 'Wearing course and kerb channel' },
       ],
     },
     {
       id: 'project-heritage-renovation',
       slug: 'heritage-renovation',
       number: '06',
-      name: 'Old Town Heritage Remodel',
-      category: 'Renovation & Remodelling',
-      location: 'Civil Station Ward', // PLACEHOLDER: Location
-      year: '2020', // Completion year
-      builtArea: '8,600 sq ft', // PLACEHOLDER: Built area
-      duration: '6 months', // PLACEHOLDER: Contract duration
-      role: 'Main contractor', // PLACEHOLDER: Role
-      brief:
-        'Structural remediation and internal remodel of a load-bearing masonry building dating from the early twentieth century. The brief called for column jacketing to reinforce distressed brick piers, replacing decayed timber floor joists with rolled structural steel sections, and damp-proof chemical injection along perimeter foundation footings. All temporary props and needle beams were monitored with dial gauges to protect fragile adjacent party walls throughout the six-month contract.',
-      scope: [
-        'Installed structural steel needle beams and temporary shoring across three storeys.',
-        'Executed reinforced micro-concrete jacketing around ten load-bearing brick masonry piers.',
-        'Replaced degraded timber floor framing with structural steel universal beams.',
-      ],
-      outcome: 'Strengthened 8,600 square feet of historical building envelope in 6 months',
+      name: 'Old Town House Remodel',
+      type: 'Renovation',
+      location: 'Old town ward, Tiruchirappalli',
+      year: '2020',
+      builtArea: '8,600 sq ft',
+      duration: '6 months',
+      clientType: 'Owner-occupier',
+      challenge:
+        'A load-bearing brick house from the early twentieth century had cracked piers and rotted timber floors, and the owners wanted the street facade kept.',
+      response:
+        'We propped the floors on needle beams, wrapped the weakest piers in reinforced micro-concrete, and replaced the timber floors with steel joists behind the original facade.',
+      outcome: 'A three-storey house with a strengthened frame and its street face unchanged.',
       gallery: [
-        {
-          id: 'gallery-herit-1',
-          caption: 'Temporary needle beam shoring and structural prop monitoring',
-        },
-        {
-          id: 'gallery-herit-2',
-          caption: 'Micro-concrete column jacketing and rebar cage anchoring',
-        },
-        {
-          id: 'gallery-herit-3',
-          caption: 'Structural steel floor beam placement and floor deck leveling',
-        },
+        { id: 'gallery-herit-1', caption: 'Needle beams and props under the first floor' },
+        { id: 'gallery-herit-2', caption: 'Micro-concrete jacket around a brick pier' },
+        { id: 'gallery-herit-3', caption: 'Steel joists laid for the new floor' },
       ],
     },
   ],

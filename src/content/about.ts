@@ -14,30 +14,26 @@ export interface AboutContent {
 export const ABOUT_CONTENT: AboutContent = {
   headline: 'We work from the ground up.',
   paragraphs: [
-    // PLACEHOLDER: Company founding year and geographic scope
-    'RC Constructions is a general contracting firm founded by Gokul in 20XX. We build residential houses, commercial premises, industrial sheds, and civil infrastructure across the region.',
-    // PLACEHOLDER: Operational model and direct site supervision statement
-    'We handle our own earthwork, structural framing, and on-site coordination. We do not subcontract core structural trades or manage projects from an off-site office. Our supervisors remain on the slab every day until final handover.',
+    'RC Constructions is a general contracting company. We build houses, commercial premises, industrial sheds and civil works.',
+    'We handle earthwork, structural framing and on-site coordination ourselves, and our supervisors are on the slab while work is in progress.',
   ],
-  principlesTitle: 'Working Principles',
+  principlesTitle: 'How we work',
   principles: [
     {
       id: 'principle-strata',
-      statement:
-        'Soil strata and foundation depths are verified by engineer bore tests before casting.',
-      consequence: 'Footings never settle unevenly over time.',
+      statement: 'We check soil strata and foundation depths with bore tests before casting.',
+      consequence: 'The results decide the footing type and depth.',
     },
     {
       id: 'principle-inspection',
       statement:
-        'Reinforcement schedules, bar bending, and pour records are photographed daily and shared with the owner.',
-      consequence: 'Every structural member is fully accountable.',
+        'We photograph reinforcement, bar bending and pours each day and share the photos with the owner.',
+      consequence: 'The owner can see each structural member before it is covered.',
     },
     {
       id: 'principle-curing',
-      statement:
-        'Concrete test cubes are crushed for compressive strength verification at seven and twenty-eight days.',
-      consequence: 'Structural strength is documented before masonry commences.',
+      statement: 'We test concrete cubes for compressive strength at seven and twenty-eight days.',
+      consequence: 'The results are on record before masonry begins.',
     },
   ],
 };

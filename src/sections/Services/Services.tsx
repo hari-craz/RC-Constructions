@@ -30,7 +30,8 @@ export function Services() {
           stagger: 0.08,
           ease: 'power2.out',
           scrollTrigger: {
-            trigger: `#${stage.sectionId}`,
+            // An element, not a selector: a selector would be resolved inside the context scope only
+            trigger: document.getElementById(stage.sectionId),
             start: 'top 80%',
             toggleActions: 'play none none reverse',
           },
@@ -58,13 +59,10 @@ export function Services() {
             <thead className="services-table-header">
               <tr>
                 <th scope="col" className="services-th services-th-num">
-                  Item
-                </th>
-                <th scope="col" className="services-th services-th-name">
-                  Trade / Sector
+                  No.
                 </th>
                 <th scope="col" className="services-th">
-                  Scope & Typical Deliverables
+                  Trade and scope
                 </th>
               </tr>
             </thead>
@@ -80,10 +78,8 @@ export function Services() {
                     <span className="services-num">{service.number}</span>
                   </td>
                   <td className="services-td">
-                    <span className="services-name-cell">{service.name}</span>
-                  </td>
-                  <td className="services-td">
                     <div className="services-desc-cell">
+                      <span className="services-name-cell">{service.name}</span>
                       <span className="services-scope">{service.scope}</span>
                       <span className="services-typical">{service.typicalWork}</span>
                     </div>

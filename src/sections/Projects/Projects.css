@@ -9,6 +9,15 @@
   color: var(--color-ink);
 }
 
+.projects-sample-note {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-label);
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
+  color: var(--color-ink-muted);
+}
+
 /* Image slot: a fixed 16:9 frame. It holds only the placeholder note, never register rows. */
 .projects-preview-slot {
   display: grid;
@@ -120,6 +129,10 @@
   letter-spacing: var(--tracking-normal);
   text-transform: none;
   color: var(--color-ink-muted);
+}
+
+.projects-row-outcome {
+  font-size: 0.9375rem;
 }
 
 .projects-row-bottom {

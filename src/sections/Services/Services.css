@@ -26,22 +26,35 @@
 }
 
 .services-table-header {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
+  display: block;
+}
+
+/* Header row: sentence case, same two columns as the rows */
+.services-table-header tr {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-2) var(--space-2) calc(var(--space-2) + 2px);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.services-th {
+  padding: 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-label);
+  font-weight: 600;
+  letter-spacing: var(--tracking-normal);
+  text-transform: none;
+  text-align: left;
+  color: var(--color-ink-muted);
 }
 
 .services-row {
   position: relative;
   display: grid;
   grid-template-columns: 3.25rem minmax(0, 1fr);
-  grid-template-areas:
-    'num name'
-    'num desc';
-  gap: var(--space-1) var(--space-3);
-  padding: var(--space-4) var(--space-2);
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-2);
   border-left: 2px solid transparent;
   cursor: pointer;
   outline: none;
@@ -78,18 +91,6 @@
   padding: 0;
 }
 
-.services-td:nth-child(1) {
-  grid-area: num;
-}
-
-.services-td:nth-child(2) {
-  grid-area: name;
-}
-
-.services-td:nth-child(3) {
-  grid-area: desc;
-}
-
 .services-num {
   font-family: var(--font-headline);
   font-size: var(--font-size-lg);
@@ -112,6 +113,18 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+}
+
+/* Phones: number, name, scope and detail stack with clear separation */
+@media (width < 640px) {
+  .services-table-header {
+    display: none;
+  }
+
+  .services-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+  }
 }
 
 .services-scope {

@@ -33,6 +33,21 @@ export function SurveyCursor() {
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, []);
 
+  // While text is being selected the native cursor comes back (see SurveyCursor.css)
+  useEffect(() => {
+    if (!isFinePointer) return;
+    const root = document.documentElement;
+    const onSelection = () => {
+      const selection = window.getSelection();
+      root.classList.toggle('is-selecting-text', Boolean(selection && !selection.isCollapsed));
+    };
+    document.addEventListener('selectionchange', onSelection);
+    return () => {
+      document.removeEventListener('selectionchange', onSelection);
+      root.classList.remove('is-selecting-text');
+    };
+  }, [isFinePointer]);
+
   // 2. Track pointer with gsap.quickTo (transforms only, passive listener, zero rAF overhead)
   useEffect(() => {
     if (!isFinePointer || !markerRef.current) return;
@@ -55,6 +70,7 @@ export function SurveyCursor() {
         });
 
         let isVisible = false;
+        let lastTarget: Element | null = null;
 
         const handlePointerMove = (e: PointerEvent) => {
           if (!isVisible) {
@@ -67,8 +83,11 @@ export function SurveyCursor() {
 
           // Determine state and surface tone from target element
           const target = document.elementFromPoint(e.clientX, e.clientY);
-          setState(resolveCursorState(target));
-          setTone(resolveCursorTone(target));
+          if (target !== lastTarget) {
+            lastTarget = target;
+            setState(resolveCursorState(target));
+            setTone(resolveCursorTone(target));
+          }
         };
 
         const handlePointerLeave = () => {

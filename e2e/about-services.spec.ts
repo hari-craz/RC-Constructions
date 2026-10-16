@@ -17,7 +17,7 @@ test.describe('Phase 7A — About and Services Real Content', () => {
     const headline = page.getByRole('heading', { level: 2, name: /we work from the ground up/i });
     await expect(headline).toBeVisible();
 
-    const founderCopy = page.getByText(/founded by gokul in 20xx/i);
+    const founderCopy = page.getByText(/general contracting company/i);
     await expect(founderCopy).toBeVisible();
 
     // Verify 3 principles are present

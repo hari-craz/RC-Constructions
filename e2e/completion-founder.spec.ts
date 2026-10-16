@@ -2,7 +2,9 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 test.describe('Phase 7C — Completion Stats and Founder Real Content', () => {
-  test('renders Completion section with 4 stats and final figures in DOM', async ({ page }) => {
+  test('renders Completion section with handover items and no invented figures', async ({
+    page,
+  }) => {
     const consoleErrors: string[] = [];
     page.on('console', (msg) => {
       if (msg.type() === 'error') {
@@ -19,25 +21,11 @@ test.describe('Phase 7C — Completion Stats and Founder Real Content', () => {
 
     // Verify Completion headings
     await expect(page.locator('#completion-heading')).toBeVisible();
-    await expect(page.locator('#completion-heading')).toHaveText(
-      /commissioned delivery & site records/i,
-    );
+    await expect(page.locator('#completion-heading')).toHaveText(/work delivered/i);
 
-    // Verify 4 stat figures are present with final values in DOM
-    const statCells = completion.locator('.completion-stat-cell');
-    await expect(statCells).toHaveCount(4);
-
-    for (let i = 0; i < 4; i++) {
-      const cell = statCells.nth(i);
-      const figure = cell.locator('.completion-stat-figure');
-      await expect(figure).toBeVisible();
-      // Final values must be in DOM from the start
-      await expect(figure).toHaveText(/\d+/);
-      const caption = cell.locator('.completion-stat-caption');
-      await expect(caption).toBeVisible();
-      const text = await caption.textContent();
-      expect(text?.trim().length).toBeGreaterThan(0);
-    }
+    // Four handover items; the figures band stays hidden until the company supplies figures
+    await expect(completion.locator('.completion-handover-item')).toHaveCount(4);
+    await expect(completion.locator('.completion-stat-cell')).toHaveCount(0);
 
     expect(consoleErrors).toEqual([]);
   });
@@ -68,18 +56,16 @@ test.describe('Phase 7C — Completion Stats and Founder Real Content', () => {
     await expect(role).toBeVisible();
     await expect(role).toHaveText('Founder');
 
-    // Verify Pull quote
-    const quote = founder.locator('.founder-quote');
-    await expect(quote).toBeVisible();
-    await expect(quote).toContainText('A building is only as reliable');
+    // No quote is shown until the founder supplies one
+    await expect(founder.locator('.founder-quote')).toHaveCount(0);
 
     // Verify Bio
     const bioParagraphs = founder.locator('.founder-bio-p');
     await expect(bioParagraphs).toHaveCount(3);
 
-    // Verify 3 ruled facts
+    // Only known facts are listed
     const facts = founder.locator('.founder-fact-item');
-    await expect(facts).toHaveCount(3);
+    await expect(facts).toHaveCount(1);
 
     // Verify Reserved Portrait Slot
     const portraitSlot = founder.locator('[data-portrait-slot="founder"]');

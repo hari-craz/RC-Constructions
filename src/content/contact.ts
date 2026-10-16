@@ -1,7 +1,4 @@
-/**
- * Phase 7D: Contact section and footer content data model.
- * All phone, email, WhatsApp, and location details are placeholders.
- */
+import { COMPANY, hasContent } from './company';
 
 interface ContactChannel {
   readonly id: string;
@@ -10,32 +7,42 @@ interface ContactChannel {
   readonly href?: string;
 }
 
+interface FooterLink {
+  readonly label: string;
+  readonly href: string;
+}
+
 export interface ContactContent {
   readonly sectionId: string;
   readonly headline: string;
   readonly subhead: string;
   readonly channels: readonly ContactChannel[];
   readonly privacyNotice: string;
+  readonly privacyLink: FooterLink;
   readonly footer: {
     readonly companyName: string;
     readonly builtBy: string;
     readonly backToTopLabel: string;
+    readonly links: readonly FooterLink[];
   };
 }
 
+/** Contact facts come from company.ts (currently SAMPLE values, see docs/BEFORE-GOING-LIVE.md). */
 export const CONTACT_CONFIG = {
-  rawPhone: '+914428470000', // PLACEHOLDER: Digits for tel: and https://wa.me/
-  displayPhone: '+91 (0) 44 2847 0000', // PLACEHOLDER: Formatted display
-  email: 'build@rcconstructions.com', // PLACEHOLDER: Formspree fallback
-  address: 'Survey Plot 104, Industrial Corridor, Chennai', // PLACEHOLDER: Site office
-  workingHours: 'Monday to Saturday, 08:00 – 18:00 IST', // PLACEHOLDER
+  rawPhone: COMPANY.contact.phoneRaw,
+  displayPhone: COMPANY.contact.phoneDisplay,
+  email: COMPANY.contact.email,
+  address: COMPANY.contact.address,
+  workingHours: COMPANY.contact.workingHours,
 } as const;
+
+const whatsapp = COMPANY.contact.whatsappRaw;
 
 export const CONTACT_CONTENT: ContactContent = {
   sectionId: 'contact',
   headline: 'Tell us what you want to build.',
   subhead:
-    'Every enquiry is reviewed directly by our site team. We respond with initial feasibility notes and estimated mobilization schedules.',
+    'We read each enquiry ourselves and reply with questions about the site and a first idea of the schedule.',
   channels: [
     {
       id: 'phone',
@@ -43,12 +50,16 @@ export const CONTACT_CONTENT: ContactContent = {
       value: CONTACT_CONFIG.displayPhone,
       href: `tel:${CONTACT_CONFIG.rawPhone}`,
     },
-    {
-      id: 'whatsapp',
-      label: 'WhatsApp',
-      value: 'Message our site desk',
-      href: `https://wa.me/${CONTACT_CONFIG.rawPhone.replace(/\D/g, '')}`,
-    },
+    ...(hasContent(whatsapp)
+      ? [
+          {
+            id: 'whatsapp',
+            label: 'WhatsApp',
+            value: 'Send a message',
+            href: `https://wa.me/${whatsapp.replace(/\D/g, '')}`,
+          },
+        ]
+      : []),
     {
       id: 'email',
       label: 'Email',
@@ -57,20 +68,24 @@ export const CONTACT_CONTENT: ContactContent = {
     },
     {
       id: 'address',
-      label: 'Office & Yard',
+      label: 'Office and yard',
       value: CONTACT_CONFIG.address,
     },
     {
       id: 'hours',
-      label: 'Working Hours',
+      label: 'Working hours',
       value: CONTACT_CONFIG.workingHours,
     },
   ],
-  privacyNotice:
-    'We use your details only to respond to this construction enquiry. We never share contact records.',
+  privacyNotice: 'We use your details only to reply to this enquiry.',
+  privacyLink: { label: 'Read the privacy notice', href: '/privacy' },
   footer: {
-    companyName: 'RC Constructions',
+    companyName: COMPANY.name,
     builtBy: 'Built by UnitaryX',
     backToTopLabel: 'Back to top',
+    links: [
+      { label: 'Privacy', href: '/privacy' },
+      { label: 'Terms', href: '/terms' },
+    ],
   },
 };

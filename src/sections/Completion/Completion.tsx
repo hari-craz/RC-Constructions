@@ -52,25 +52,39 @@ export function Completion() {
           <p className="completion-lead">{COMPLETION_CONTENT.lead}</p>
         </header>
 
-        <div className="completion-stats-band" role="region" aria-label="Completion statistics">
-          {COMPLETION_CONTENT.stats.map((stat, idx) => (
-            <div key={stat.id} className="completion-stat-cell">
-              <span className="completion-stat-figure" data-stat-id={stat.id}>
-                {/* Screen readers and initial no-JS DOM have the final value from the start */}
-                <span className="sr-only">{stat.value}</span>
-                <span
-                  aria-hidden="true"
-                  ref={(el) => {
-                    visualRefs.current[idx] = el;
-                  }}
-                >
-                  {stat.value}
-                </span>
-              </span>
-              <p className="completion-stat-caption">{stat.caption}</p>
-            </div>
-          ))}
+        <div className="completion-handover">
+          <h3 className="completion-handover-title">{COMPLETION_CONTENT.handoverTitle}</h3>
+          <ul className="completion-handover-list">
+            {COMPLETION_CONTENT.handover.map((item) => (
+              <li key={item.id} className="completion-handover-item">
+                <span className="completion-handover-name">{item.title}</span>
+                <span className="completion-handover-text">{item.text}</span>
+              </li>
+            ))}
+          </ul>
         </div>
+
+        {COMPLETION_CONTENT.stats.length > 0 && (
+          <div className="completion-stats-band" role="region" aria-label="Completion statistics">
+            {COMPLETION_CONTENT.stats.map((stat, idx) => (
+              <div key={stat.id} className="completion-stat-cell">
+                <span className="completion-stat-figure" data-stat-id={stat.id}>
+                  {/* Screen readers and initial no-JS DOM have the final value from the start */}
+                  <span className="sr-only">{stat.value}</span>
+                  <span
+                    aria-hidden="true"
+                    ref={(el) => {
+                      visualRefs.current[idx] = el;
+                    }}
+                  >
+                    {stat.value}
+                  </span>
+                </span>
+                <p className="completion-stat-caption">{stat.caption}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Tall sheet terminal element preserved for viewport reachability verification */}
         <div id="tall-sheet-terminal" aria-hidden="true" style={{ marginTop: 'var(--space-6)' }} />

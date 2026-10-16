@@ -1,9 +1,4 @@
-/**
- * Phase 7C: Founder section content data model.
- *
- * Editorial monograph profile of Gokul, Founder.
- * All details and credentials are placeholders ("20XX", "Registered body to come").
- */
+import { COMPANY, hasContent } from './company';
 
 interface FounderFact {
   id: string;
@@ -15,44 +10,58 @@ export interface FounderContent {
   sectionId: string;
   name: string;
   role: string;
-  bioParagraphs: readonly [string, string, string];
-  pullQuote: string;
-  facts: readonly [FounderFact, FounderFact, FounderFact];
+  bioParagraphs: readonly string[];
+  /** Null until the founder supplies a quote; the quote block is hidden. */
+  pullQuote: string | null;
+  /** Only facts that are known; entries without a value are not listed. */
+  facts: readonly FounderFact[];
   portraitAlt: string;
   portraitNote: string;
-  /** Set true once /images/founder-gokul.webp and .jpg are committed. Until then no <img> renders. */
+  /** Set in company.ts once /images/founder-gokul.webp and .jpg are committed. */
   portraitAvailable: boolean;
 }
 
-export const FOUNDER_CONTENT: FounderContent = {
-  sectionId: 'founder',
-  name: 'Gokul', // PLACEHOLDER: Surname to be supplied
-  role: 'Founder', // PLACEHOLDER: Official title
-  bioParagraphs: [
-    'Gokul founded RC Constructions in 20XX after fifteen years directing commercial structural works.', // PLACEHOLDER
-    'He oversees site operations directly, from initial setting out through structural completion and commissioning.',
-    'The practice maintains a single-contract responsibility model on every build.',
-  ],
-  pullQuote:
-    'A building is only as reliable as the concrete under its columns and the supervisor on its deck.',
-  facts: [
-    {
-      id: 'fact-experience',
-      label: 'Experience',
-      value: 'Site practice since 20XX', // PLACEHOLDER
-    },
+function buildFacts(): FounderFact[] {
+  const facts: FounderFact[] = [
     {
       id: 'fact-sector',
-      label: 'Areas of Work',
-      value: 'Commercial structural frames and industrial groundworks', // PLACEHOLDER
+      label: 'Areas of work',
+      value: 'Houses, commercial premises, industrial sheds and civil works',
     },
-    {
+  ];
+  if (hasContent(COMPANY.founder.experienceNote)) {
+    facts.push({
+      id: 'fact-experience',
+      label: 'Experience',
+      value: COMPANY.founder.experienceNote,
+    });
+  }
+  if (hasContent(COMPANY.facts.licenceOrRegistration)) {
+    facts.push({
       id: 'fact-licence',
-      label: 'Accreditation',
-      value: 'Registered body to come (Licence ref 20XX)', // PLACEHOLDER
-    },
+      label: 'Registration',
+      value: COMPANY.facts.licenceOrRegistration,
+    });
+  }
+  return facts;
+}
+
+const founderName = hasContent(COMPANY.founder.surname)
+  ? `${COMPANY.founder.name} ${COMPANY.founder.surname}`
+  : COMPANY.founder.name;
+
+export const FOUNDER_CONTENT: FounderContent = {
+  sectionId: 'founder',
+  name: founderName,
+  role: COMPANY.founder.role,
+  bioParagraphs: [
+    'Gokul founded RC Constructions after directing commercial structural works.',
+    'He oversees site operations directly, from setting out through structural completion and handover.',
+    'Each build runs under one contract with the client.',
   ],
-  portraitAlt: 'Portrait of Gokul, founder of RC Constructions',
-  portraitAvailable: false,
-  portraitNote: 'Photo to come, 1200 by 1500',
+  pullQuote: COMPANY.founder.quote,
+  facts: buildFacts(),
+  portraitAlt: COMPANY.founder.photoAlt,
+  portraitNote: COMPANY.founder.photoNote,
+  portraitAvailable: COMPANY.founder.photoAvailable,
 };

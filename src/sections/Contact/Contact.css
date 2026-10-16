@@ -350,6 +350,42 @@ a.contact-channel-value:hover {
   color: var(--color-formwork-dark);
 }
 
+.contact-footer-links {
+  display: flex;
+  gap: var(--space-5);
+}
+
+.contact-privacy-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-privacy-link {
+  display: flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 44px;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.contact-footer-link,
+.contact-privacy-link {
+  color: var(--color-formwork-dark);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.contact-footer-link {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
 .contact-footer-credit {
   font-family: var(--font-body);
   font-size: 0.875rem;

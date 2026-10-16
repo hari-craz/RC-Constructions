@@ -194,6 +194,15 @@ curl -I https://<your-production-domain>/site.webmanifest
 
 ---
 
+## 8a. Pre-launch content, form and domain (Phase 13)
+
+- [ ] Replace the sample phone, email, address and hours (`docs/BEFORE-GOING-LIVE.md` section 0).
+- [ ] Set `VITE_FORMSPREE_ID` in Vercel (Production), redeploy, set Formspree's allowed domain, test once yourself (`docs/FORM-AND-DOMAIN.md`).
+- [ ] Final domain and DNS; `src/config/site.json` and the `vercel.json` CORS origin match.
+- [ ] SPF, DKIM, DMARC for the company mail provider.
+- [ ] Adviser has read `/privacy` and `/terms`.
+- [ ] `node scripts/check-live.mjs https://<live host>` reports no failures (headers, no wildcard CORS, canonical URL, security.txt expiry, clean console).
+
 ## 9. Release Automation (`v0.1.0`)
 
 1. Once `main` is stable, the `release-please` action will open a Release PR (`chore: release v0.1.0`).

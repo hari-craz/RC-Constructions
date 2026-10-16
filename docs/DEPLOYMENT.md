@@ -147,3 +147,11 @@ services:
    docker service update --image ghcr.io/hari-craz/rc-constructions:sha-923df65 rc-constructions
    ```
 3. In Portainer, change the stack image tag to the desired SHA and click **Update the stack**.
+
+## 7. Headers, CORS and security.txt (Phase 13)
+
+- `vercel.json` and `nginx.conf` carry the same security headers (`pnpm compare:headers`). HSTS has no `preload` until the final domain is ready.
+- Vercel adds `Access-Control-Allow-Origin: *` to static deployments by default. `vercel.json` sets it to the site origin instead (must equal `src/config/site.json`; a test checks). nginx sends no CORS header. If the live response still shows `*`, remove the rule in the Vercel project's Headers or Firewall settings.
+- `/.well-known/security.txt` is generated at build with a fresh `Expires` (330 days). Both hosts serve it as `text/plain; charset=utf-8`. CI runs `pnpm check:security-txt` against `dist/`.
+- Extra pages `privacy.html` and `terms.html` are Vite inputs; Vercel serves them at `/privacy` and `/terms` (`cleanUrls`), nginx via `try_files $uri $uri.html`.
+- After each deploy: `node scripts/check-live.mjs https://<live host>`. See `docs/FORM-AND-DOMAIN.md` for the form, DNS and email steps.

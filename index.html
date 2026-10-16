@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RC Constructions — Architectural General Contractor</title>
+    <title>%COMPANY_NAME% — General contractor</title>
     <meta
       name="description"
       content="RC Constructions — Architectural general contracting, concrete structural engineering, and commercial building portfolio."
     />
     <meta name="theme-color" content="#232622" />
-    <link rel="canonical" href="https://rcconstructions.com/" />
+    <link rel="canonical" href="%SITE_URL%/" />
 
     <!-- Open Graph Metadata -->
     <meta property="og:type" content="website" />
@@ -18,8 +18,8 @@
       property="og:description"
       content="Architectural general contracting, concrete structural engineering, and commercial building portfolio."
     />
-    <meta property="og:url" content="https://rcconstructions.com/" />
-    <meta property="og:image" content="https://rcconstructions.com/og-image.png" />
+    <meta property="og:url" content="%SITE_URL%/" />
+    <meta property="og:image" content="%SITE_URL%/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
 
@@ -30,7 +30,7 @@
       name="twitter:description"
       content="Architectural general contracting, concrete structural engineering, and commercial building portfolio."
     />
-    <meta name="twitter:image" content="https://rcconstructions.com/og-image.png" />
+    <meta name="twitter:image" content="%SITE_URL%/og-image.png" />
 
     <!-- Favicons & Manifest -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -43,48 +43,20 @@
         "@context": "https://schema.org",
         "@type": "GeneralContractor",
         "name": "RC Constructions",
-        "url": "https://rcconstructions.com/",
-        "logo": "https://rcconstructions.com/favicon.svg",
-        "image": "https://rcconstructions.com/og-image.png",
-        "description": "Architectural General Contracting, concrete structural engineering, and commercial building execution.",
-        "telephone": "+914428470000",
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": "Survey Plot 104, Industrial Corridor",
-          "addressLocality": "Chennai",
-          "addressRegion": "Tamil Nadu",
-          "addressCountry": "IN"
-        },
-        "areaServed": "Regional Industrial & Urban Corridor",
-        "priceRange": "$$$$"
+        "url": "%SITE_URL%/",
+        "logo": "%SITE_URL%/favicon.svg",
+        "image": "%SITE_URL%/og-image.png",
+        "description": "General contractor building houses, commercial premises, industrial sheds and civil works."
       }
     </script>
   </head>
   <body>
     <noscript>
-      <div
-        style="
-          background: #232622;
-          color: #e9e7df;
-          padding: 2rem;
-          text-align: center;
-          font-family: serif;
-          border-bottom: 2px solid #e3b341;
-        "
-      >
-        <p style="font-size: 1.25rem; font-weight: bold; margin-bottom: 0.5rem">RC CONSTRUCTIONS</p>
-        <p style="color: #c4c4bc; max-width: 600px; margin: 0 auto 1rem">
-          Architectural General Contracting &amp; Structural Engineering. JavaScript is required for
-          interactive CAD drawing inspection and project sheet navigation.
-        </p>
-        <p style="font-size: 0.9rem; color: #c4c4bc">
-          Direct tenders:
-          <a href="tel:+914428470000" style="color: #e9e7df">+91 (0) 44 2847 0000</a> |
-          <a href="mailto:build@rcconstructions.com" style="color: #e9e7df"
-            >build@rcconstructions.com</a
-          >
-        </p>
-      </div>
+      <p>%COMPANY_NAME%. This site needs JavaScript to show its drawings and project pages.</p>
+      <p>
+        Phone: <a href="tel:%CONTACT_PHONE_RAW%">%CONTACT_PHONE_DISPLAY%</a>. Email:
+        <a href="mailto:%CONTACT_EMAIL%">%CONTACT_EMAIL%</a>.
+      </p>
     </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

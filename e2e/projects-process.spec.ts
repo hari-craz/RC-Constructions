@@ -14,7 +14,7 @@ test.describe('Phase 7B — Projects and Process Real Content', () => {
     await page.waitForTimeout(1000);
 
     // Verify Projects title
-    const title = page.getByRole('heading', { level: 2, name: /selected projects register/i });
+    const title = page.getByRole('heading', { level: 2, name: /^selected projects$/i });
     await expect(title).toBeVisible();
 
     // Verify preview slot
@@ -74,11 +74,11 @@ test.describe('Phase 7B — Projects and Process Real Content', () => {
 
     // Verify first and last step
     await expect(steps.first()).toContainText('01');
-    await expect(steps.first()).toContainText('Enquiry & Site Visit');
-    await expect(steps.first()).toContainText('Client Deliverable:');
+    await expect(steps.first()).toContainText('Enquiry and site visit');
+    await expect(steps.first()).toContainText('You receive:');
 
     await expect(steps.last()).toContainText('06');
-    await expect(steps.last()).toContainText('Handover & Care');
+    await expect(steps.last()).toContainText('Handover and care');
 
     expect(consoleErrors).toEqual([]);
   });

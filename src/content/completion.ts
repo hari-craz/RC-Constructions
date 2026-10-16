@@ -1,15 +1,4 @@
-/**
- * Phase 7C: Completion stats data model.
- *
- * Four placeholder figures:
- * - projects completed
- * - years in business
- * - square feet built
- * - on-time handover rate
- *
- * All figures are obvious placeholders ("XX") per Phase 7C specification.
- * Very large in Big Shoulders with a short plain sentence under each saying what it counts.
- */
+import { COMPANY, hasContent } from './company';
 
 interface CompletionStat {
   id: string;
@@ -17,37 +6,78 @@ interface CompletionStat {
   caption: string;
 }
 
+interface HandoverItem {
+  id: string;
+  title: string;
+  text: string;
+}
+
 export interface CompletionContent {
   sectionId: string;
   title: string;
   lead: string;
-  stats: readonly [CompletionStat, CompletionStat, CompletionStat, CompletionStat];
+  handoverTitle: string;
+  handover: readonly HandoverItem[];
+  /** Figures the company has supplied in company.ts; empty until then (the band is hidden). */
+  stats: readonly CompletionStat[];
+}
+
+function buildStats(): CompletionStat[] {
+  const f = COMPANY.facts;
+  const stats: CompletionStat[] = [];
+  if (hasContent(f.projectsCompleted)) {
+    stats.push({
+      id: 'stat-projects',
+      value: String(f.projectsCompleted),
+      caption: 'Projects completed.',
+    });
+  }
+  if (hasContent(f.yearsInBusiness)) {
+    stats.push({
+      id: 'stat-years',
+      value: String(f.yearsInBusiness),
+      caption: 'Years in business.',
+    });
+  }
+  if (hasContent(f.areaBuiltSqFt)) {
+    stats.push({ id: 'stat-area', value: String(f.areaBuiltSqFt), caption: 'Square feet built.' });
+  }
+  if (hasContent(f.onTimeHandoverPercent)) {
+    stats.push({
+      id: 'stat-handover',
+      value: `${f.onTimeHandoverPercent}%`,
+      caption: 'Projects handed over on the agreed date.',
+    });
+  }
+  return stats;
 }
 
 export const COMPLETION_CONTENT: CompletionContent = {
   sectionId: 'completion',
-  title: 'Commissioned Delivery & Site Records',
-  lead: 'The building is complete. Windows are illuminated, structures are surveyed, and documentation is sealed for handover.',
-  stats: [
+  title: 'Work delivered',
+  lead: 'A building is finished when it has been tested, walked through with you and handed over with its records.',
+  handoverTitle: 'What a handover includes',
+  handover: [
     {
-      id: 'stat-projects',
-      value: '48',
-      caption: 'Projects completed across regional and commercial sectors.',
+      id: 'handover-drawings',
+      title: 'As-built drawings',
+      text: 'Structural drawings updated to what was built.',
     },
     {
-      id: 'stat-years',
-      value: '18',
-      caption: 'Years of continuous site operations and building practice.',
+      id: 'handover-tests',
+      title: 'Test records',
+      text: 'Concrete cube results and system test records.',
     },
     {
-      id: 'stat-area',
-      value: '420k',
-      caption: 'Square feet of structural floor area delivered to date.',
+      id: 'handover-walkthrough',
+      title: 'Walk-through',
+      text: 'A site walk with you, with any snags listed.',
     },
     {
-      id: 'stat-handover',
-      value: '98%',
-      caption: 'On-time handover rate recorded across contracted programmes.',
+      id: 'handover-keys',
+      title: 'Keys',
+      text: 'Keys handed over once the snag list is agreed.',
     },
   ],
+  stats: buildStats(),
 };

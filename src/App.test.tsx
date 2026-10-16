@@ -21,16 +21,14 @@ describe('App', () => {
       screen.getByRole('heading', { level: 2, name: /services & construction schedule/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { level: 2, name: /selected projects register/i }),
+      screen.getByRole('heading', { level: 2, name: /^selected projects$/i }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { level: 2, name: /construction process/i }),
     ).toBeInTheDocument();
 
     // Verify Phase 7C Completion and Founder headings are rendered
-    expect(
-      screen.getByRole('heading', { level: 2, name: /commissioned delivery & site records/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: /work delivered/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { level: 2, name: /gokul/i })).toBeInTheDocument();
 
     // Verify Phase 7D Contact heading and footer

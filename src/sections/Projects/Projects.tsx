@@ -42,7 +42,7 @@ function ProjectRow({ project, isActive, onActivate, onOpen }: ProjectRowProps) 
         type="button"
         className="projects-row-btn"
         aria-expanded={isActive}
-        aria-label={`Project ${project.number}: ${project.name}, ${project.category}, ${project.location}. Click to open detail sheet.`}
+        aria-label={`Project ${project.number}: ${project.name}, ${project.type}, ${project.location}. Click to open detail sheet.`}
         onClick={(e) => {
           onActivate(project.id);
           onOpen(project.id, e.currentTarget);
@@ -62,12 +62,12 @@ function ProjectRow({ project, isActive, onActivate, onOpen }: ProjectRowProps) 
             <h3 className="projects-row-name">{project.name}</h3>
           </div>
           <span className="projects-row-meta">
-            {project.category} — {project.year}
+            {project.type}, {project.year}
           </span>
         </div>
         <div className="projects-row-bottom">
           <span className="projects-row-spec">
-            {project.location} · {project.builtArea}
+            {project.location}, {project.builtArea}
           </span>
           <span className="projects-row-outcome">{project.outcome}</span>
         </div>
@@ -195,7 +195,8 @@ export function Projects() {
         stagger: 0.08,
         ease: 'power2.out',
         scrollTrigger: {
-          trigger: `#${stage.sectionId}`,
+          // An element, not a selector: a selector would be resolved inside the context scope only
+          trigger: document.getElementById(stage.sectionId),
           start: 'top 80%',
           toggleActions: 'play none none reverse',
         },
@@ -212,6 +213,7 @@ export function Projects() {
             <h2 id={`${stage.sectionId}-heading`} className="projects-title">
               {content.title}
             </h2>
+            <p className="projects-sample-note">{content.sampleNote}</p>
           </header>
 
           {/* Image slot reserved for the selected project's elevation; it never holds list rows */}

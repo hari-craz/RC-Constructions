@@ -1,112 +1,40 @@
-# RC Constructions — Repository Placeholder Audit
+# Placeholder audit (`docs/PLACEHOLDERS.md`)
 
-This document catalogues all placeholder values and temporary fixtures across the repository.
-Every item listed here must be replaced with verified client material before final deployment and client pitch.
+Every value that is not a verified company fact. Rule: **no placeholder text is shown in body copy.** A missing fact is `null` in `src/content/company.ts` and the element is hidden (`hasContent`). Photo slots use one plain sentence-case line.
 
----
+## 1. Facts held in `src/content/company.ts`
 
-## 1. Content Placeholders (`src/content/site.ts`)
+| Field                                                                                                                          | Value now                                                          | Effect when empty                                                                       |
+| ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| `contact.*` (phone, WhatsApp, email, address, hours)                                                                           | **Sample values**, `isSample: true`                                | Cannot be empty; must be replaced before launch (`docs/BEFORE-GOING-LIVE.md` section 0) |
+| `legalName`                                                                                                                    | `null`                                                             | Falls back to "RC Constructions"                                                        |
+| `facts.foundedYear`, `licenceOrRegistration`, `yearsInBusiness`, `projectsCompleted`, `areaBuiltSqFt`, `onTimeHandoverPercent` | `null`                                                             | Not shown; the "Work delivered" figures band is hidden                                  |
+| `founder.surname`, `quote`, `experienceNote`                                                                                   | `null`                                                             | Name shows "Gokul" only; quote block and the Experience fact are hidden                 |
+| `founder.photoAvailable`                                                                                                       | `false`                                                            | Quiet block with "Photo to come, 1200 by 1500"; no `<img>`                              |
+| `legal.retentionPeriod`                                                                                                        | `12 months after the enquiry is closed`, `retentionIsSample: true` | Shown in `/privacy`; must be confirmed                                                  |
+| `legal.governingLaw`                                                                                                           | `null`                                                             | Governing-law paragraph hidden in `/terms`                                              |
 
-| Key                    | Current Placeholder Value                         | Source File           | Replacement Target / Action                                                    |
-| :--------------------- | :------------------------------------------------ | :-------------------- | :----------------------------------------------------------------------------- |
-| `SITE.tagline`         | `"We build homes, offices, factories and roads."` | `src/content/site.ts` | Official client positioning statement / value proposition.                     |
-| `SITE.cta.label`       | `"Request a quote"`                               | `src/content/site.ts` | Finalized commercial CTA text (e.g. "Initiate Tender", "Consult Engineering"). |
-| `SITE.cta.href`        | `"#contact"`                                      | `src/content/site.ts` | Resolves to `#contact` section anchor.                                         |
-| `SITE.nav[0].label`    | `"Enquire"`                                       | `src/content/site.ts` | Final nav items approved by client.                                            |
-| `SITE.contact.email`   | `"build@rcconstructions.com"`                     | `src/content/site.ts` | Verified Formspree recipient / domain mail.                                    |
-| `SITE.contact.phone`   | `"+91 (0) 44 2847 0000"`                          | `src/content/site.ts` | Verified regional commercial office telephone.                                 |
-| `SITE.contact.address` | `"Survey Plot 104, Industrial Corridor, Chennai"` | `src/content/site.ts` | Verified corporate registration headquarters.                                  |
+## 2. Sample content
 
----
+| Item                                      | Where                                       | Note                                                                                                        |
+| ----------------------------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Six projects                              | `src/content/projects.ts`                   | Labelled once on the page: "Sample projects for this demo." No real client or brand.                        |
+| Project and image slots                   | `Projects` image slot, overlay gallery      | "Elevation drawing to come" and "Drawing to come" (image slots only)                                        |
+| Survey plot dimensions                    | `src/components/HeroPlot/`, building labels | Illustrative drawing figures (18.40 m, 24.80 m, 15.40 m, 17.40 m); not claims about a real plot or building |
+| Tagline, call to action, navigation label | `src/content/site.ts`                       | Wording the client may replace                                                                              |
+| Services list                             | `src/content/services.ts`                   | General trades; confirm with the company                                                                    |
+| Process steps                             | `src/content/process.ts`                    | Describe a typical order of work; confirm with the company                                                  |
 
-## 2. Section Stubs Status
+## 3. Technical placeholders
 
-All temporary section stubs have been completely replaced with real content as of Phase 7D (`About`, `Services`, `Projects`, `Process`, `Completion`, `Founder`, `Contact`). Zero stub sections remain in the repository.
+| Item                            | Where                                                                |
+| ------------------------------- | -------------------------------------------------------------------- |
+| `VITE_FORMSPREE_ID`             | Vercel environment and local `.env`; the form is disabled without it |
+| Site URL                        | `src/config/site.json` (one place)                                   |
+| `public/og-image.png`, favicons | Script-generated; replace with brand artwork                         |
 
----
+## 4. Tests that guard this
 
-## 3. Survey Plot Drawing Dimensions (`src/components/HeroPlot/`)
-
-| Metric / Dimension          | Placeholder Value | Significance                                            |
-| :-------------------------- | :---------------- | :------------------------------------------------------ |
-| Lateral North Dimension     | `18.40 m`         | Representative parcel front setback survey measurement. |
-| Longitudinal East Dimension | `24.80 m`         | Representative parcel depth survey measurement.         |
-| Setback Offset              | `3.00 m`          | Statutory municipal planning setback line.              |
-| Grid Pitch                  | `6.00 m`          | Standard structural column center-to-center pitch.      |
-
----
-
-## 4. Phase 7A Content Placeholders (`src/content/about.ts`)
-
-| Key                           | Current Placeholder Value            | Source File            | Replacement Target / Action                       |
-| :---------------------------- | :----------------------------------- | :--------------------- | :------------------------------------------------ |
-| `ABOUT_CONTENT.paragraphs[0]` | `"founded by Gokul in 20XX"`         | `src/content/about.ts` | Verified incorporation / founding year.           |
-| `ABOUT_CONTENT.paragraphs[0]` | `"across the region"`                | `src/content/about.ts` | Verified primary state / district jurisdiction.   |
-| `ABOUT_CONTENT.principles`    | 3 engineering rules and consequences | `src/content/about.ts` | Verified operational quality assurance protocols. |
-
----
-
-## 5. Phase 7B Content Placeholders (`src/content/projects.ts`)
-
-| Key                            | Current Placeholder Value                    | Source File               | Replacement Target / Action                         |
-| :----------------------------- | :------------------------------------------- | :------------------------ | :-------------------------------------------------- |
-| `PROJECTS_CONTENT.projects[*]` | Location, year ("20XX"), built area, outcome | `src/content/projects.ts` | Verified portfolio project records and photography. |
-| `Projects.preview-slot`        | Elevation drawing preview slot (1200×675)    | `src/sections/Projects`   | High-resolution CAD elevation rendering or photo.   |
-
----
-
-## 6. Phase 7C Completion Placeholders (`src/content/completion.ts`)
-
-| Key                           | Current Placeholder Value | Source File                 | Replacement Target / Action                          |
-| :---------------------------- | :------------------------ | :-------------------------- | :--------------------------------------------------- |
-| `COMPLETION_CONTENT.stats[0]` | `"XX"`                    | `src/content/completion.ts` | Verified total projects completed.                   |
-| `COMPLETION_CONTENT.stats[1]` | `"XX"`                    | `src/content/completion.ts` | Verified years of practice in regional construction. |
-| `COMPLETION_CONTENT.stats[2]` | `"XX"`                    | `src/content/completion.ts` | Verified gross square feet built.                    |
-| `COMPLETION_CONTENT.stats[3]` | `"XX"`                    | `src/content/completion.ts` | Verified audited on-time handover rate percentage.   |
-
----
-
-## 7. Phase 7C Founder Placeholders (`src/content/founder.ts`)
-
-| Key                                | Current Placeholder Value                      | Source File              | Replacement Target / Action                                                        |
-| :--------------------------------- | :--------------------------------------------- | :----------------------- | :--------------------------------------------------------------------------------- |
-| `FOUNDER_CONTENT.name`             | `"Gokul"`                                      | `src/content/founder.ts` | Full legal name and verified titles.                                               |
-| `FOUNDER_CONTENT.bioParagraphs[0]` | `"founded RC Constructions in 20XX"`           | `src/content/founder.ts` | Verified incorporation year.                                                       |
-| `FOUNDER_CONTENT.facts[0]`         | `"Site practice since 20XX"`                   | `src/content/founder.ts` | Verified career start year.                                                        |
-| `FOUNDER_CONTENT.facts[2]`         | `"Registered body to come (Licence ref 20XX)"` | `src/content/founder.ts` | Verified contractor registration body and licence serial.                          |
-| `Founder.portrait-slot`            | 1200 × 1500 px (4:5 ratio) WebP / JPEG         | `src/sections/Founder`   | Supply professional portrait photo (WebP and JPEG, 1200×1500 px, monochrome/tint). |
-
----
-
-## 8. Phase 7D Contact Placeholders (`src/content/contact.ts`)
-
-| Key                           | Current Placeholder Value                         | Source File              | Replacement Target / Action                |
-| :---------------------------- | :------------------------------------------------ | :----------------------- | :----------------------------------------- |
-| `CONTACT_CONFIG.rawPhone`     | `"+914428470000"`                                 | `src/content/contact.ts` | Verified primary commercial phone number.  |
-| `CONTACT_CONFIG.displayPhone` | `"+91 (0) 44 2847 0000"`                          | `src/content/contact.ts` | Verified formatted display phone number.   |
-| `CONTACT_CONFIG.email`        | `"build@rcconstructions.com"`                     | `src/content/contact.ts` | Verified direct inquiry recipient address. |
-| `CONTACT_CONFIG.address`      | `"Survey Plot 104, Industrial Corridor, Chennai"` | `src/content/contact.ts` | Verified site office & yard address.       |
-| `CONTACT_CONFIG.workingHours` | `"Monday to Saturday, 08:00 – 18:00 IST"`         | `src/content/contact.ts` | Official client site working hours.        |
-| `VITE_FORMSPREE_ID`           | Environment variable                              | `.env` / `vercel.json`   | Production Formspree form endpoint ID.     |
-
----
-
-## 9. Phase 8 Project Overlays Placeholders (`src/content/projects.ts`)
-
-| Key                                    | Current Placeholder Value                                | Source File               | Replacement Target / Action                                |
-| :------------------------------------- | :------------------------------------------------------- | :------------------------ | :--------------------------------------------------------- |
-| `PROJECTS_CONTENT.projects[*].role`    | `"Main contractor // PLACEHOLDER"`                       | `src/content/projects.ts` | Verified contractual project role per tender.              |
-| `PROJECTS_CONTENT.projects[*].brief`   | Architectural summary brief (60–90 words)                | `src/content/projects.ts` | Approved client project brief and case study narrative.    |
-| `PROJECTS_CONTENT.projects[*].scope`   | 3 complete scope sentences                               | `src/content/projects.ts` | Detailed bills of quantities and work package scope.       |
-| `PROJECTS_CONTENT.projects[*].gallery` | 3 reserved concrete slots with captions (18 total slots) | `src/content/projects.ts` | High-resolution architectural on-site construction photos. |
-
----
-
-## 10. Phase 9 Launch Hardening & Branding Placeholders
-
-| Asset / Metadata              | Current Placeholder Value                           | Source File                                             | Replacement Target / Action                                                                          |
-| :---------------------------- | :-------------------------------------------------- | :------------------------------------------------------ | :--------------------------------------------------------------------------------------------------- |
-| Open Graph image              | Generated SVG-backed card (1200×630)                | `public/og-image.png`                                   | Official high-res branded portfolio graphic or hero photograph.                                      |
-| Favicons & App Icons          | Architectural geometric monogram (180, 192, 512 px) | `public/`                                               | Final client company trademark icon set.                                                             |
-| JSON-LD structured data       | Schema.org `GeneralContractor` placeholder data     | `index.html`                                            | Official verified business legal name, headquarters coordinates, official telephone, and web domain. |
-| Production Domain & Canonical | `https://rc-constructions.example.com`              | `index.html`, `public/robots.txt`, `public/sitemap.xml` | Registered public primary production domain.                                                         |
+- `src/content/content.test.ts`: no `20XX`, `XX`, "to come" or `PLACEHOLDER` in founder and other content.
+- `e2e/phase-13.spec.ts`: no placeholder text or banned claim anywhere visible; no broken image.
+- `e2e/phase-12.spec.ts`: no visible `//`, no `<img>` with `naturalWidth` 0.
