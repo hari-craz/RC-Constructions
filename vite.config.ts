@@ -6,6 +6,7 @@ import { defineConfig, type Plugin } from 'vite';
 import { COMPANY, CONTACT_EMAIL, SITE_URL } from './src/content/company';
 import { renderPrivacy, PRIVACY_TITLE } from './src/legal/privacy';
 import { renderTerms, TERMS_TITLE } from './src/legal/terms';
+import { staticHouseSvg } from './src/lib/model3d/staticSvg';
 import { fillPlaceholders, robotsTxt, securityTxt, sitemapXml } from './src/lib/siteFiles';
 
 /** Preloads only the two latin font files used above the fold (headline and body). */
@@ -58,6 +59,8 @@ function siteFiles(): Plugin {
           CONTACT_EMAIL,
           LEGAL_TITLE: page?.title ?? '',
           YEAR: String(new Date().getFullYear()),
+          // The no-JS fallback: the house at its three-quarter rest angle, drawn at build time
+          HERO_MODEL_SVG: staticHouseSvg(),
         });
       },
     },

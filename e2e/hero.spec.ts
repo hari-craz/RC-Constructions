@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
-test.describe('Phase 4 — Pinned Hero & Land Survey Drawing', () => {
+test.describe('Phase 4 — Pinned Hero & 3D house', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
@@ -30,15 +30,14 @@ test.describe('Phase 4 — Pinned Hero & Land Survey Drawing', () => {
     expect(scanResults.violations).toEqual([]);
   });
 
-  test('renders decorative survey plot drawing with dimension callouts', async ({ page }) => {
-    const plotContainer = page.locator('.hero-plot-container');
-    await expect(plotContainer).toHaveAttribute('aria-hidden', 'true');
-
-    const svg = page.locator('.hero-plot-svg');
-    await expect(svg).toBeAttached();
-
-    // Primary dimension callout
-    await expect(page.locator('.hero-dim-text', { hasText: '18.40 m' })).toBeAttached();
+  test('renders the 3D house model with its dimension callouts (Phase 14C replaced the survey plot)', async ({
+    page,
+  }) => {
+    const widget = page.locator('.hero-model-widget');
+    await expect(widget).toBeAttached();
+    await expect(page.locator('.hm-svg').first()).toBeAttached();
+    // Overall width dimension label
+    await expect(page.locator('.hm-dim-label text', { hasText: '12.0 m' })).toBeAttached();
   });
 
   test('nav bar switches tone when scrolling from hero to about', async ({ page }, testInfo) => {

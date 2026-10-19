@@ -1,0 +1,126 @@
+/* Layout of the hero house widget: the model area, hint, axis gizmo and the control cluster. */
+.hero-model-widget {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  animation: hero-model-in 0.6s var(--ease-entrance) both;
+}
+
+@keyframes hero-model-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.hero-model-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  pointer-events: auto;
+  cursor: grab;
+
+  /* Vertical swipes still scroll the page; horizontal drags turn the house */
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.hero-model-stage .hm-svg {
+  position: absolute;
+  inset: 0;
+}
+
+.hero-model-stage:active {
+  cursor: grabbing;
+}
+
+.hero-model-stage:focus-visible {
+  outline: 2px solid var(--color-formwork-dark);
+  outline-offset: 2px;
+}
+
+.hero-model-gizmo {
+  position: absolute;
+  bottom: var(--space-2);
+  left: var(--space-2);
+  width: 5.5rem;
+  height: 5.5rem;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.hm-axis {
+  stroke: var(--color-formwork-dark);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+
+.hm-axis-label {
+  font-family: var(--font-body);
+  font-size: 16px;
+  fill: var(--color-formwork-dark);
+}
+
+.hero-model-hint {
+  opacity: var(--hm-controls-opacity, 1);
+  margin: 0;
+  padding: var(--space-1) 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  text-align: right;
+  color: var(--color-formwork-dark);
+}
+
+.hero-model-controls {
+  opacity: var(--hm-controls-opacity, 1);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2);
+  align-self: flex-end;
+  width: min(100%, 34rem);
+  pointer-events: auto;
+}
+
+.hero-model-btn {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  line-height: 1.2;
+  color: var(--color-formwork-dark);
+  background: transparent;
+  border: 1.5px solid var(--color-formwork-dark);
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.hero-model-btn:hover {
+  background-color: rgb(35 38 34 / 10%);
+}
+
+.hero-model-btn:focus-visible {
+  outline: 2px solid var(--color-formwork-dark);
+  outline-offset: 2px;
+}
+
+.hero-model-btn[aria-checked='true'] {
+  color: var(--color-limewash);
+  background-color: var(--color-formwork-dark);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-model-widget {
+    animation: none;
+  }
+}
+
+/* Narrow screens: keep every label on one line inside its 44 px cell */
+@media (width <= 480px) {
+  .hero-model-btn {
+    padding-inline: var(--space-1);
+    white-space: nowrap;
+  }
+}

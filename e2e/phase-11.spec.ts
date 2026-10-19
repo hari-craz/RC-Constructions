@@ -327,10 +327,10 @@ test.describe('Phase 11 — page rules', () => {
       await open(page, id);
       const bad = await page.evaluate((amber) => {
         const allowed =
-          '.btn, .contact-submit-btn, .error-boundary-reload-btn, .b-pane, .b-dim, .b-dim-label, .hero-plot-svg, .hero-plot-svg *, .loading-dimension-line, .loading-dimension-line *';
+          '.btn, .contact-submit-btn, .error-boundary-reload-btn, .b-pane, .b-dim, .b-dim-label, .hm-dim, .hm-dim-label, .hm-dim-label *, .loading-dimension-line, .loading-dimension-line *';
         const out: string[] = [];
         document.querySelectorAll<HTMLElement | SVGElement>('body *').forEach((el) => {
-          if (el.matches(allowed) || el.closest('.hero-plot-svg, .loading-dimension-line')) return;
+          if (el.matches(allowed) || el.closest('.hm-dim-label, .loading-dimension-line')) return;
           const cs = getComputedStyle(el);
           const hit = [cs.color, cs.backgroundColor, cs.fill, cs.stroke].includes(amber);
           const edge = [cs.borderTopColor, cs.outlineColor].some(

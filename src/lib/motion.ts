@@ -19,35 +19,58 @@ export const MOTION = {
     lagSmoothing: 0,
     resizeDebounceMs: 150,
   },
-  /* hero.* load-sequence timings are mirrored by the CSS in HeroPlot.css and Hero.css */
+  /* hero.headline* timings are mirrored by the CSS in Hero.css (the headline rises via CSS) */
   hero: {
-    boundaryStart: 0.0,
-    boundaryDuration: 1.0,
-    stakesStart: 0.8,
-    stakesDuration: 0.2,
-    setbackStart: 0.6,
-    setbackDuration: 0.8,
-    footprintStart: 1.0,
-    footprintDuration: 0.8,
-    gridStart: 1.4,
-    gridDuration: 0.6,
-    gridStagger: 0.04,
-    dimensionsStart: 1.8,
-    dimensionsDuration: 0.8,
-    dimensionLabelsDelay: 0.4,
-    dimensionLabelsDuration: 0.4,
-    dimensionLabelsStagger: 0.1,
     headlineStart: 0.5,
     headlineDuration: 0.9,
     headlineStagger: 0.12,
     totalDuration: 2.6,
     ease: 'power2.out',
-    scrollLinked: {
-      start: 'top bottom',
-      end: 'top top',
-      gridScaleMax: 1.35,
-      ease: 'none',
-    },
+  },
+  /* The hero 3D house (src/lib/model3d and src/components/HeroModel) */
+  model3d: {
+    /** Seconds per revolution about y while auto-rotating, and the gentle bob on x. */
+    autoSeconds: 20,
+    bobDeg: 8,
+    bobSeconds: 9,
+    bobRampSeconds: 1,
+    /** Auto-rotate redraws at most this many times a second. */
+    autoFps: 30,
+    /** Auto-rotate resumes after this long without interaction. */
+    resumeMs: 3000,
+    /** The hint line stays this long unless the visitor interacts first. */
+    hintMs: 6000,
+    /** Each button or key press, and how long the ease takes. */
+    stepDeg: 15,
+    stepSeconds: 0.25,
+    /** Pointer drag: degrees per pixel, inertia decay per second and the stop speed (deg/s). */
+    dragDegPerPx: 0.45,
+    inertiaDecay: 3.5,
+    inertiaMinSpeed: 4,
+    tiltLimitDeg: 80,
+    /** Roll while twisting with two fingers or dragging with Shift. */
+    rollDegPerPx: 0.4,
+    /** Rest pose (three-quarter view) and a mild perspective (1 / eye distance in model units). */
+    restRx: 16,
+    restRy: -35,
+    restRz: 0,
+    restInvDistance: 1 / 60,
+    /** Scroll hand-off: share of the hand-off by which the house reaches the front elevation. */
+    frontShare: 0.15,
+    /** Share of the hand-off at which the model starts to fade (opacity only). */
+    fadeStartShare: 0.1,
+    /** The house is gone before the arriving sheet reaches its base: desktop and phone. */
+    fadeEndShare: 0.3,
+    fadeEndSharePhone: 0.56,
+    /** The controls and hint (low in the hero) go first. */
+    controlsFadeEndShare: 0.1,
+    /** Axis gizmo reach in drawing units. */
+    gizmoLength: 36,
+    /** Dimension label text is never drawn smaller than this on screen (px), and lines shorter than this many drawing units are hidden. */
+    minLabelPx: 12,
+    minDimensionUnits: 70,
+    /** The house holds the rest angle this long before auto-rotate starts. */
+    restHoldMs: 1500,
   },
   building: {
     // While the foundation is drawn the whole drawing is lifted (and may be scaled) so the site

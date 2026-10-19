@@ -264,7 +264,7 @@ test.describe('Phase 14: stage sync', () => {
         const y = top - window.innerHeight * f;
         lenis?.scrollTo(Math.max(0, y), { immediate: true });
         await new Promise((r) => setTimeout(r, 40));
-        const plot = document.querySelector('.hero-plot-container');
+        const plot = document.querySelector('.hero-model');
         const win = document.querySelector('.building-site-window')?.getBoundingClientRect();
         const plotOpacity = plot ? Number(getComputedStyle(plot).opacity) : 0;
         // Distance the window has entered the viewport from its starting edge

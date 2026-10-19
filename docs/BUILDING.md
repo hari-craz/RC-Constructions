@@ -72,7 +72,7 @@ State is published on the window for tests and styles: `data-stage` (the stage i
 
 ### Hero to window hand-off
 
-One scrubbed timeline from the foundation sheet entering the viewport (`windowEnterViewport`) to its top edge reaching the top. Desktop: the plot (`.hero-plot-container`) fades out over the first `plotFadeShare` of it, and only then does the window slide in from the right, so no moving edge crosses the drawn plot. Phones and tablets (below 1024 px): the band rides up with the top edge of the arriving sheet (it fills the space the sheet reserves for it) while the plot fades, so no empty area shows. `e2e/phase-14b.spec.ts` asserts that no run of sheet-coloured rows taller than 20% of the viewport appears under the arriving sheet at 390, 768, 1024 and 1440 px.
+One scrubbed timeline from the foundation sheet entering the viewport (`windowEnterViewport`) to its top edge reaching the top. The hero 3D house (`.hero-model`, `src/components/HeroModel`) first eases to its front elevation (all angles 0, orthographic; `MOTION.model3d.frontShare`), then fades by opacity only (from `fadeStartShare`). Desktop: the window slides in from the right only after the house has gone (at `plotFadeShare`), so no moving edge crosses it. Phones and tablets (below 1024 px): the band rides up with the top edge of the arriving sheet (it fills the space the sheet reserves for it) while the house fades, so no empty area shows. The house keeps its own pose and resumes it when the visitor scrolls back (`data-handoff` on the widget reports progress). `e2e/phase-14b.spec.ts` asserts that no run of sheet-coloured rows taller than 20% of the viewport appears under the arriving sheet at 390, 768, 1024 and 1440 px.
 
 ### Reduced motion and no JavaScript
 

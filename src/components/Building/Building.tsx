@@ -340,8 +340,8 @@ export function Building({ className = '' }: BuildingProps) {
         });
       };
 
-      // Window hand-off: the survey plot fades out first, then the window slides in from the
-      // right edge (from the top on phones), so no moving edge ever cuts the drawn plot.
+      // Window hand-off: the hero house fades out first, then the window slides in from the
+      // right edge (from the top on phones), so no moving edge ever cuts the house.
       void inOwnTask(() => {
         if (cancelled) return;
         context.add(() => {
@@ -358,19 +358,28 @@ export function Building({ className = '' }: BuildingProps) {
               onRefresh: (self) => markWindowIn(self.progress >= 0.98),
             },
           });
-          const plot = document.querySelector('.hero-plot-container');
+          // The hero house first eases to its front elevation (HeroModel), then fades by opacity
+          // only; on desktop the window enters from the right only after it has gone
+          const model = document.querySelector('.hero-model');
+          const fadeStart = MOTION.model3d.fadeStartShare;
           if (phone) {
             // The band rides up with the top edge of the arriving sheet, filling the space the
             // sheet reserves for it, so no empty area ever shows while the sheet arrives
-            // The plot fades over the whole hand-off, so the hero never shows as an empty slab
-            tl.to(plot, { opacity: 0, duration: 1, ease: 'none' }, 0).fromTo(
-              root,
-              { y: () => vh() },
-              { y: 0, duration: 1, ease: 'none' },
-              0,
-            );
+            const fadeEnd = MOTION.model3d.fadeEndSharePhone;
+            tl.to(
+              model,
+              { opacity: 0, duration: fadeEnd - fadeStart, ease: 'none' },
+              fadeStart,
+            ).fromTo(root, { y: () => vh() }, { y: 0, duration: 1, ease: 'none' }, 0);
           } else {
-            tl.to(plot, { opacity: 0, duration: B.plotFadeShare, ease: 'none' }, 0).fromTo(
+            // The house is gone before the sheet's edge reaches its base; the window then enters
+            // from the right
+            const fadeEnd = MOTION.model3d.fadeEndShare;
+            tl.to(
+              model,
+              { opacity: 0, duration: fadeEnd - fadeStart, ease: 'none' },
+              fadeStart,
+            ).fromTo(
               root,
               { xPercent: 100 },
               { xPercent: 0, duration: 1 - B.plotFadeShare, ease: 'none' },

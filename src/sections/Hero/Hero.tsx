@@ -1,57 +1,57 @@
-import { useRef } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Button } from '../../components/Button';
-import { HeroPlot, type HeroPlotHandle } from '../../components/HeroPlot';
+import '../../components/HeroModel/HeroModel.css';
 import { Sheet } from '../../components/SheetStack';
 import { SITE } from '../../content/site';
 import { useScroll } from '../../hooks/useScroll';
-import { gsap, useGSAP } from '../../lib/gsap';
-import { MOTION } from '../../lib/motion';
 import './Hero.css';
 
-export function Hero() {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const plotRef = useRef<HeroPlotHandle | null>(null);
-  const { reducedMotion } = useScroll();
+// The 3D house is its own chunk. It is requested only after first paint and an idle moment, so
+// the headline (the LCP element) and the first paint never wait on it.
+const HeroModel = lazy(() => import('../../components/HeroModel/HeroModel'));
 
-  // The load sequence (plot drawing and headline rise) is pure CSS and plays from first paint.
-  // Only the scroll-linked layer below needs the motion chunk.
-  useGSAP(
-    () => {
-      const plot = plotRef.current;
-      if (reducedMotion || !plot) return;
-
-      const aboutTrigger = document.getElementById('foundation');
-      if (!aboutTrigger) return;
-
-      const scrub = {
-        trigger: aboutTrigger,
-        start: MOTION.hero.scrollLinked.start,
-        end: MOTION.hero.scrollLinked.end,
-        scrub: true,
+function afterFirstPaintAndIdle(run: () => void): () => void {
+  let cancelled = false;
+  let idleHandle = 0;
+  let timer = 0;
+  const frame = requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const go = () => {
+        if (!cancelled) run();
       };
-
-      if (plot.footprintPath) {
-        const limewash =
-          getComputedStyle(document.documentElement).getPropertyValue('--color-limewash').trim() ||
-          'var(--color-limewash)';
-        gsap.to(plot.footprintPath, { fill: limewash, scrollTrigger: scrub });
+      if (typeof window.requestIdleCallback === 'function') {
+        idleHandle = window.requestIdleCallback(go, { timeout: 1500 });
+      } else {
+        timer = window.setTimeout(go, 200);
       }
+    });
+  });
+  return () => {
+    cancelled = true;
+    cancelAnimationFrame(frame);
+    if (idleHandle && typeof window.cancelIdleCallback === 'function') {
+      window.cancelIdleCallback(idleHandle);
+    }
+    window.clearTimeout(timer);
+  };
+}
 
-      if (plot.gridGroup) {
-        gsap.to(plot.gridGroup.querySelectorAll('.hero-grid-cross'), {
-          scale: MOTION.hero.scrollLinked.gridScaleMax,
-          transformOrigin: 'center center',
-          scrollTrigger: scrub,
-        });
-      }
-    },
-    { scope: containerRef, dependencies: [reducedMotion] },
-  );
+export function Hero() {
+  const { reducedMotion } = useScroll();
+  const [modelReady, setModelReady] = useState(false);
+
+  useEffect(() => afterFirstPaintAndIdle(() => setModelReady(true)), []);
 
   return (
     <Sheet id="hero" tone="concrete">
-      <div ref={containerRef} className="hero-sheet-inner">
-        <HeroPlot ref={plotRef} />
+      <div className="hero-sheet-inner">
+        <div className="hero-model">
+          {modelReady && (
+            <Suspense fallback={null}>
+              <HeroModel reducedMotion={reducedMotion} />
+            </Suspense>
+          )}
+        </div>
 
         <div className="hero-content">
           <div className="hero-text-block">

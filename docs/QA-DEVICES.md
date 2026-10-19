@@ -27,7 +27,7 @@ This protocol validates scroll physics, dynamic viewports, and visual stability 
 - [ ] **Address Bar Collapse**:
   - Scroll down: confirm the dynamic toolbar hides smoothly without jumpy recalculation.
 - [ ] **SVG Line Drawing Performance**:
-  - Reload page at top: verify the initial survey plot draw (boundary, setback, footprint, stakes, dimension ticks) renders at 60 FPS without dropped frames.
+  - Reload page at top: verify the 3D house fades in and turns smoothly without dropped frames (it redraws about 30 times a second while auto-rotating).
 - [ ] **No Horizontal Overflow**:
   - Attempt horizontal dragging anywhere across the page. Confirm `overflow-x: clip` prevents any sideways panning.
 
@@ -140,8 +140,16 @@ This protocol validates scroll physics, dynamic viewports, and visual stability 
 
 ## Phase 14 additions
 
-- **Story sync.** Scroll slowly from the top. The window slides in only after the survey plot has faded out. Through About the foundation is drawn; through each of the six Process steps the building advances in parts (structure, envelope, fit-out) and each part is complete when that step's text is centred. Scroll back up: the building un-builds exactly. Tap an anchor in the header: the building lands on the same state as scrolling there.
+- **Story sync.** Scroll slowly from the top. The window slides in only after the hero house has faded out. Through About the foundation is drawn; through each of the six Process steps the building advances in parts (structure, envelope, fit-out) and each part is complete when that step's text is centred. Scroll back up: the building un-builds exactly. Tap an anchor in the header: the building lands on the same state as scrolling there.
 - **Header indicator.** At 1024 px and below 1280 px, and on a phone, the button names the current section; the list opens full width, Escape closes it, focus returns to the button. At 1280 px and above, check the six links never touch the logo or Enquire. Targets are at least 44 px.
 - **Projects preview.** Hover a row on a laptop and tab through them on a phone with a keyboard or switch: the drawing in the window changes with a soft fade; leaving the list returns to the finished building. On a phone, check the drawer is a full-screen sheet and Previous and Next scroll the row into view behind it.
 - **Form focus.** Tab through the enquiry form: each field shows a dark outline and a thicker bottom edge, never amber, and nothing jumps.
 - **Reduced motion.** With reduce motion on, the building changes state when a section or step comes into view, with no scrubbing and no cross-fade.
+
+---
+
+## Phase 14C additions
+
+- **The 3D house.** On a laptop: it turns by itself, pauses under the pointer and resumes about three seconds after you leave; drag turns and tilts it, Shift + drag rolls it, the buttons and keys (arrows, Q, E, 0, Space) work. On a phone: horizontal drag turns it, a vertical swipe on it scrolls the page, a two-finger twist rolls it, and every button is easy to hit.
+- **Hand-off.** Scroll slowly out of the hero: the house settles to a straight-on elevation, fades, then the window arrives; scroll back and it returns to the pose it had.
+- **Reduced motion.** The house does not turn by itself and buttons snap with no easing.

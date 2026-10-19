@@ -31,7 +31,7 @@ describe('amber allowlist (source)', () => {
     'Building.css',
     'Button.css',
     'LoadingLine.css',
-    'HeroPlot.css',
+    'HeroModel.css',
     'Contact.css',
     'ErrorBoundary.css',
     'tokens.css',

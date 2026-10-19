@@ -28,6 +28,11 @@
     "src/legal/html.ts",
     "src/legal/privacy.ts",
     "src/legal/terms.ts",
-    "src/lib/siteFiles.ts"
+    "src/lib/siteFiles.ts",
+    "src/lib/motion.ts",
+    "src/lib/model3d/math.ts",
+    "src/lib/model3d/house.ts",
+    "src/lib/model3d/render.ts",
+    "src/lib/model3d/staticSvg.ts"
   ]
 }

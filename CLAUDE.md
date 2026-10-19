@@ -74,6 +74,12 @@ Single-page scroll-driven portfolio site where a building is progressively const
 - Header: a sentence-case section indicator (links from 1280 px, a button and dialog below). No all-caps, amber, arrows or numbering.
 - Placeholders are quiet frames with crop marks and one sentence-case line. Focus on form fields is a 2 px ink outline, 2 px offset and a thicker bottom border, never amber.
 
+## Hero 3D House Rules (Phase 14C)
+
+- The hero shows an original 3D house (`src/lib/model3d/` data and maths, `src/components/HeroModel/` controller and component). No 3D library, no new dependencies. It is its own lazy chunk, requested after first paint and idle; never import it statically.
+- It rotates about x, y and z (auto-rotate, drag, buttons, keyboard). Tokens live in `MOTION.model3d`. The hand-off to the window eases it to the front elevation, then fades by opacity only.
+- Amber only on its dimension lines and labels. Reduced motion: no auto-rotate, inertia or easing. No-JS: the static SVG inlined from `index.html` (`%HERO_MODEL_SVG%`).
+
 ## Folder Map
 
 - `src/app/` — Application providers, scroll controller, layout wrappers

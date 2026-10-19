@@ -63,3 +63,7 @@ Mobile median of five: performance 98, LCP 2256 ms, TBT 6 ms, CLS 0 (Phase 13: 9
 ## Phase 14B
 
 Mobile median of five: performance 98, LCP 2160 ms, TBT 82 ms, CLS 0 (Phase 14: 98, 2256 ms, 6 ms, 0; the TBT rise is run-to-run variation inside the 200 ms budget). Desktop median of three: 100. `pnpm size`: 128.26 kB brotlied (limit 180 kB).
+
+## Phase 14C
+
+Mobile median of five: performance 98, LCP 2157 ms, TBT 64 ms, CLS 0 (Phase 14B: 98, 2160 ms, 82 ms, 0). Desktop median of three: 100. `pnpm size`: 134.12 kB brotlied (128.26 kB before; limit 180 kB). The hero 3D house is a lazy chunk of about 17 kB (6 kB gzipped), requested after first paint and idle; the LCP element is still the headline. Update cost of the house at a 4x CPU slowdown: about 3 to 4 ms per update when the machine is quiet, at most 30 updates a second.

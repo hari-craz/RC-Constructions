@@ -91,19 +91,12 @@ The following combinations fail WCAG contrast and are **strictly banned**:
 
 ## 5. Hero Section Specification (Creative Direction & Architecture)
 
-The hero opens with the core physical reality of construction: **a land survey**. Before concrete is poured or steel erected, an irregular plot of land is measured, staked, and drawn in chalk-line precision over bare concrete. The visitor witnesses the ground survey being laid out.
+The hero opens with the building itself: a small **interactive 3D house** drawn on bare concrete that turns slowly by itself and can be turned by the visitor (Phase 14C replaced the earlier survey plot; see section 12).
 
 ### Visual Foundations
 
 - **Surface**: Pure flat concrete (`--color-concrete`, `#C4C4BC`). Strictly zero gradients, zero drop shadows, zero noisy canvas overlays, zero glassmorphism blurs.
-- **The Drawing (Plan View / Top-Down Plot)**:
-  - Irregular 4-sided boundary polygon representing real parcel boundaries.
-  - Dashed setback lines inset from boundary (`--color-steel`, `#7A7E78`).
-  - Solid rectangular building footprint (`--color-formwork-dark`, `#232622`).
-  - Column-grid intersections marked with small crosshairs (`+`) in `--color-steel`.
-  - Corner survey stakes marked with solid coordinate squares and center registration pips in `--color-formwork-dark`.
-  - Dimension lines and extension ticks drawn in **amber exclusively** (`--color-work-lamp-amber`, `#E3B341`).
-  - Dimension values: Real architectural survey numbers in Newsreader figures (e.g. `18.40 m`, `24.80 m`). To maintain WCAG AAA compliance (≥ 8.5:1), dimension text in amber is housed on discrete formwork-dark survey marker tags or crisp dark callouts, avoiding low-contrast yellow-on-grey failure while retaining pure survey utility.
+- **The Drawing (3D house)**: an original two-storey house (main block, garage, front porch, gable roofs, chimney) as plain data in `src/lib/model3d/`, projected by our own maths into one inline SVG. Limewash walls, concrete roofs, formwork-dark windows and doors, ink edges in the three-weight system. Dimension lines (overall width and height) and their labels follow the model in **amber exclusively** (`--color-work-lamp-amber`), with the labels on formwork-dark tags for contrast.
 
 ### Typography & Hierarchy
 
@@ -116,35 +109,23 @@ The hero opens with the core physical reality of construction: **a land survey**
 
 - **Desktop (1440×900)**:
   - Dual-zone composition: Text column anchored to bottom-left with `--page-gutter` padding.
-  - Survey plot drawing occupies the upper and right 65% of the viewport, bleeding off the top and right edges.
-  - Clear negative space between text and drawing lines; zero overlap.
+  - The 3D house and its controls occupy the right 56% of the hero, above and beside the headline block; zero overlap with the text.
 - **Tablet (768×1024)**:
-  - SVG positioned top-right, headline bottom-left; peripheral dimension lines on the left edge collapse to prevent collision with text.
-- **Mobile (360×640)**:
-  - Survey drawing occupies upper 60% of viewport.
-  - Headline, tagline, and button anchor to lower 40%.
-  - Colliding lateral dimension lines are hidden; primary width dimension ("18.40 m") floats safely above the headline.
-  - Text never overlaps structural drawing lines at any viewport width.
+  - The house sits above the headline, full width, with the controls beneath it.
+- **Mobile (390×844)**:
+  - The house fills the width of the upper area; its control cluster (two rows of four, 44 px targets) sits beneath it; headline, tagline and button anchor to the lower part.
+  - Dimension labels are drawn 1.8 times larger below 768 px so they stay readable.
 
-### Motion Timeline (Load Sequence & Scroll-Linked Construction)
+### Motion Timeline
 
-1. **Load Timeline (Played once, never repeated on resize)**:
-   - `0.0s – 1.0s`: Plot boundary line draws (`pathLength="1"`, `strokeDashoffset: 1 -> 0`), corner stakes appear.
-   - `0.6s – 1.4s`: Dashed setback lines draw.
-   - `1.0s – 1.8s`: Building footprint perimeter draws.
-   - `1.4s – 2.0s`: Column-grid crosses pop in with a quick stagger.
-   - `1.8s – 2.6s`: Amber dimension lines draw and survey values reveal.
-   - `0.5s – 1.4s`: Headline reveals via masked line clip (each line slides up out of an overflow-hidden container, 0.9s duration, 0.12s stagger).
-   - **Scroll Jump**: If the user scrolls before 2.6s completes, the timeline immediately jumps to `progress(1)`.
-2. **Scroll-Linked Scrub Layer**:
-   - As the user scrolls into Sheet 2 (About/Structural), the footprint fills with flat limewash (`--color-limewash`) and the grid crosses expand, transitioning survey into foundation pouring.
-3. **Accessibility**:
-   - With `prefers-reduced-motion: reduce`, all paths are instantly drawn (`strokeDashoffset: 0`), headline is immediately visible without transforms, and scroll scrub is bypassed.
+1. **Load**: the headline reveals via a masked line clip (CSS, `MOTION.hero.headline*`). The 3D house is a lazy chunk requested after first paint and an idle moment; it fades in (opacity only) once ready.
+2. **Scroll hand-off**: see `docs/BUILDING.md` and section 12 (the house eases to its front elevation, then fades while the window arrives).
+3. **Accessibility**: with `prefers-reduced-motion: reduce` there is no auto-rotate, inertia or easing; the house stays at its rest angle and the buttons and keys snap.
 
 ### Banned List Audit & Revision Record
 
 - _Review against cliches_: No generic hero tags, no "Scroll to explore" pulsing arrows, no gradient text, no glassmorphism cards.
-- _Changes made from initial concept_: Added formwork-dark survey marker backing behind amber dimension labels to enforce WCAG AA/AAA contrast (8.5:1) rather than raw amber on bare concrete (which fails at 1.3:1).
+- _Changes made from initial concept_: Added formwork-dark marker backing behind amber dimension labels to enforce WCAG AA/AAA contrast (8.5:1) rather than raw amber on bare concrete (which fails at 1.3:1).
 
 ---
 
@@ -236,3 +217,12 @@ The custom cursor evokes a surveyor's optical level crosshair. It is engineered 
 - Phone and tablet hand-off: the band rides with the arriving sheet's top edge; no empty region taller than 20% of the viewport.
 - The foundation is framed by a lifted camera (`MOTION.building.siteCamera*`), not left low in an empty window.
 - The founder portrait falls back to the quiet placeholder if the file fails to load; `src/content/portrait.test.ts` requires real files of the right type before the flag can be switched on.
+
+## 12. Phase 14C — Interactive 3D house in the hero
+
+- **Model**: `src/lib/model3d/` holds plain data (about 110 vertices, solids with flat window and door decals), rotation and projection maths (turn about y, then tilt about x, then roll about z; a mild perspective), back-face culling and a painter's sort by solid. No 3D library. One inline SVG; faces of one kind that are neighbours in paint order share a path to keep DOM work small.
+- **Auto-rotate**: one turn in 20 s about y with an 8 degree bob on x, redrawn at most 30 times a second. It pauses on hover (mouse), when the model has keyboard focus, while dragging, while the hero is off-screen or the tab is hidden, and resumes after 3 s without input.
+- **Controls**: drag turns (y) and tilts (x, clamped to 80 degrees) with inertia; Shift + drag or a two-finger twist rolls (z). On touch `touch-action: pan-y` keeps vertical swipes scrolling the page. Always-visible buttons (Turn left, Turn right, Tilt up, Tilt down, Roll left, Roll right, Reset view, Auto-rotate) rotate 15 degrees with a short ease. The model is focusable (arrows, Q and E, 0 or Home, Space). Focus rings are 2 px ink with a 2 px offset. An x, y, z axis gizmo rotates with the model; one hint line ("Drag to turn the house") is removed after 6 s or the first interaction. Nothing is announced by a live region.
+- **Hand-off**: over the first quarter of the hero-to-window hand-off the house eases to its front elevation (all angles 0, perspective to orthographic); it then fades by opacity only before the window enters. Scrolling back restores the pose it had.
+- **Fallbacks**: reduced motion as above; no-JS shows the house at its rest angle, inlined into `index.html` at build time (`%HERO_MODEL_SVG%`).
+- **Tokens**: `MOTION.model3d` in `src/lib/motion.ts`.

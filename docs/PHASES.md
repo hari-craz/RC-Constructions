@@ -21,7 +21,7 @@
   - Comprehensive unit and E2E test suites with zero axe violations and screenshot capture.
 
 - [x] **Phase 4: Pinned Hero & Land Survey Drawing**
-  - Land survey drawing (`HeroPlot`) in chalk-line precision on concrete with normalized paths (`pathLength="1"`).
+  - Land survey drawing (`HeroPlot`, replaced in Phase 14C by the interactive 3D house in `src/components/HeroModel`).
   - Massive architectural headline in Big Shoulders Display with masked line reveals.
   - Polymorphic `Button` with amber accent and `Logo` with favicon geometry.
   - Section-spy responsive `Nav` switching tone over sheets with accessible skip link.

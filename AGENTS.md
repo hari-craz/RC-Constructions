@@ -15,6 +15,10 @@ GSAP, ScrollTrigger and Lenis load lazily through `src/lib/gsap.ts` after the fi
 
 Section order, the stage map and the sync rules live in `docs/BUILDING.md` section 3 and `src/data/stages.ts`. Never reorder sections or change an id without updating both and `e2e/phase-14.spec.ts`. Process steps 01-03 complete the foundation, 04 structure, 05 envelope, 06 fit-out; lit windows never appear before the Work delivered headline is centred. The building must never finish a part before its text is centred, and reverse scrolling must un-build exactly.
 
+## Hero Model Law
+
+The hero 3D house is our own projection code (`src/lib/model3d/`) in a lazy chunk (`src/components/HeroModel/`); never add a 3D or animation library. It must stay at the front elevation at the end of the hero scroll, keep 44 px control targets and 2 px ink focus rings, and snap (no easing) under reduced motion.
+
 ## The Three Rules That Matter Most
 
 1. **Never Start Unrequested Phases**: Only implement the current, explicitly requested phase. Do not build forward into upcoming milestones.

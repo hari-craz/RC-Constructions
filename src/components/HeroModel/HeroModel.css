@@ -1,0 +1,71 @@
+/* Face styles for the hero house: flat fills, ink edges in the three-weight system. */
+.hm-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.hm-face,
+.hm-ground,
+.hm-dim {
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.hm-ground {
+  fill: none;
+  stroke: var(--color-steel);
+  stroke-width: 1px;
+}
+
+.hm-wall {
+  fill: var(--color-limewash);
+  stroke: var(--color-formwork-dark);
+  stroke-width: 1.5px;
+}
+
+.hm-roof {
+  fill: var(--color-concrete);
+  stroke: var(--color-formwork-dark);
+  stroke-width: 2px;
+}
+
+.hm-trim {
+  fill: var(--color-concrete);
+  stroke: var(--color-formwork-dark);
+  stroke-width: 1.5px;
+}
+
+.hm-glass,
+.hm-door {
+  fill: var(--color-formwork-dark);
+  stroke: var(--color-formwork-dark);
+  stroke-width: 1px;
+}
+
+/* Dimension lines and their labels: amber only here */
+.hm-dim {
+  fill: none;
+  stroke: var(--color-accent);
+  stroke-width: 1.5px;
+}
+
+.hm-dim-label rect {
+  fill: var(--color-formwork-dark);
+}
+
+.hm-dim-label text {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 600;
+  fill: var(--color-accent);
+}
+
+/* No-JS fallback (index.html noscript): the static house at its rest angle */
+.hero-model-static {
+  width: min(100%, 40rem);
+  margin: var(--space-6) auto;
+  aspect-ratio: 5 / 4;
+}
