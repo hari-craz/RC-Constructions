@@ -35,8 +35,8 @@ test.describe('Phase 11 — building as protagonist', () => {
           .locator('.building-site-window')
           .evaluate((el) => getComputedStyle(el).backgroundColor);
         expect(bg).toBe(SURFACE);
-        // The drawn building spans at least 70% of the window width. The ground slab is drawn by About (partly built there); measure where it is complete
-        if (id === 'foundation') continue;
+        // The drawn building spans at least 70% of the window width. The ground slab is drawn across About and process steps 1 to 3 (partly built at those anchors); measure where it is complete
+        if (id === 'foundation' || id === 'fitout') continue;
         const ratio = await page.evaluate(() => {
           const win = document.querySelector('.building-site-window')?.getBoundingClientRect();
           const roof = document.querySelector('.b-ground-slab')?.getBoundingClientRect();
@@ -135,7 +135,7 @@ test.describe('Phase 11 — building as protagonist', () => {
     expect(paneMax).toBeLessThan(winW * 0.15);
 
     await open(page, 'hero');
-    let at = await untilPartComplete(0); // foundation (About)
+    let at = await untilPartComplete(1); // foundation (About, then steps 1 to 3)
     expect(at).toBeGreaterThan(0);
     let m = await measure();
     expect(m.footing).toBeGreaterThan(ref.footing * 0.95);
@@ -143,22 +143,22 @@ test.describe('Phase 11 — building as protagonist', () => {
     expect(m.paneFills.some((f) => f === AMBER)).toBe(false);
 
     at = await untilPartComplete(2, Math.max(0, at - 40));
-    expect(at).toBeGreaterThan(0); // structure (Process steps 1 and 2)
+    expect(at).toBeGreaterThan(0); // structure (Process step 4)
     m = await measure();
     expect(m.col).toBeGreaterThan(ref.col * 0.95);
     expect(m.wall).toBeLessThan(ref.wall * 0.15);
     // The next part starts the moment this one ends, so allow the first 20 px of it
     expect(Math.max(...m.frameOpacity)).toBeLessThan(0.25);
 
-    at = await untilPartComplete(4, Math.max(0, at - 40));
-    expect(at).toBeGreaterThan(0); // envelope (steps 3 and 4)
+    at = await untilPartComplete(3, Math.max(0, at - 40));
+    expect(at).toBeGreaterThan(0); // envelope (step 5)
     m = await measure();
     expect(m.wall).toBeGreaterThan(ref.wall * 0.95);
     // The next part starts the moment this one ends, so allow the first 20 px of it
     expect(Math.max(...m.frameOpacity)).toBeLessThan(0.25);
 
-    at = await untilPartComplete(6, Math.max(0, at - 40));
-    expect(at).toBeGreaterThan(0); // fit-out (steps 5 and 6)
+    at = await untilPartComplete(4, Math.max(0, at - 40));
+    expect(at).toBeGreaterThan(0); // fit-out (step 6)
     m = await measure();
     expect(Math.min(...m.frameOpacity)).toBeGreaterThan(0.9);
     expect(m.paneFills.some((f) => f === AMBER)).toBe(false);

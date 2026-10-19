@@ -23,7 +23,16 @@ const ALL = [
 ];
 // Full set at the four review widths; 1280 and 1024 only get header and transition frames
 const REVIEW = new Set(['1904x1080', '1440x900', '768x1024', '390x844']);
-const TRANSITION_WIDTHS = new Set(['1904x1080', '1440x900', '1280x800', '768x1024', '390x844']);
+const TRANSITION_WIDTHS = new Set([
+  '1904x1080',
+  '1440x900',
+  '1280x800',
+  '1024x768',
+  '768x1024',
+  '390x844',
+]);
+// ONLY_TRANSITIONS=1 captures just the hero-to-window frames (fast iteration)
+const ONLY_TRANSITIONS = Boolean(process.env.ONLY_TRANSITIONS);
 const HEADER_WIDTHS = new Set(['1904x1080', '1440x900', '1280x800', '1024x768', '390x844']);
 
 // New story order; ids are unchanged
@@ -90,7 +99,7 @@ for (const vp of ALL) {
   const shot = (name, opts = {}) =>
     page.screenshot({ path: path.join(dir, `${prefix}-${name}.png`), ...opts });
 
-  if (REVIEW.has(vp.name)) {
+  if (REVIEW.has(vp.name) && !ONLY_TRANSITIONS) {
     // Every section, by hash
     for (const [name, id] of SECTIONS) {
       await page.goto('about:blank');
@@ -155,7 +164,7 @@ for (const vp of ALL) {
   }
 
   // Header at the widths where the layout changes
-  if (HEADER_WIDTHS.has(vp.name)) {
+  if (HEADER_WIDTHS.has(vp.name) && !ONLY_TRANSITIONS) {
     await page.goto('about:blank');
     await page.goto(`${base}/#fitout`);
     await settle(page, 2200);

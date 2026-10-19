@@ -17,7 +17,12 @@ const ORDER = [
 ];
 const NAV_LABELS = ['Principles', 'Process', 'Track record', 'Services', 'Projects', 'Contact'];
 const NAV_IDS = ['foundation', 'fitout', 'completion', 'structure', 'envelope', 'contact'];
-const PARTS = 8; // foundation 1, structure 2, envelope 2, fit-out 2, completion 1
+// foundation 2 (About, then steps 1 to 3), structure 1 (step 4), envelope 1 (step 5),
+// fit-out 1 (step 6), completion 2 (plate and dimensions, then lit windows)
+const PARTS = 7;
+// Build progress at which each step's part is complete; steps 1 and 2 only advance the
+// foundation, which step 3 completes
+const STEP_END = [null, null, 2 / PARTS, 3 / PARTS, 4 / PARTS, 5 / PARTS];
 const PROCESS_STEPS = 6;
 
 async function open(page: Page, id: string) {
@@ -117,12 +122,18 @@ test.describe('Phase 14: stage sync', () => {
     // Rule 1: step i finishes when its text is centred, never before
     let sawCentred = 0;
     for (let i = 0; i < PROCESS_STEPS; i++) {
-      const end = (2 + i) / PARTS;
+      const end = STEP_END[i] ?? null;
       const closest = samples.reduce((a, b) =>
         Math.abs(b.offsets[i] ?? 1e9) < Math.abs(a.offsets[i] ?? 1e9) ? b : a,
       );
       if (Math.abs(closest.offsets[i] ?? 1e9) > 40) continue; // sheet ends before it can centre
       sawCentred++;
+      if (end === null) {
+        // Pre-construction steps: the foundation is under way but not yet complete
+        expect(closest.bp, `step ${i + 1} advances the foundation`).toBeGreaterThan(1 / PARTS);
+        expect(closest.bp, `step ${i + 1} leaves it unfinished`).toBeLessThan(2 / PARTS);
+        continue;
+      }
       for (const s of samples) {
         if ((s.offsets[i] ?? 0) > 60) {
           expect(s.bp, `step ${i + 1} at y=${s.y}`).toBeLessThan(end - 0.0005);
@@ -248,7 +259,7 @@ test.describe('Phase 14: stage sync', () => {
       const hero = document.getElementById('hero');
       if (!about || !hero) return [];
       const top = hero.offsetHeight;
-      const out: { frac: number; plot: number; edge: number }[] = [];
+      const out: { frac: number; plot: number; edge: number; band: number }[] = [];
       for (let f = 1; f >= 0; f -= 0.05) {
         const y = top - window.innerHeight * f;
         lenis?.scrollTo(Math.max(0, y), { immediate: true });
@@ -257,19 +268,25 @@ test.describe('Phase 14: stage sync', () => {
         const win = document.querySelector('.building-site-window')?.getBoundingClientRect();
         const plotOpacity = plot ? Number(getComputedStyle(plot).opacity) : 0;
         // Distance the window has entered the viewport from its starting edge
-        const entered = win
-          ? window.innerWidth > 800
-            ? window.innerWidth - win.left
-            : win.bottom
-          : 0;
-        out.push({ frac: f, plot: plotOpacity, edge: entered });
+        const entered = win ? window.innerWidth - win.left : 0;
+        // Phones: how far the band's top edge sits above the arriving sheet's top edge
+        const sheetTop = about.getBoundingClientRect().top;
+        out.push({
+          frac: f,
+          plot: plotOpacity,
+          edge: window.innerWidth < 1024 ? 0 : entered,
+          band: win && window.innerWidth < 1024 ? sheetTop - win.top : 0,
+        });
       }
       return out;
     });
     expect(frames.length).toBeGreaterThan(10);
     void isMobile;
     for (const f of frames) {
+      // Desktop: the window enters from the right only after the plot has faded
       if (f.edge > 24) expect(f.plot, `frac ${f.frac}`).toBeLessThanOrEqual(0.02);
+      // Phones: the band rides with the arriving sheet's top edge and is never above it
+      expect(f.band, `band vs sheet at frac ${f.frac}`).toBeLessThanOrEqual(2);
     }
   });
 });

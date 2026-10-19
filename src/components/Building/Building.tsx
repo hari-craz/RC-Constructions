@@ -181,10 +181,25 @@ export function Building({ className = '' }: BuildingProps) {
       const B = MOTION.building;
       const section = (id: string) => document.getElementById(id) as HTMLElement;
 
+      // Site camera: lifted and enlarged for the foundation, settling to rest during the structure
+      const camera = root.querySelector<SVGGElement>('.b-camera');
+      const cameraView = phone ? VIEWBOXES.mobile : VIEWBOXES.desktop;
+      const cameraLift = phone ? B.siteCameraLiftPhone : B.siteCameraLiftDesktop;
+      // Scale about the middle of the ground line; k runs 1 (foundation frame) to 0 (rest frame).
+      // Written straight to the group's transform so the origin is exact in viewBox units.
+      const originX = cameraView.x + cameraView.width / 2;
+      const applyCamera = (k: number) => {
+        const scale = 1 + (B.siteCameraScale - 1) * k;
+        const tx = originX * (1 - scale);
+        const ty = GROUND_Y * (1 - scale) - cameraLift * k;
+        camera?.setAttribute('transform', `matrix(${scale} 0 0 ${scale} ${tx} ${ty})`);
+      };
+      applyCamera(1);
+
       root.dataset.stage = 'survey';
       root.dataset.stageProgress = '0';
       root.dataset.buildProgress = '0';
-      root.dataset.partProgress = '0,0,0,0,0,0,0,0';
+      root.dataset.partProgress = '0,0,0,0,0,0,0';
 
       // Staggered fromTo tweens only render their first target's start state up front, so a
       // stagger is laid out as explicit per-element positions on the scrubbed timeline.
@@ -273,9 +288,24 @@ export function Building({ className = '' }: BuildingProps) {
         }
         return out;
       };
-      const completionRange = (): [number, number] => {
+      // A part drawn by process steps `from` to `to` (inclusive, zero based)
+      const stepSpan = (from: number, to: number): [number, number] => {
+        const ranges = stepRanges();
+        const first = ranges[from] ?? foundationRange();
+        const last = ranges[to] ?? first;
+        return [first[0], Math.max(last[1], first[0] + 1)];
+      };
+      // Work delivered: first the plate and dimension lines (from the end of the last step until
+      // its headline is centred), then the windows are lit (headline centred until the sheet is)
+      const completionPlateRange = (): [number, number] => {
         const ranges = stepRanges();
         const start = ranges[ranges.length - 1]?.[1] ?? foundationRange()[1];
+        const heading = document.getElementById(`${COMPLETION_SECTION.sectionId}-heading`);
+        const end = heading ? centreScroll(heading) : centred(completionSheet());
+        return [start, Math.max(end, start + 1)];
+      };
+      const completionWindowsRange = (): [number, number] => {
+        const start = completionPlateRange()[1];
         return [start, Math.max(centred(completionSheet()), start + 1)];
       };
 
@@ -328,165 +358,189 @@ export function Building({ className = '' }: BuildingProps) {
               onRefresh: (self) => markWindowIn(self.progress >= 0.98),
             },
           });
-          tl.to(
-            document.querySelector('.hero-plot-container'),
-            { opacity: 0, duration: B.plotFadeShare, ease: 'none' },
-            0,
-          ).fromTo(
-            root,
-            phone ? { yPercent: -100 } : { xPercent: 100 },
-            { xPercent: 0, yPercent: 0, duration: 1 - B.plotFadeShare, ease: 'none' },
-            B.plotFadeShare,
-          );
+          const plot = document.querySelector('.hero-plot-container');
+          if (phone) {
+            // The band rides up with the top edge of the arriving sheet, filling the space the
+            // sheet reserves for it, so no empty area ever shows while the sheet arrives
+            // The plot fades over the whole hand-off, so the hero never shows as an empty slab
+            tl.to(plot, { opacity: 0, duration: 1, ease: 'none' }, 0).fromTo(
+              root,
+              { y: () => vh() },
+              { y: 0, duration: 1, ease: 'none' },
+              0,
+            );
+          } else {
+            tl.to(plot, { opacity: 0, duration: B.plotFadeShare, ease: 'none' }, 0).fromTo(
+              root,
+              { xPercent: 100 },
+              { xPercent: 0, duration: 1 - B.plotFadeShare, ease: 'none' },
+              B.plotFadeShare,
+            );
+          }
           root.dataset.sync = 'true';
         });
       });
 
-      // Stage 2: Foundation (About): excavation, footings, plinth, ground slab, site set-out
+      // Stage 2a: Foundation, part 0 (About): excavation and set-out pegs
       scrubPart('foundation:0', foundationRange, (tl) => {
         tl.fromTo(
           all('.b-pit'),
           { scaleY: 0, transformOrigin: TOP_ORIGIN },
           { scaleY: 1, duration: B.digDuration, ease: B.strokeEase },
           0,
-        ).fromTo(
-          all('.b-ground-slab'),
-          { scaleX: 0, transformOrigin: LEFT_ORIGIN },
-          { scaleX: 1, duration: B.memberDuration, ease: B.strokeEase },
-          B.digDuration + B.footingDuration + B.memberDuration,
         );
         staggered(
           tl,
-          all('.b-peg, .b-datum'),
+          all('.b-peg'),
           { opacity: 0 },
           { opacity: 1, duration: B.memberDuration, ease: B.fillEase },
           0,
           B.memberStagger,
         );
-        staggered(
-          tl,
-          all('.b-starter'),
-          { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
-          { scaleY: 1, duration: B.memberDuration, ease: B.strokeEase },
-          B.digDuration + B.footingDuration + B.memberDuration,
-          B.starterStagger,
-        );
-        staggered(
-          tl,
-          all('.b-footing'),
-          { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
-          { scaleY: 1, duration: B.footingDuration, ease: B.strokeEase },
-          B.digDuration,
-          B.footingStagger,
-        );
-        staggered(
-          tl,
-          all('.b-stub, .b-tie'),
-          { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
-          { scaleY: 1, duration: B.memberDuration, ease: B.strokeEase },
-          B.digDuration + B.footingDuration,
-          B.memberStagger,
-        );
       });
 
-      // Stage 3: Structure (process steps 1 and 2): two storeys per step, columns and core,
-      // then beams and slab
-      const storeyPairs = [STOREYS.slice(0, 2), STOREYS.slice(2)];
-      storeyPairs.forEach((levels, part) => {
-        scrubPart(
-          `structure:${part}`,
-          () => stepRanges()[part] ?? foundationRange(),
-          (tl) => {
-            levels.forEach((s, i) => {
-              const at = i * B.levelStagger;
-              tl.fromTo(
-                all(`.b-level[data-level="${s}"] .b-col, .b-level[data-level="${s}"] .b-core`),
-                { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
-                { scaleY: 1, duration: B.levelDuration, ease: B.strokeEase },
-                at,
-              ).fromTo(
-                all(`.b-level[data-level="${s}"] .b-slab, .b-level[data-level="${s}"] .b-beam`),
-                { scaleX: 0, transformOrigin: LEFT_ORIGIN },
-                { scaleX: 1, duration: B.levelDuration, ease: B.strokeEase },
-                at + B.levelDuration * 0.6,
-              );
-            });
-          },
-        );
-      });
-
-      // Stage 4: Envelope (process steps 3 and 4): walls rise two storeys per step; the last
-      // step adds the parapet, backfills the excavation and takes down the profile string
-      storeyPairs.forEach((levels, part) => {
-        scrubPart(
-          `envelope:${part}`,
-          () => stepRanges()[2 + part] ?? foundationRange(),
-          (tl) => {
-            levels.forEach((s, i) => {
-              const at = i * B.wallStagger;
-              tl.fromTo(
-                all(`.b-wall[data-storey="${s}"]`),
-                { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
-                { scaleY: 1, duration: B.wallDuration, ease: B.strokeEase },
-                at,
-              ).fromTo(
-                all(`.b-opening[data-storey="${s}"]`),
-                { opacity: 0 },
-                { opacity: 1, duration: B.wallDuration, ease: B.fillEase },
-                at + B.wallDuration,
-              );
-            });
-            if (part === 1) {
-              staggered(
-                tl,
-                all('.b-parapet'),
-                { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
-                { scaleY: 1, duration: B.wallDuration, ease: B.strokeEase },
-                levels.length * B.wallStagger + B.wallDuration,
-                B.wallStagger,
-              );
-              tl.to(all('.b-pit'), { fill: raised, duration: B.wallDuration, ease: B.fillEase }, 0);
-              tl.to(
-                all('.b-string'),
-                { opacity: 0, duration: B.wallDuration, ease: B.fillEase },
-                0,
-              );
-            }
-          },
-        );
-      });
-
-      // Stage 5: Fit-out (process steps 5 and 6): window frames and railings, then entrance,
-      // canopy and stair
-      (['a', 'b'] as const).forEach((fit, part) => {
-        scrubPart(
-          `fitout:${part}`,
-          () => stepRanges()[4 + part] ?? foundationRange(),
-          (tl) => {
-            staggered(
-              tl,
-              all(`.b-fit[data-fit="${fit}"]`),
-              { opacity: 0 },
-              { opacity: 1, duration: B.detailDuration, ease: B.fillEase },
-              0,
-              B.detailStagger,
-            );
-          },
-        );
-      });
-
-      // Stage 6: Completion (Work delivered): every window lit (flat amber), name plate,
-      // dimensions
-      scrubPart('completion:0', completionRange, (tl) => {
-        // Each window switches on as one flat amber rectangle; never a blended or translucent tint
-        all('.b-pane').forEach((pane, i) => {
-          tl.fromTo(
-            pane,
-            { fill: raised },
-            { fill: amber, duration: B.windowSwitchDuration, ease: 'none' },
-            i * B.windowLitStagger,
+      // Stage 2b: Foundation, part 1 (process steps 1 to 3, the pre-construction steps):
+      // footings, stubs and tie beam, starter bars, ground slab, level marks
+      scrubPart(
+        'foundation:1',
+        () => stepSpan(0, 2),
+        (tl) => {
+          staggered(
+            tl,
+            all('.b-footing'),
+            { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
+            { scaleY: 1, duration: B.footingDuration, ease: B.strokeEase },
+            0,
+            B.footingStagger,
           );
-        });
+          staggered(
+            tl,
+            all('.b-stub, .b-tie'),
+            { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
+            { scaleY: 1, duration: B.memberDuration, ease: B.strokeEase },
+            B.footingDuration,
+            B.memberStagger,
+          );
+          staggered(
+            tl,
+            all('.b-starter'),
+            { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
+            { scaleY: 1, duration: B.memberDuration, ease: B.strokeEase },
+            B.footingDuration + B.memberDuration,
+            B.starterStagger,
+          );
+          tl.fromTo(
+            all('.b-ground-slab'),
+            { scaleX: 0, transformOrigin: LEFT_ORIGIN },
+            { scaleX: 1, duration: B.memberDuration, ease: B.strokeEase },
+            B.footingDuration + B.memberDuration,
+          );
+          staggered(
+            tl,
+            all('.b-datum'),
+            { opacity: 0 },
+            { opacity: 1, duration: B.memberDuration, ease: B.fillEase },
+            B.footingDuration + B.memberDuration,
+            B.memberStagger,
+          );
+        },
+      );
+
+      // Stage 3: Structure (process step 4): level by level, columns and core, then beams and slab
+      scrubPart(
+        'structure:0',
+        () => stepSpan(3, 3),
+        (tl) => {
+          STOREYS.forEach((s, i) => {
+            const at = i * B.levelStagger;
+            tl.fromTo(
+              all(`.b-level[data-level="${s}"] .b-col, .b-level[data-level="${s}"] .b-core`),
+              { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
+              { scaleY: 1, duration: B.levelDuration, ease: B.strokeEase },
+              at,
+            ).fromTo(
+              all(`.b-level[data-level="${s}"] .b-slab, .b-level[data-level="${s}"] .b-beam`),
+              { scaleX: 0, transformOrigin: LEFT_ORIGIN },
+              { scaleX: 1, duration: B.levelDuration, ease: B.strokeEase },
+              at + B.levelDuration * 0.6,
+            );
+          });
+          const cameraTween = { k: 1 };
+          tl.fromTo(
+            cameraTween,
+            { k: 1 },
+            {
+              k: 0,
+              duration: tl.duration(),
+              ease: 'none',
+              onUpdate: () => applyCamera(cameraTween.k),
+            },
+            0,
+          );
+        },
+      );
+
+      // Stage 4: Envelope (process step 5): walls rise storey by storey with their openings, then
+      // the parapet; the excavation is backfilled and the profile string comes down
+      scrubPart(
+        'envelope:0',
+        () => stepSpan(4, 4),
+        (tl) => {
+          STOREYS.forEach((s, i) => {
+            const at = i * B.wallStagger;
+            tl.fromTo(
+              all(`.b-wall[data-storey="${s}"]`),
+              { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
+              { scaleY: 1, duration: B.wallDuration, ease: B.strokeEase },
+              at,
+            ).fromTo(
+              all(`.b-opening[data-storey="${s}"]`),
+              { opacity: 0 },
+              { opacity: 1, duration: B.wallDuration, ease: B.fillEase },
+              at + B.wallDuration,
+            );
+          });
+          staggered(
+            tl,
+            all('.b-parapet'),
+            { scaleY: 0, transformOrigin: BOTTOM_ORIGIN },
+            { scaleY: 1, duration: B.wallDuration, ease: B.strokeEase },
+            STOREYS.length * B.wallStagger + B.wallDuration,
+            B.wallStagger,
+          );
+          tl.to(all('.b-pit'), { fill: raised, duration: B.wallDuration, ease: B.fillEase }, 0);
+          tl.to(all('.b-string'), { opacity: 0, duration: B.wallDuration, ease: B.fillEase }, 0);
+        },
+      );
+
+      // Stage 5: Fit-out (process step 6): window frames and railings, then entrance, canopy
+      // and stair
+      scrubPart(
+        'fitout:0',
+        () => stepSpan(5, 5),
+        (tl) => {
+          const first = all('.b-fit[data-fit="a"]');
+          staggered(
+            tl,
+            first,
+            { opacity: 0 },
+            { opacity: 1, duration: B.detailDuration, ease: B.fillEase },
+            0,
+            B.detailStagger,
+          );
+          staggered(
+            tl,
+            all('.b-fit[data-fit="b"]'),
+            { opacity: 0 },
+            { opacity: 1, duration: B.detailDuration, ease: B.fillEase },
+            first.length * B.detailStagger,
+            B.detailStagger,
+          );
+        },
+      );
+
+      // Stage 6a: Completion, part 0: name plate and the dimension lines
+      scrubPart('completion:0', completionPlateRange, (tl) => {
         tl.fromTo(
           all('.b-plate'),
           { opacity: 0 },
@@ -511,6 +565,19 @@ export function Building({ className = '' }: BuildingProps) {
             { opacity: 1, duration: B.detailDuration, ease: B.fillEase },
             B.dimensionLabelDelay + B.dimensionDrawDuration,
           );
+      });
+
+      // Stage 6b: Completion, part 1: every window lit (a flat amber rectangle, never a blended or
+      // translucent tint), only once the Work delivered headline is centred
+      scrubPart('completion:1', completionWindowsRange, (tl) => {
+        all('.b-pane').forEach((pane, i) => {
+          tl.fromTo(
+            pane,
+            { fill: raised },
+            { fill: amber, duration: B.windowSwitchDuration, ease: 'none' },
+            i * B.windowLitStagger,
+          );
+        });
       });
 
       return () => {
@@ -543,333 +610,341 @@ export function Building({ className = '' }: BuildingProps) {
         role="presentation"
         focusable="false"
       >
-        {/* Ground: soil mass and the ground line run the full width of the window */}
-        <rect className="b-soil" x={-4000} y={GROUND_Y} width={9000} height={4000} />
-        <line className="b-ground-line" x1={-4000} y1={GROUND_Y} x2={5000} y2={GROUND_Y} />
+        <g className="b-camera">
+          {/* Ground: soil mass and the ground line run the full width of the window */}
+          <rect className="b-soil" x={-4000} y={GROUND_Y} width={9000} height={4000} />
+          <line className="b-ground-line" x1={-4000} y1={GROUND_Y} x2={5000} y2={GROUND_Y} />
 
-        {/* STAGE 2: FOUNDATION */}
-        <g id="stage-foundation" className="stage-group">
-          <polygon className="b-pit" points={PIT_POINTS.map((pt) => pt.join(',')).join(' ')} />
-          <line
-            className="b-string"
-            x1={PEGS[0].x}
-            x2={PEGS[1].x}
-            y1={GROUND_Y - STRING_HEIGHT}
-            y2={GROUND_Y - STRING_HEIGHT}
-          />
-          {PEGS.map((peg) => (
-            <g key={peg.x} className="b-peg">
-              <rect x={peg.x - 3} y={GROUND_Y - peg.height} width={6} height={peg.height + 14} />
-              <rect x={peg.x - 16} y={GROUND_Y - peg.height} width={32} height={6} />
-            </g>
-          ))}
-          <g className="b-datum">
+          {/* STAGE 2: FOUNDATION */}
+          <g id="stage-foundation" className="stage-group">
+            <polygon className="b-pit" points={PIT_POINTS.map((pt) => pt.join(',')).join(' ')} />
             <line
-              x1={DATUM_STAFF.x}
-              y1={GROUND_Y}
-              x2={DATUM_STAFF.x}
-              y2={GROUND_Y - DATUM_STAFF.height}
+              className="b-string"
+              x1={PEGS[0].x}
+              x2={PEGS[1].x}
+              y1={GROUND_Y - STRING_HEIGHT}
+              y2={GROUND_Y - STRING_HEIGHT}
             />
-            {Array.from({ length: DATUM_STAFF.height / DATUM_STAFF.tickGap }, (_, i) => (
+            {PEGS.map((peg) => (
+              <g key={peg.x} className="b-peg">
+                <rect x={peg.x - 3} y={GROUND_Y - peg.height} width={6} height={peg.height + 14} />
+                <rect x={peg.x - 16} y={GROUND_Y - peg.height} width={32} height={6} />
+              </g>
+            ))}
+            <g className="b-datum">
               <line
-                key={i}
                 x1={DATUM_STAFF.x}
-                x2={DATUM_STAFF.x + (i % 2 === 0 ? 16 : 9)}
-                y1={GROUND_Y - (i + 1) * DATUM_STAFF.tickGap}
-                y2={GROUND_Y - (i + 1) * DATUM_STAFF.tickGap}
+                y1={GROUND_Y}
+                x2={DATUM_STAFF.x}
+                y2={GROUND_Y - DATUM_STAFF.height}
+              />
+              {Array.from({ length: DATUM_STAFF.height / DATUM_STAFF.tickGap }, (_, i) => (
+                <line
+                  key={i}
+                  x1={DATUM_STAFF.x}
+                  x2={DATUM_STAFF.x + (i % 2 === 0 ? 16 : 9)}
+                  y1={GROUND_Y - (i + 1) * DATUM_STAFF.tickGap}
+                  y2={GROUND_Y - (i + 1) * DATUM_STAFF.tickGap}
+                />
+              ))}
+              <text className="b-level-label" x={DATUM_STAFF.x - 6} y={GROUND_Y + 36}>
+                0.00 m
+              </text>
+              <text className="b-level-label" x={DATUM_STAFF.x - 6} y={PIT_BOTTOM - 6}>
+                -3.20 m
+              </text>
+            </g>
+            {COLUMN_LEFTS.map((x) => (
+              <path key={x} className="b-starter" d={starterCage(x)} />
+            ))}
+            {FOOTINGS.map((f) => (
+              <rect
+                key={f.x}
+                className="b-footing"
+                x={f.x}
+                y={FOOTING.top}
+                width={f.width}
+                height={FOOTING.height}
               />
             ))}
-            <text className="b-level-label" x={DATUM_STAFF.x - 6} y={GROUND_Y + 36}>
-              0.00 m
-            </text>
-            <text className="b-level-label" x={DATUM_STAFF.x - 6} y={PIT_BOTTOM - 6}>
-              -3.20 m
-            </text>
-          </g>
-          {COLUMN_LEFTS.map((x) => (
-            <path key={x} className="b-starter" d={starterCage(x)} />
-          ))}
-          {FOOTINGS.map((f) => (
+            {COLUMN_LEFTS.map((x) => (
+              <rect
+                key={x}
+                className="b-stub"
+                x={x}
+                y={GROUND_Y}
+                width={COLUMN_WIDTH}
+                height={FOOTING.top - GROUND_Y}
+              />
+            ))}
             <rect
-              key={f.x}
-              className="b-footing"
-              x={f.x}
-              y={FOOTING.top}
-              width={f.width}
-              height={FOOTING.height}
-            />
-          ))}
-          {COLUMN_LEFTS.map((x) => (
-            <rect
-              key={x}
               className="b-stub"
-              x={x}
+              x={FRAME.coreLeft + 10}
               y={GROUND_Y}
-              width={COLUMN_WIDTH}
+              width={FRAME.right - FRAME.coreLeft - 20}
               height={FOOTING.top - GROUND_Y}
             />
-          ))}
-          <rect
-            className="b-stub"
-            x={FRAME.coreLeft + 10}
-            y={GROUND_Y}
-            width={FRAME.right - FRAME.coreLeft - 20}
-            height={FOOTING.top - GROUND_Y}
-          />
-          <rect
-            className="b-tie"
-            x={COLUMN_LEFTS[0]}
-            y={TIE_BEAM.y}
-            width={FRAME.coreLeft - COLUMN_LEFTS[0]}
-            height={TIE_BEAM.height}
-          />
-          <rect
-            className="b-ground-slab"
-            x={FRAME.left - 4}
-            y={SLAB_TOPS[0]}
-            width={frameWidth + 8}
-            height={SLAB_THICKNESS}
-          />
-        </g>
-
-        {/* STAGE 4: ENVELOPE (drawn behind the frame) */}
-        <g id="stage-envelope" className="stage-group">
-          {STOREYS.flatMap((s) => {
-            const wall = wallBounds(s);
-            return BAYS.map((bay, i) => (
-              <rect
-                key={`w${s}${i}`}
-                className="b-wall"
-                data-storey={s}
-                x={bay.left}
-                y={wall.top}
-                width={bay.right - bay.left}
-                height={wall.height}
-              />
-            ));
-          })}
-          {WINDOWS.map((w) => (
             <rect
-              key={`o${w.id}`}
-              className="b-opening"
-              data-storey={w.storey}
-              x={w.x}
-              y={w.y}
-              width={w.width}
-              height={w.height}
+              className="b-tie"
+              x={COLUMN_LEFTS[0]}
+              y={TIE_BEAM.y}
+              width={FRAME.coreLeft - COLUMN_LEFTS[0]}
+              height={TIE_BEAM.height}
             />
-          ))}
-          <rect
-            className="b-opening"
-            data-storey={0}
-            x={ENTRANCE.x}
-            y={ENTRANCE.y}
-            width={ENTRANCE.width}
-            height={ENTRANCE.height}
-          />
-          <rect
-            className="b-parapet b-parapet-wall"
-            x={FRAME.left}
-            y={SLAB_TOPS[4] - 20}
-            width={frameWidth}
-            height={20}
-          />
-          <rect
-            className="b-parapet b-parapet-cap"
-            x={FRAME.left - 6}
-            y={BUILDING_TOP}
-            width={frameWidth + 12}
-            height={6}
-          />
-        </g>
-
-        {/* STAGE 3: STRUCTURE */}
-        <g id="stage-structure" className="stage-group">
-          {STOREYS.map((s) => {
-            const { ceiling, height } = storeyBounds(s);
-            const slabTop = SLAB_TOPS[s + 1] as number;
-            const roof = s === STOREY_COUNT - 1;
-            return (
-              <g key={s} className="b-level" data-level={s}>
-                {COLUMN_LEFTS.map((x) => (
-                  <rect
-                    key={x}
-                    className="b-col"
-                    x={x}
-                    y={ceiling}
-                    width={COLUMN_WIDTH}
-                    height={height}
-                  />
-                ))}
-                <rect
-                  className="b-core"
-                  x={FRAME.coreLeft}
-                  y={ceiling}
-                  width={FRAME.right - FRAME.coreLeft}
-                  height={height}
-                />
-                <rect
-                  className="b-beam"
-                  x={FRAME.left}
-                  y={ceiling}
-                  width={FRAME.coreLeft - FRAME.left}
-                  height={BEAM_DEPTH}
-                />
-                <rect
-                  className="b-slab"
-                  x={FRAME.left - (roof ? 8 : 4)}
-                  y={slabTop}
-                  width={frameWidth + (roof ? 16 : 8)}
-                  height={SLAB_THICKNESS}
-                />
-              </g>
-            );
-          })}
-        </g>
-
-        {/* STAGE 5: FIT-OUT */}
-        <g id="stage-fitout" className="stage-group">
-          {WINDOWS.map((w) => (
-            <g key={`f${w.id}`} className="b-fit" data-fit="a">
-              <rect
-                className="b-pane"
-                x={w.x + PANE_INSET}
-                y={w.y + PANE_INSET}
-                width={w.width - PANE_INSET * 2}
-                height={w.height - PANE_INSET * 2}
-              />
-              <rect className="b-frame" x={w.x} y={w.y} width={w.width} height={w.height} />
-              <line
-                className="b-mullion"
-                x1={w.x + w.width / 2}
-                y1={w.y}
-                x2={w.x + w.width / 2}
-                y2={w.y + w.height}
-              />
-              <line className="b-mullion" x1={w.x} y1={w.y + 20} x2={w.x + w.width} y2={w.y + 20} />
-            </g>
-          ))}
-          <g className="b-fit" data-fit="b">
             <rect
-              className="b-frame"
+              className="b-ground-slab"
+              x={FRAME.left - 4}
+              y={SLAB_TOPS[0]}
+              width={frameWidth + 8}
+              height={SLAB_THICKNESS}
+            />
+          </g>
+
+          {/* STAGE 4: ENVELOPE (drawn behind the frame) */}
+          <g id="stage-envelope" className="stage-group">
+            {STOREYS.flatMap((s) => {
+              const wall = wallBounds(s);
+              return BAYS.map((bay, i) => (
+                <rect
+                  key={`w${s}${i}`}
+                  className="b-wall"
+                  data-storey={s}
+                  x={bay.left}
+                  y={wall.top}
+                  width={bay.right - bay.left}
+                  height={wall.height}
+                />
+              ));
+            })}
+            {WINDOWS.map((w) => (
+              <rect
+                key={`o${w.id}`}
+                className="b-opening"
+                data-storey={w.storey}
+                x={w.x}
+                y={w.y}
+                width={w.width}
+                height={w.height}
+              />
+            ))}
+            <rect
+              className="b-opening"
+              data-storey={0}
               x={ENTRANCE.x}
               y={ENTRANCE.y}
               width={ENTRANCE.width}
               height={ENTRANCE.height}
             />
             <rect
-              className="b-door"
-              x={ENTRANCE.x + 5}
-              y={ENTRANCE.y + 5}
-              width={ENTRANCE.width / 2 - 7}
-              height={ENTRANCE.height - 5}
+              className="b-parapet b-parapet-wall"
+              x={FRAME.left}
+              y={SLAB_TOPS[4] - 20}
+              width={frameWidth}
+              height={20}
             />
             <rect
-              className="b-door"
-              x={ENTRANCE.x + ENTRANCE.width / 2 + 2}
-              y={ENTRANCE.y + 5}
-              width={ENTRANCE.width / 2 - 7}
-              height={ENTRANCE.height - 5}
-            />
-            <rect
-              className="b-canopy"
-              x={CANOPY.x}
-              y={CANOPY.y}
-              width={CANOPY.width}
-              height={CANOPY.height}
+              className="b-parapet b-parapet-cap"
+              x={FRAME.left - 6}
+              y={BUILDING_TOP}
+              width={frameWidth + 12}
+              height={6}
             />
           </g>
-          <g className="b-fit" data-fit="b">
-            <rect
-              className="b-opening b-slit"
-              x={CORE_SLIT.x}
-              y={CORE_SLIT.y}
-              width={CORE_SLIT.width}
-              height={CORE_SLIT.height}
-            />
-            <polyline className="b-stair" points={STAIR_POINTS} />
-          </g>
-          {RAILINGS.map((r) => (
-            <path key={r.id} className="b-fit b-rail" data-fit="a" d={r.d} />
-          ))}
-        </g>
 
-        {/* STAGE 6: COMPLETION — name plate */}
-        <g id="stage-completion" className="stage-group">
-          <g className="b-plate">
-            <rect
-              className="b-plate-box"
-              x={NAME_PLATE.x}
-              y={NAME_PLATE.y}
-              width={NAME_PLATE.width}
-              height={NAME_PLATE.height}
+          {/* STAGE 3: STRUCTURE */}
+          <g id="stage-structure" className="stage-group">
+            {STOREYS.map((s) => {
+              const { ceiling, height } = storeyBounds(s);
+              const slabTop = SLAB_TOPS[s + 1] as number;
+              const roof = s === STOREY_COUNT - 1;
+              return (
+                <g key={s} className="b-level" data-level={s}>
+                  {COLUMN_LEFTS.map((x) => (
+                    <rect
+                      key={x}
+                      className="b-col"
+                      x={x}
+                      y={ceiling}
+                      width={COLUMN_WIDTH}
+                      height={height}
+                    />
+                  ))}
+                  <rect
+                    className="b-core"
+                    x={FRAME.coreLeft}
+                    y={ceiling}
+                    width={FRAME.right - FRAME.coreLeft}
+                    height={height}
+                  />
+                  <rect
+                    className="b-beam"
+                    x={FRAME.left}
+                    y={ceiling}
+                    width={FRAME.coreLeft - FRAME.left}
+                    height={BEAM_DEPTH}
+                  />
+                  <rect
+                    className="b-slab"
+                    x={FRAME.left - (roof ? 8 : 4)}
+                    y={slabTop}
+                    width={frameWidth + (roof ? 16 : 8)}
+                    height={SLAB_THICKNESS}
+                  />
+                </g>
+              );
+            })}
+          </g>
+
+          {/* STAGE 5: FIT-OUT */}
+          <g id="stage-fitout" className="stage-group">
+            {WINDOWS.map((w) => (
+              <g key={`f${w.id}`} className="b-fit" data-fit="a">
+                <rect
+                  className="b-pane"
+                  x={w.x + PANE_INSET}
+                  y={w.y + PANE_INSET}
+                  width={w.width - PANE_INSET * 2}
+                  height={w.height - PANE_INSET * 2}
+                />
+                <rect className="b-frame" x={w.x} y={w.y} width={w.width} height={w.height} />
+                <line
+                  className="b-mullion"
+                  x1={w.x + w.width / 2}
+                  y1={w.y}
+                  x2={w.x + w.width / 2}
+                  y2={w.y + w.height}
+                />
+                <line
+                  className="b-mullion"
+                  x1={w.x}
+                  y1={w.y + 20}
+                  x2={w.x + w.width}
+                  y2={w.y + 20}
+                />
+              </g>
+            ))}
+            <g className="b-fit" data-fit="b">
+              <rect
+                className="b-frame"
+                x={ENTRANCE.x}
+                y={ENTRANCE.y}
+                width={ENTRANCE.width}
+                height={ENTRANCE.height}
+              />
+              <rect
+                className="b-door"
+                x={ENTRANCE.x + 5}
+                y={ENTRANCE.y + 5}
+                width={ENTRANCE.width / 2 - 7}
+                height={ENTRANCE.height - 5}
+              />
+              <rect
+                className="b-door"
+                x={ENTRANCE.x + ENTRANCE.width / 2 + 2}
+                y={ENTRANCE.y + 5}
+                width={ENTRANCE.width / 2 - 7}
+                height={ENTRANCE.height - 5}
+              />
+              <rect
+                className="b-canopy"
+                x={CANOPY.x}
+                y={CANOPY.y}
+                width={CANOPY.width}
+                height={CANOPY.height}
+              />
+            </g>
+            <g className="b-fit" data-fit="b">
+              <rect
+                className="b-opening b-slit"
+                x={CORE_SLIT.x}
+                y={CORE_SLIT.y}
+                width={CORE_SLIT.width}
+                height={CORE_SLIT.height}
+              />
+              <polyline className="b-stair" points={STAIR_POINTS} />
+            </g>
+            {RAILINGS.map((r) => (
+              <path key={r.id} className="b-fit b-rail" data-fit="a" d={r.d} />
+            ))}
+          </g>
+
+          {/* STAGE 6: COMPLETION — name plate */}
+          <g id="stage-completion" className="stage-group">
+            <g className="b-plate">
+              <rect
+                className="b-plate-box"
+                x={NAME_PLATE.x}
+                y={NAME_PLATE.y}
+                width={NAME_PLATE.width}
+                height={NAME_PLATE.height}
+              />
+              <text
+                className="b-plate-text"
+                x={NAME_PLATE.x + NAME_PLATE.width / 2}
+                y={NAME_PLATE.y + NAME_PLATE.height / 2 + 5}
+                textAnchor="middle"
+              >
+                RC Constructions
+              </text>
+            </g>
+          </g>
+
+          {/* Dimension lines: amber hairlines with two sentence-case labels */}
+          <g id="stage-dimensions" className="stage-group">
+            <line
+              className="b-dim b-dim-vertical"
+              x1={dimX}
+              y1={BUILDING_TOP}
+              x2={dimX}
+              y2={GROUND_Y}
+            />
+            <line
+              className="b-dim b-dim-tick"
+              x1={dimX - 12}
+              y1={BUILDING_TOP}
+              x2={dimX + 12}
+              y2={BUILDING_TOP}
+            />
+            <line
+              className="b-dim b-dim-tick"
+              x1={dimX - 12}
+              y1={GROUND_Y}
+              x2={dimX + 12}
+              y2={GROUND_Y}
+            />
+            <text className="b-dim-label" x={dimX + 10} y={(BUILDING_TOP + GROUND_Y) / 2}>
+              15.40 m
+            </text>
+            <line
+              className="b-dim b-dim-horizontal"
+              x1={FRAME.left}
+              y1={dimWidthY}
+              x2={FRAME.right}
+              y2={dimWidthY}
+            />
+            <line
+              className="b-dim b-dim-tick"
+              x1={FRAME.left}
+              y1={dimWidthY - 12}
+              x2={FRAME.left}
+              y2={dimWidthY + 12}
+            />
+            <line
+              className="b-dim b-dim-tick"
+              x1={FRAME.right}
+              y1={dimWidthY - 12}
+              x2={FRAME.right}
+              y2={dimWidthY + 12}
             />
             <text
-              className="b-plate-text"
-              x={NAME_PLATE.x + NAME_PLATE.width / 2}
-              y={NAME_PLATE.y + NAME_PLATE.height / 2 + 5}
+              className="b-dim-label"
+              x={(FRAME.left + FRAME.right) / 2}
+              y={dimWidthY + 18}
               textAnchor="middle"
             >
-              RC Constructions
+              17.40 m
             </text>
           </g>
-        </g>
-
-        {/* Dimension lines: amber hairlines with two sentence-case labels */}
-        <g id="stage-dimensions" className="stage-group">
-          <line
-            className="b-dim b-dim-vertical"
-            x1={dimX}
-            y1={BUILDING_TOP}
-            x2={dimX}
-            y2={GROUND_Y}
-          />
-          <line
-            className="b-dim b-dim-tick"
-            x1={dimX - 12}
-            y1={BUILDING_TOP}
-            x2={dimX + 12}
-            y2={BUILDING_TOP}
-          />
-          <line
-            className="b-dim b-dim-tick"
-            x1={dimX - 12}
-            y1={GROUND_Y}
-            x2={dimX + 12}
-            y2={GROUND_Y}
-          />
-          <text className="b-dim-label" x={dimX + 10} y={(BUILDING_TOP + GROUND_Y) / 2}>
-            15.40 m
-          </text>
-          <line
-            className="b-dim b-dim-horizontal"
-            x1={FRAME.left}
-            y1={dimWidthY}
-            x2={FRAME.right}
-            y2={dimWidthY}
-          />
-          <line
-            className="b-dim b-dim-tick"
-            x1={FRAME.left}
-            y1={dimWidthY - 12}
-            x2={FRAME.left}
-            y2={dimWidthY + 12}
-          />
-          <line
-            className="b-dim b-dim-tick"
-            x1={FRAME.right}
-            y1={dimWidthY - 12}
-            x2={FRAME.right}
-            y2={dimWidthY + 12}
-          />
-          <text
-            className="b-dim-label"
-            x={(FRAME.left + FRAME.right) / 2}
-            y={dimWidthY + 18}
-            textAnchor="middle"
-          >
-            17.40 m
-          </text>
         </g>
       </svg>
       <div className="building-preview" aria-hidden="true">

@@ -41,22 +41,38 @@ The text and the building tell one story. Section ids never change (old links ke
 | 7          | Founder (`#founder`)             | no     | Full width.                                                                      |
 | 8          | Contact (`#contact`)             | no     | Full width.                                                                      |
 
-Process step to building part (`PROCESS_STEP_STAGES` in `src/data/stages.ts`): steps 1 and 2 draw the structure (storeys 0-1, then 2-3), steps 3 and 4 the envelope (walls and openings storeys 0-1, then 2-3 with parapet, backfill and string), steps 5 and 6 the fit-out (windows and rails, then entrance, slit and stair). There are eight scrubbed parts in all: foundation 1, structure 2, envelope 2, fit-out 2, completion 1.
+Process step to building part (`PROCESS_STEP_STAGES` in `src/data/stages.ts`, changed in Phase 14B because steps 1 to 3 describe pre-construction work and the structure should not appear before the building starts):
+
+| Section or step                               | Part drawn                                                                                                |
+| --------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| About                                         | `foundation:0` excavation and set-out pegs                                                                |
+| Process steps 01 to 03                        | `foundation:1` footings, stubs and tie beam, starter bars, ground slab, level marks (complete at step 03) |
+| Process step 04                               | `structure:0` columns and core, then beams and slab, all four storeys                                     |
+| Process step 05                               | `envelope:0` walls and openings storey by storey, parapet, backfill, profile string taken down            |
+| Process step 06                               | `fitout:0` window frames and rails, then entrance, canopy and stair                                       |
+| Work delivered, until its headline is centred | `completion:0` name plate and dimension lines                                                             |
+| Work delivered, headline centred onward       | `completion:1` every window lit (never before the headline is centred; tested at 390, 768 and 1440)       |
+
+There are seven scrubbed parts in all: foundation 2, structure 1, envelope 1, fit-out 1, completion 2. The step copy was not changed.
+
+### Site camera
+
+While the foundation is drawn the whole drawing sits in a `.b-camera` group lifted by `MOTION.building.siteCameraLiftDesktop` or `...Phone` (viewBox units, optional `siteCameraScale`) so the site fills the middle of the window instead of the bottom. It settles to the resting frame across process step 04 as the columns rise. The transform is written straight to the group (a scrubbed `{k}` proxy) so the origin is exact; under reduced motion CSS applies the foundation frame directly.
 
 ### Sync rules
 
 Ranges are bound to section bounding boxes (`src/components/Building/stageSync.ts`: `sheetTop`, `centreScroll`, `sheetEndScroll`), not to fixed scroll distances, so a change in copy length cannot desynchronise them.
 
-1. A part never finishes before its text is centred in the viewport (a step that cannot reach the centre because its sheet ends first finishes when the sheet is fully scrolled).
+1. A part never finishes before its text is centred in the reading area (the viewport, or on phones the area below the band); the Process sheet has room below step 06 so every step can reach it.
 2. A part never starts before the previous one is complete (ranges are contiguous: each starts where the last ended).
 3. The building is never static for more than one step-height of scroll while a mapped section scrolls.
 4. Reverse scrolling un-builds exactly (scrubbed, no snap), and anchor jumps land on the same state as scrolling there (function-based `start` and `end` with `invalidateOnRefresh`).
 
-State is published on the window for tests and styles: `data-stage` (the stage in progress), `data-stage-progress` (0-1 within it), `data-build-progress` (0-1 overall), `data-part-progress` (eight comma-separated values), `data-preview`, and `data-static` under reduced motion. The header takes its window colours only when the window has fully arrived (`data-window-in` on `<html>`).
+State is published on the window for tests and styles: `data-stage` (the stage in progress), `data-stage-progress` (0-1 within it), `data-build-progress` (0-1 overall), `data-part-progress` (seven comma-separated values), `data-preview`, and `data-static` under reduced motion. The header takes its window colours only when the window has fully arrived (`data-window-in` on `<html>`).
 
 ### Hero to window hand-off
 
-One scrubbed timeline from the foundation sheet entering the viewport (`windowEnterViewport`) to its top edge reaching the top: the plot (`.hero-plot-container`) fades out over the first `plotFadeShare` of it, and only then does the window slide in (from the right on desktop, from the top on phones). No moving edge ever crosses the drawn plot.
+One scrubbed timeline from the foundation sheet entering the viewport (`windowEnterViewport`) to its top edge reaching the top. Desktop: the plot (`.hero-plot-container`) fades out over the first `plotFadeShare` of it, and only then does the window slide in from the right, so no moving edge crosses the drawn plot. Phones and tablets (below 1024 px): the band rides up with the top edge of the arriving sheet (it fills the space the sheet reserves for it) while the plot fades, so no empty area shows. `e2e/phase-14b.spec.ts` asserts that no run of sheet-coloured rows taller than 20% of the viewport appears under the arriving sheet at 390, 768, 1024 and 1440 px.
 
 ### Reduced motion and no JavaScript
 

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Sheet } from '../../components/SheetStack';
 import { FOUNDER_CONTENT } from '../../content/founder';
 import { useScroll } from '../../hooks/useScroll';
@@ -11,6 +11,8 @@ export function Founder() {
   const contentRef = useRef<HTMLDivElement | null>(null);
   const portraitFrameRef = useRef<HTMLDivElement | null>(null);
   const { reducedMotion } = useScroll();
+  // A portrait file that fails to load is swapped for the quiet placeholder, never a broken image
+  const [portraitFailed, setPortraitFailed] = useState(false);
 
   useGSAP(
     () => {
@@ -80,7 +82,7 @@ export function Founder() {
               className="founder-portrait-frame photo-slot"
               data-portrait-slot="founder"
             >
-              {FOUNDER_CONTENT.portraitAvailable ? (
+              {FOUNDER_CONTENT.portraitAvailable && !portraitFailed ? (
                 <picture className="founder-picture">
                   <source srcSet="/images/founder-gokul.webp" type="image/webp" />
                   <img
@@ -90,6 +92,7 @@ export function Founder() {
                     height="1500"
                     loading="lazy"
                     className="founder-portrait-img"
+                    onError={() => setPortraitFailed(true)}
                   />
                 </picture>
               ) : (

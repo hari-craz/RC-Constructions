@@ -64,7 +64,7 @@ test.describe('Phase 12 — visible defects', () => {
   test('founder portrait slot is a quiet block with one sentence and no img', async ({ page }) => {
     await open(page, 'founder');
     await expect(page.locator('.founder-portrait-frame img')).toHaveCount(0);
-    await expect(page.locator('.founder-portrait-note')).toHaveText('Photo to come, 1200 by 1500');
+    await expect(page.locator('.founder-portrait-note')).toHaveText('Portrait of Gokul, founder');
   });
 
   test('contact: disabled send button is readable and explained beside it', async ({ page }) => {

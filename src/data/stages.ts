@@ -93,24 +93,28 @@ export const SECTIONS: readonly SectionConfig[] = [
 /** Building stages in build order; `parts` is how many scrubbed timelines make up the stage. */
 export const STAGES: readonly { id: StageId; parts: number }[] = [
   { id: 'survey', parts: 0 },
-  { id: 'foundation', parts: 1 },
-  { id: 'structure', parts: 2 },
-  { id: 'envelope', parts: 2 },
-  { id: 'fitout', parts: 2 },
-  { id: 'completion', parts: 1 },
+  { id: 'foundation', parts: 2 },
+  { id: 'structure', parts: 1 },
+  { id: 'envelope', parts: 1 },
+  { id: 'fitout', parts: 1 },
+  { id: 'completion', parts: 2 },
 ];
 
 /**
  * Which stage each Construction process step draws (step number minus one), and which part of
- * that stage. Foundation is drawn by About, completion by Work delivered.
+ * that stage. About starts the foundation (part 0: excavation and set-out); steps 1 to 3 are the
+ * pre-construction steps and complete it (part 1: footings, plinth, slab, level marks); step 4
+ * raises the structure, step 5 closes the envelope, step 6 is the fit-out. Work delivered then
+ * draws the completion in two parts: the name plate and dimension lines first, then the windows
+ * are lit once its headline is centred.
  */
 export const PROCESS_STEP_STAGES: readonly { stage: StageId; part: number }[] = [
+  { stage: 'foundation', part: 1 },
+  { stage: 'foundation', part: 1 },
+  { stage: 'foundation', part: 1 },
   { stage: 'structure', part: 0 },
-  { stage: 'structure', part: 1 },
   { stage: 'envelope', part: 0 },
-  { stage: 'envelope', part: 1 },
   { stage: 'fitout', part: 0 },
-  { stage: 'fitout', part: 1 },
 ];
 
 /** The building stage that is complete while a section is the one in view. */

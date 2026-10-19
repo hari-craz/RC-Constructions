@@ -69,6 +69,7 @@ Single-page scroll-driven portfolio site where a building is progressively const
 
 - Page order: Hero, About (`#foundation`), Construction process (`#fitout`), Work delivered (`#completion`), Services (`#structure`), Projects (`#envelope`), Founder, Contact. Ids never change. `src/data/stages.ts` is the one source for order, stage map and nav labels.
 - The building follows the text: ranges are bound to section bounding boxes (`src/components/Building/stageSync.ts`), a part never finishes before its text is centred, the next never starts before the previous completes, and reverse scroll un-builds exactly. Details and the published `data-stage-progress` attributes are in `docs/BUILDING.md`.
+- Step map: steps 01-03 complete the foundation, 04 structure, 05 envelope, 06 fit-out, then Work delivered (plate and dimensions, then windows once its headline is centred). Phones: the band rides with the arriving sheet. The foundation is framed by the site camera (`MOTION.building.siteCamera*`).
 - Projects: no grey slot; the right-hand window previews the active row with opacity-only cross-fades (six original inline SVGs, one lazy chunk). The drawer covers only the window region on desktop and is a full-screen sheet on phones.
 - Header: a sentence-case section indicator (links from 1280 px, a button and dialog below). No all-caps, amber, arrows or numbering.
 - Placeholders are quiet frames with crop marks and one sentence-case line. Focus on form fields is a 2 px ink outline, 2 px offset and a thicker bottom border, never amber.

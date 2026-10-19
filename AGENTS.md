@@ -13,7 +13,7 @@ GSAP, ScrollTrigger and Lenis load lazily through `src/lib/gsap.ts` after the fi
 
 ## Story Sync Law
 
-Section order, the stage map and the sync rules live in `docs/BUILDING.md` section 3 and `src/data/stages.ts`. Never reorder sections or change an id without updating both and `e2e/phase-14.spec.ts`. The building must never finish a part before its text is centred, and reverse scrolling must un-build exactly.
+Section order, the stage map and the sync rules live in `docs/BUILDING.md` section 3 and `src/data/stages.ts`. Never reorder sections or change an id without updating both and `e2e/phase-14.spec.ts`. Process steps 01-03 complete the foundation, 04 structure, 05 envelope, 06 fit-out; lit windows never appear before the Work delivered headline is centred. The building must never finish a part before its text is centred, and reverse scrolling must un-build exactly.
 
 ## The Three Rules That Matter Most
 

@@ -53,7 +53,7 @@ export const COMPANY = {
     /** Set true only after /images/founder-gokul.webp and .jpg are committed. */
     photoAvailable: false,
     photoAlt: 'Portrait of Gokul, founder of RC Constructions',
-    photoNote: 'Photo to come, 1200 by 1500',
+    photoNote: 'Portrait of Gokul, founder',
   },
 
   legal: {

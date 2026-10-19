@@ -34,19 +34,20 @@ describe('story order and stage map', () => {
     ]);
   });
 
-  it('maps the six process steps to structure, envelope and fit-out in order, two parts each', () => {
+  it('maps the six process steps: three complete the foundation, then structure, envelope, fit-out', () => {
     expect(PROCESS_STEP_STAGES.map((s) => `${s.stage}:${s.part}`)).toEqual([
+      'foundation:1',
+      'foundation:1',
+      'foundation:1',
       'structure:0',
-      'structure:1',
       'envelope:0',
-      'envelope:1',
       'fitout:0',
-      'fitout:1',
     ]);
+    // About draws foundation part 0; every other part is drawn by the steps
+    expect(STAGES.find((s) => s.id === 'foundation')?.parts).toBe(2);
     for (const id of ['structure', 'envelope', 'fitout'] as const) {
-      expect(STAGES.find((s) => s.id === id)?.parts).toBe(
-        PROCESS_STEP_STAGES.filter((s) => s.stage === id).length,
-      );
+      expect(STAGES.find((s) => s.id === id)?.parts).toBe(1);
+      expect(PROCESS_STEP_STAGES.filter((s) => s.stage === id)).toHaveLength(1);
     }
   });
 

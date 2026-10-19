@@ -50,6 +50,11 @@ export const MOTION = {
     },
   },
   building: {
+    // While the foundation is drawn the whole drawing is lifted (and may be scaled) so the site
+    // fills the window; it settles to its resting frame as the structure rises (process step 4)
+    siteCameraScale: 1,
+    siteCameraLiftDesktop: 270,
+    siteCameraLiftPhone: 190,
     stageStart: 'top 85%',
     stageEnd: 'top 20%',
     strokeEase: 'power2.out',
@@ -77,7 +82,7 @@ export const MOTION = {
     dimensionDrawDuration: 0.5,
     dimensionLabelDelay: 0.3,
     plotFadeShare: 0.5,
-    windowEnterViewport: 0.5,
+    windowEnterViewport: 1,
   },
   stats: {
     countDuration: 1.6,

@@ -74,7 +74,7 @@ test.describe('Phase 7C — Completion Stats and Founder Real Content', () => {
     // No photo is committed yet, so the slot is a quiet block with one sentence and no <img>
     await expect(portraitSlot.locator('img')).toHaveCount(0);
     await expect(portraitSlot.locator('.founder-portrait-note')).toHaveText(
-      'Photo to come, 1200 by 1500',
+      'Portrait of Gokul, founder',
     );
 
     expect(consoleErrors).toEqual([]);

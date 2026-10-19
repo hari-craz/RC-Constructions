@@ -59,3 +59,7 @@ Size: `pnpm size` about 124.8 kB brotlied across all chunks (limit 180 kB).
 ## Phase 14
 
 Mobile median of five: performance 98, LCP 2256 ms, TBT 6 ms, CLS 0 (Phase 13: 98, about 2.26 s, 20 ms, 0). Desktop median of three: 100. `pnpm size`: 128.08 kB brotlied (124.8 kB before; limit 180 kB). The six project drawings are one lazy chunk (about 2 kB gzipped) fetched on the first hover or focus of a project row.
+
+## Phase 14B
+
+Mobile median of five: performance 98, LCP 2160 ms, TBT 82 ms, CLS 0 (Phase 14: 98, 2256 ms, 6 ms, 0; the TBT rise is run-to-run variation inside the 200 ms budget). Desktop median of three: 100. `pnpm size`: 128.26 kB brotlied (limit 180 kB).

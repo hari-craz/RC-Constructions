@@ -243,3 +243,19 @@
     display: none;
   }
 }
+
+/* Site camera (see MOTION.building.siteCamera*): the foundation is lifted and enlarged so the
+   site fills the window; every later stage rests at the full frame. Under reduced motion there is
+   no scrub, so the foundation frame is applied directly (the origin is set here only for that case:
+   GSAP sets its own svgOrigin otherwise). */
+.building-site-window[data-static='true'][data-stage='foundation'] .b-camera {
+  transform: translateY(-270px);
+  transform-origin: 570px 620px;
+}
+
+@media (width < 1024px) {
+  .building-site-window[data-static='true'][data-stage='foundation'] .b-camera {
+    transform: translateY(-190px);
+    transform-origin: 550px 620px;
+  }
+}

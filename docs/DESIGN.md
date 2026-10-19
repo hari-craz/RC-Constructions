@@ -229,3 +229,10 @@ The custom cursor evokes a surveyor's optical level crosshair. It is engineered 
 - **Header section indicator**: from 1280 px, sentence-case Newsreader links at 16 px (Principles, Process, Track record, Services, Projects, Contact) with 44 px targets; the current one has a 2 px ink underline and `aria-current="true"`. Below 1280 px, a button naming the current section opens a full-width list in a native `<dialog>` (scroll lock, Escape, Close, focus returned to the button). The wordmark hides below 480 px so the header never collides. No all-caps, amber, arrows or numbering.
 - **Form focus**: a 2 px ink outline with 2 px offset and a 3 px bottom border (padding gives back the extra 2 px so nothing shifts); at least 3:1 against the field and never amber.
 - **Services highlight (optional)**: skipped. Lighting the part of the building a service refers to would imply the services are built in a fixed order, which they are not, and the building already follows the process section directly above.
+
+## 11. Phase 14B — Map, hand-off and framing
+
+- Process steps 01 to 03 complete the foundation; step 04 raises the structure, 05 closes the envelope, 06 is the fit-out (`docs/BUILDING.md` section 3). Lit windows wait for the Work delivered headline to be centred.
+- Phone and tablet hand-off: the band rides with the arriving sheet's top edge; no empty region taller than 20% of the viewport.
+- The foundation is framed by a lifted camera (`MOTION.building.siteCamera*`), not left low in an empty window.
+- The founder portrait falls back to the quiet placeholder if the file fails to load; `src/content/portrait.test.ts` requires real files of the right type before the flag can be switched on.
