@@ -1,4 +1,3 @@
-/* global document */
 import { chromium } from '@playwright/test';
 
 // Mean cost of one model update (maths and DOM writes) while the house auto-rotates, at a CPU slowdown
