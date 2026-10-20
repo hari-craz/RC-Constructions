@@ -132,7 +132,7 @@ This protocol validates scroll physics, dynamic viewports, and visual stability 
 
 - **Motion starts on first input.** The building mounts and Lenis starts on the first pointer, wheel, touch, key or scroll event (or immediately for an anchor URL). On every device: load the page, wait, then scroll once; the first scroll must not stutter and the building must appear by the About section.
 - **WebKit variable fonts.** Playwright's WebKit build on Windows renders Big Shoulders Display (variable) at a hairline weight with wide tracking. This is a limitation of that test build, not seen in Chromium or Firefox; confirm on a real iPhone that headings are bold and condensed.
-- **Phone band.** Check the building fills at least 80% of the band width at 360, 390 and 412 px wide, and that the band is at most 52svh.
+- **Phone layer.** (Phase 14D replaced the Phase 12 band.) Check the building fills at least 80% of the screen width at 360, 390 and 412 px wide and is centred in the screen; see Phase 14D additions.
 - **Native cursor.** On a touch laptop with a mouse, the Windows arrow must be hidden and the survey crosshair shown.
 - **Font preload warning in WebKit (Windows test build).** The console test ignores one message there: the two font preloads reported as "not used". The fonts are loaded and used; check on a real iPhone that no such warning appears and that the fonts are not downloaded twice (Network tab).
 
@@ -153,3 +153,12 @@ This protocol validates scroll physics, dynamic viewports, and visual stability 
 - **The 3D house.** On a laptop: it turns by itself, pauses under the pointer and resumes about three seconds after you leave; drag turns and tilts it, Shift + drag rolls it, the buttons and keys (arrows, Q, E, 0, Space) work. On a phone: horizontal drag turns it, a vertical swipe on it scrolls the page, a two-finger twist rolls it, and every button is easy to hit.
 - **Hand-off.** Scroll slowly out of the hero: the house settles to a straight-on elevation, fades, then the window arrives; scroll back and it returns to the pose it had.
 - **Reduced motion.** The house does not turn by itself and buttons snap with no easing.
+
+## Phase 14D additions
+
+- **Detail.** Turn the house to six angles (front, side, back, above, below, rolled): windows have frames, sills and head trim, the garage doors show their panels, the gables show shingle rows, the porch has posts on stone bases and three steps. Nothing flickers while it turns.
+- **Intro.** Load the hero: the house is raised stage by stage in about three seconds, then starts to turn. With reduce motion on it is already finished.
+- **Morph (desktop).** Scroll slowly out of the hero: the house settles to a front elevation, moves and scales onto the building window's ground line and width as the window slides in, then dissolves roof first, then upper storey, ground storey and porch, leaving its plinth; the foundation is dug where it stood. Scroll back up: it reassembles exactly. Tap Principles in the header: the building is at the foundation.
+- **Phone and tablet.** The house is the background of the hero with the text over it (it can be dragged, swiped past, and rolled with two fingers). Scroll on: the text fades, the page turns dark, the house lands low on the screen and dissolves, then the building is built behind the text as each section is read. Check at 360x640, 390x844 and 768x1024 that text is legible everywhere (the muted drawing is faint by design; Work delivered has lit windows and plates), that nothing scrolls sideways, and that a turn from portrait to landscape at 1024 px switches cleanly to the desktop layout.
+- **Reduced motion.** The house stays finished and still while the hero is in view and is swapped for the building, with no animation, once the hero has left.
+- **Performance.** On a mid-range phone, drag the house: it follows the finger (hairlines return when you let go).

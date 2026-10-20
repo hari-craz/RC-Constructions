@@ -275,8 +275,10 @@ export function Building({ className = '' }: BuildingProps) {
       // its text is centred, so a stage never finishes before its text is read and never sits
       // idle while a mapped section scrolls.
       const foundationRange = (): [number, number] => {
-        const start = sheetTop(aboutSheet()) - vh() * B.windowEnterViewport;
-        return [start, Math.max(centred(aboutSheet()), start + 1)];
+        // The foundation begins where the morph ends (the About sheet has reached the top and the
+        // hero house has dissolved), and takes at least a fixed stretch of scroll
+        const start = sheetTop(aboutSheet());
+        return [start, Math.max(centred(aboutSheet()), start + vh() * B.foundationMinViewport)];
       };
       const stepRanges = () => {
         const out: [number, number][] = [];
@@ -340,12 +342,15 @@ export function Building({ className = '' }: BuildingProps) {
         });
       };
 
-      // Window hand-off: the hero house fades out first, then the window slides in from the
-      // right edge (from the top on phones), so no moving edge ever cuts the house.
+      // Window hand-off, scrubbed over the morph (the About sheet arriving over the hero). Desktop:
+      // the window slides in from the right while the house lands on its footprint. Below 1024 px
+      // the fixed drawing appears behind the text. The house itself is HeroModel's; it dissolves
+      // after the window is in, and the foundation begins when the dissolve is complete.
       void inOwnTask(() => {
         if (cancelled) return;
         context.add(() => {
           gsap.set(root, { clearProps: 'transform' });
+          const MO = MOTION.morph;
           const tl = gsap.timeline({
             scrollTrigger: {
               trigger: root,
@@ -354,38 +359,28 @@ export function Building({ className = '' }: BuildingProps) {
               scrub: true,
               invalidateOnRefresh: true,
               // The header takes its window colours only once the window has fully arrived
-              onUpdate: (self) => markWindowIn(self.progress >= 0.98),
-              onRefresh: (self) => markWindowIn(self.progress >= 0.98),
+              onUpdate: (self) => markWindowIn(self.progress >= MO.windowEnd),
+              onRefresh: (self) => markWindowIn(self.progress >= MO.windowEnd),
             },
           });
-          // The hero house first eases to its front elevation (HeroModel), then fades by opacity
-          // only; on desktop the window enters from the right only after it has gone
-          const model = document.querySelector('.hero-model');
-          const fadeStart = MOTION.model3d.fadeStartShare;
+          const span = MO.windowEnd - MO.windowStart;
           if (phone) {
-            // The band rides up with the top edge of the arriving sheet, filling the space the
-            // sheet reserves for it, so no empty area ever shows while the sheet arrives
-            const fadeEnd = MOTION.model3d.fadeEndSharePhone;
-            tl.to(
-              model,
-              { opacity: 0, duration: fadeEnd - fadeStart, ease: 'none' },
-              fadeStart,
-            ).fromTo(root, { y: () => vh() }, { y: 0, duration: 1, ease: 'none' }, 0);
+            tl.fromTo(
+              root,
+              { opacity: 0 },
+              { opacity: 1, duration: span, ease: 'none' },
+              MO.windowStart,
+            );
           } else {
-            // The house is gone before the sheet's edge reaches its base; the window then enters
-            // from the right
-            const fadeEnd = MOTION.model3d.fadeEndShare;
-            tl.to(
-              model,
-              { opacity: 0, duration: fadeEnd - fadeStart, ease: 'none' },
-              fadeStart,
-            ).fromTo(
+            tl.fromTo(
               root,
               { xPercent: 100 },
-              { xPercent: 0, duration: 1 - B.plotFadeShare, ease: 'none' },
-              B.plotFadeShare,
+              { xPercent: 0, duration: span, ease: 'none' },
+              MO.windowStart,
             );
           }
+          // Stretch the timeline to the whole morph so shares of it are shares of the scroll
+          tl.to({}, { duration: 0.001 }, 0.999);
           root.dataset.sync = 'true';
         });
       });
@@ -607,6 +602,7 @@ export function Building({ className = '' }: BuildingProps) {
     <aside
       ref={containerRef}
       className={`building-site-window ${isVisible ? 'is-visible' : ''} ${className}`.trim()}
+      data-section={activeSection}
       data-stage={reducedMotion ? staticStage : undefined}
       data-static={reducedMotion ? 'true' : undefined}
       data-preview={previewVisible ? 'true' : 'false'}
@@ -615,7 +611,7 @@ export function Building({ className = '' }: BuildingProps) {
       <svg
         className="building-svg"
         viewBox={`${view.x} ${view.y} ${view.width} ${view.height}`}
-        preserveAspectRatio="xMidYMax meet"
+        preserveAspectRatio={phone ? 'xMidYMid meet' : 'xMidYMax meet'}
         role="presentation"
         focusable="false"
       >

@@ -99,6 +99,9 @@
 
   /* Z-Index Layers */
   --z-base: 1;
+  --z-stage-backdrop: 4;
+  --z-stage-building: 5;
+  --z-stage-house: 6;
   --z-sheet: 10;
   --z-site-window: 15;
   --z-overlay: 20;

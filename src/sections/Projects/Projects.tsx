@@ -240,7 +240,7 @@ export function Projects() {
 
   return (
     <>
-      <Sheet id={stage.sectionId} tone={stage.tone} className="projects-sheet">
+      <Sheet id={stage.sectionId} tone={stage.tone} className="projects-sheet" stage>
         <div ref={containerRef} className="sheet-column projects-content">
           <header className="projects-header">
             <h2 id={`${stage.sectionId}-heading`} className="projects-title">

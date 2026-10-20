@@ -119,6 +119,19 @@
   margin-right: var(--space-2);
 }
 
+/* Over the building layer (below 1024 px) the steps are read straight over the drawing, so the
+   spine and its markers (which assume a margin of their own) are left out */
+@media (width < 1024px) {
+  .process-sequence-container {
+    padding-left: 0;
+  }
+
+  .process-spine,
+  .process-step-marker {
+    display: none;
+  }
+}
+
 /* Room below the last step so it can reach the middle of the screen before the next sheet arrives */
 .process-sheet .sheet-inner {
   padding-bottom: 50svh;

@@ -2,11 +2,12 @@
  * Building elevation geometry (viewBox units). One source of truth for the SVG and its tests.
  * Ground line at y = 620; four storeys on a four-bay frame with a stair core on the right.
  * The frame is 800 units wide, so the building fills about 78% of the window on desktop
- * (viewBox 1020 wide) and about 80% of the band on phones (viewBox 1000 wide).
+ * (viewBox 1020 wide) and about 95% of the screen width on phones (viewBox 840 wide).
  */
 export const VIEWBOXES = {
   desktop: { x: 60, y: -20, width: 1020, height: 820 },
-  mobile: { x: 50, y: 60, width: 1000, height: 700 },
+  /** Below 1024 px the drawing is centred in a full-screen layer (so it is wider than the frame). */
+  mobile: { x: 140, y: -20, width: 840, height: 820 },
 } as const;
 export const GROUND_Y = 620;
 export const SLAB_THICKNESS = 12;

@@ -42,9 +42,10 @@
 }
 
 .hero-model-gizmo {
+  opacity: var(--hm-controls-opacity, 1);
   position: absolute;
-  bottom: var(--space-2);
-  left: var(--space-2);
+  top: var(--space-2);
+  right: var(--space-2);
   width: 5.5rem;
   height: 5.5rem;
   pointer-events: none;
@@ -122,5 +123,43 @@
   .hero-model-btn {
     padding-inline: var(--space-1);
     white-space: nowrap;
+  }
+}
+
+/* Phones and tablets: the model fills the hero behind the text; controls in a strip at the top */
+@media (width < 1024px) {
+  .hero-model-widget {
+    display: block;
+  }
+
+  .hero-model-stage {
+    position: absolute;
+    inset: 0;
+  }
+
+  .hero-model-controls {
+    position: absolute;
+    top: var(--space-2);
+    left: var(--page-gutter);
+    right: var(--page-gutter);
+    width: auto;
+    z-index: 3;
+  }
+
+  .hero-model-btn {
+    background-color: var(--color-concrete);
+  }
+
+  .hero-model-hint {
+    position: absolute;
+    top: calc(var(--space-2) + 2 * 44px + 2 * var(--space-2));
+    right: var(--page-gutter);
+    z-index: 3;
+  }
+
+  .hero-model-gizmo {
+    top: calc(var(--space-2) + 2 * 44px + 3 * var(--space-2));
+    right: auto;
+    left: var(--page-gutter);
   }
 }

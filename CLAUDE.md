@@ -61,7 +61,7 @@ Single-page scroll-driven portfolio site where a building is progressively const
 
 ## Layout & Building Rules
 
-- One 12-column grid: text in columns 1-5, fixed site window (constant formwork) in columns 6-12; mobile band 42svh. Details in `docs/BUILDING.md` and `docs/DESIGN.md` section 8.
+- One 12-column grid: text in columns 1-5, fixed site window (constant formwork) in columns 6-12; below 1024 px a fixed full-screen building layer behind the text (no band, no slide-over). Details in `docs/BUILDING.md` and `docs/DESIGN.md` section 8.
 - No section labels, eyebrows, codes or uppercase micro-labels. Sheets are labelled by their headline (`<section>-heading`).
 - Never use GSAP `stagger` with `fromTo` on scrubbed building timelines; use the `staggered` helper.
 
@@ -69,7 +69,7 @@ Single-page scroll-driven portfolio site where a building is progressively const
 
 - Page order: Hero, About (`#foundation`), Construction process (`#fitout`), Work delivered (`#completion`), Services (`#structure`), Projects (`#envelope`), Founder, Contact. Ids never change. `src/data/stages.ts` is the one source for order, stage map and nav labels.
 - The building follows the text: ranges are bound to section bounding boxes (`src/components/Building/stageSync.ts`), a part never finishes before its text is centred, the next never starts before the previous completes, and reverse scroll un-builds exactly. Details and the published `data-stage-progress` attributes are in `docs/BUILDING.md`.
-- Step map: steps 01-03 complete the foundation, 04 structure, 05 envelope, 06 fit-out, then Work delivered (plate and dimensions, then windows once its headline is centred). Phones: the band rides with the arriving sheet. The foundation is framed by the site camera (`MOTION.building.siteCamera*`).
+- Step map: steps 01-03 complete the foundation, 04 structure, 05 envelope, 06 fit-out, then Work delivered (plate and dimensions, then windows once its headline is centred). Below 1024 px the reading position is the upper part of the screen (`MOTION.stageLayer.readingShare`). The foundation is framed by the site camera (`MOTION.building.siteCamera*`).
 - Projects: no grey slot; the right-hand window previews the active row with opacity-only cross-fades (six original inline SVGs, one lazy chunk). The drawer covers only the window region on desktop and is a full-screen sheet on phones.
 - Header: a sentence-case section indicator (links from 1280 px, a button and dialog below). No all-caps, amber, arrows or numbering.
 - Placeholders are quiet frames with crop marks and one sentence-case line. Focus on form fields is a 2 px ink outline, 2 px offset and a thicker bottom border, never amber.
@@ -78,6 +78,9 @@ Single-page scroll-driven portfolio site where a building is progressively const
 
 - The hero shows an original 3D house (`src/lib/model3d/` data and maths, `src/components/HeroModel/` controller and component). No 3D library, no new dependencies. It is its own lazy chunk, requested after first paint and idle; never import it statically.
 - It rotates about x, y and z (auto-rotate, drag, buttons, keyboard). Tokens live in `MOTION.model3d`. The hand-off to the window eases it to the front elevation, then fades by opacity only.
+- Phase 14D: a maximum-detail model (about 1,000 vertices, four detail groups, three flat tones), raised in stages on first load, drawn as the hero background with text over it below 1024 px (quiet palette, no amber marks). Keep ink text at 4.5:1 on every house fill. Phones drop surface hairlines while it turns; hairlines closer than 1.5 px on screen are never drawn. Frame cost target: 4 ms at a 4x CPU slowdown.
+- The morph (`src/lib/morph.ts`, `MOTION.morph`): a pure function of the scroll. The house eases to its front elevation, lands on the building's ground line and footprint (`siteTarget`, `landing`), dissolves top first (opacity and a small settle only), and the foundation begins where it stood. Never write morph state anywhere but from the scroll position; it must reverse exactly. Reduced motion swaps with no animation; the widget is `inert` once the hero is behind.
+- Below 1024 px the building is a muted ghost (limewash and concrete text keeps 4.5:1 over any pixel of it); Work delivered blocks sit on flat opaque plates because the windows are full amber there; no translucency, blur or gradient anywhere. `e2e/phase-14d.spec.ts` samples the pixels behind every text block.
 - Amber only on its dimension lines and labels. Reduced motion: no auto-rotate, inertia or easing. No-JS: the static SVG inlined from `index.html` (`%HERO_MODEL_SVG%`).
 
 ## Folder Map

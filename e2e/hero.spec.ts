@@ -37,7 +37,7 @@ test.describe('Phase 4 — Pinned Hero & 3D house', () => {
     await expect(widget).toBeAttached();
     await expect(page.locator('.hm-svg').first()).toBeAttached();
     // Overall width dimension label
-    await expect(page.locator('.hm-dim-label text', { hasText: '12.0 m' })).toBeAttached();
+    await expect(page.locator('.hm-dim-label text', { hasText: '14.8 m' })).toBeAttached();
   });
 
   test('nav bar switches tone when scrolling from hero to about', async ({ page }, testInfo) => {

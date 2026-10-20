@@ -1,8 +1,10 @@
-import { useRef, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useScroll } from '../../hooks/useScroll';
 import { gsap, useGSAP } from '../../lib/gsap';
 import { MOTION } from '../../lib/motion';
 import './SheetStack.css';
+
+const NARROW_QUERY = '(width < 1024px)';
 
 export interface SheetStackProps {
   children: ReactNode;
@@ -12,10 +14,19 @@ export interface SheetStackProps {
 export function SheetStack({ children, className = '' }: SheetStackProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const { reducedMotion } = useScroll();
+  // Below 1024 px the sheets are plain blocks over the fixed building layer: no pinning or slide-over
+  const [narrow, setNarrow] = useState(() => window.matchMedia(NARROW_QUERY).matches);
+
+  useEffect(() => {
+    const query = window.matchMedia(NARROW_QUERY);
+    const onChange = (e: MediaQueryListEvent) => setNarrow(e.matches);
+    query.addEventListener('change', onChange);
+    return () => query.removeEventListener('change', onChange);
+  }, []);
 
   useGSAP(
     () => {
-      if (reducedMotion || !containerRef.current) return;
+      if (reducedMotion || narrow || !containerRef.current) return;
 
       const sheets = Array.from(
         containerRef.current.querySelectorAll<HTMLElement>(':scope > .sheet'),
@@ -100,7 +111,7 @@ export function SheetStack({ children, className = '' }: SheetStackProps) {
         resizeObserver.disconnect();
       };
     },
-    { scope: containerRef, dependencies: [reducedMotion] },
+    { scope: containerRef, dependencies: [reducedMotion, narrow] },
   );
 
   const containerClasses = [

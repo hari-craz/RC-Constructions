@@ -1,12 +1,23 @@
 /*
  * Site window: a fixed, constant formwork surface. Desktop: grid columns 6-12 (7/12 of the
- * viewport), edge to edge in height. Mobile: a fixed band at the top (42svh).
+ * viewport), edge to edge in height. Below 1024 px: the whole screen, behind the text, with the
+ * drawing centred and the backdrop (StageLayer) as its surface.
  * The building is one inline SVG that fills the window; it is drawn with three line weights.
  */
 .building-site-window {
   --lw-heavy: 3px;
   --lw-medium: 2px;
   --lw-hair: 1px;
+
+  /* Fills and outlines; the muted variant below 1024 px takes each one step darker */
+  --b-wall: var(--color-limewash);
+  --b-mass: var(--color-concrete);
+  --b-mass-line: var(--color-limewash);
+  --b-frame-line: var(--color-limewash);
+  --b-ground-line: var(--color-limewash);
+  --b-steel: var(--color-steel);
+  --b-peg: var(--color-concrete);
+  --b-peg-line: var(--color-limewash);
 
   position: fixed;
   top: 0;
@@ -80,27 +91,27 @@
 }
 
 .b-ground-line {
-  stroke: var(--color-limewash);
+  stroke: var(--b-ground-line);
   stroke-width: var(--lw-heavy);
 }
 
 .b-pit {
   fill: var(--color-formwork-dark);
-  stroke: var(--color-steel);
+  stroke: var(--b-steel);
   stroke-width: var(--lw-medium);
 }
 
 /* Site set-out: pegs, level staff and starter bars */
 .b-peg rect {
-  fill: var(--color-concrete);
-  stroke: var(--color-limewash);
+  fill: var(--b-peg);
+  stroke: var(--b-peg-line);
   stroke-width: var(--lw-medium);
 }
 
 .b-datum line,
 .b-string,
 .b-starter {
-  stroke: var(--color-steel);
+  stroke: var(--b-steel);
   stroke-width: var(--lw-medium);
   fill: none;
 }
@@ -124,8 +135,8 @@
 .b-slab,
 .b-core,
 .b-parapet-cap {
-  fill: var(--color-concrete);
-  stroke: var(--color-limewash);
+  fill: var(--b-mass);
+  stroke: var(--b-mass-line);
   stroke-width: var(--lw-heavy);
 }
 
@@ -133,29 +144,29 @@
 .b-col,
 .b-beam,
 .b-canopy {
-  fill: var(--color-concrete);
-  stroke: var(--color-steel);
+  fill: var(--b-mass);
+  stroke: var(--b-steel);
   stroke-width: var(--lw-medium);
 }
 
 /* Walls: limewash masses between the frame, separated by steel hairlines */
 .b-wall,
 .b-parapet-wall {
-  fill: var(--color-limewash);
-  stroke: var(--color-steel);
+  fill: var(--b-wall);
+  stroke: var(--b-steel);
   stroke-width: var(--lw-hair);
 }
 
 /* Openings are formwork-dark voids */
 .b-opening {
   fill: var(--color-formwork-dark);
-  stroke: var(--color-steel);
+  stroke: var(--b-steel);
   stroke-width: var(--lw-medium);
 }
 
 .b-frame {
   fill: none;
-  stroke: var(--color-limewash);
+  stroke: var(--b-frame-line);
   stroke-width: var(--lw-medium);
 }
 
@@ -163,7 +174,7 @@
 .b-stair,
 .b-rail {
   fill: none;
-  stroke: var(--color-steel);
+  stroke: var(--b-steel);
   stroke-width: var(--lw-medium);
 }
 
@@ -173,7 +184,7 @@
 
 .b-door {
   fill: var(--color-surface-raised);
-  stroke: var(--color-steel);
+  stroke: var(--b-steel);
   stroke-width: var(--lw-medium);
 }
 
@@ -189,7 +200,7 @@
 
 .b-plate-box {
   fill: var(--color-formwork-dark);
-  stroke: var(--color-steel);
+  stroke: var(--b-steel);
   stroke-width: var(--lw-hair);
 }
 
@@ -219,27 +230,63 @@
   }
 }
 
-/* Mobile and tablet: fixed band at the top, below the header */
+/*
+ * Below 1024 px: a full-screen layer behind the text. The backdrop (StageLayer) is its surface, so
+ * the window itself is transparent. The muted variant is a ghost of the desktop drawing: formwork
+ * ground, every fill darker than on desktop and every stroke a darker steel, so limewash text
+ * keeps at least 4.5:1 over any pixel of it (the contrast test samples it). The lit windows stay
+ * full amber, and only the Work delivered stage and the sections after it put their blocks on
+ * plates over them.
+ */
 @media (width < 1024px) {
   .building-site-window {
     --lw-heavy: 2.5px;
     --lw-medium: 1.5px;
+    --b-steel: color-mix(in srgb, var(--color-steel) 58%, var(--color-formwork-dark));
+    --b-wall: color-mix(in srgb, var(--color-steel) 28%, var(--color-surface-raised));
+    --b-mass: color-mix(in srgb, var(--color-steel) 40%, var(--color-surface-raised));
+    --b-mass-line: var(--b-steel);
+    --b-frame-line: var(--b-steel);
+    --b-ground-line: var(--b-steel);
+    --b-peg: var(--b-wall);
+    --b-peg-line: var(--b-steel);
 
-    top: 0;
-    left: 0;
+    inset: 0;
+    z-index: var(--z-stage-building);
     width: 100%;
-    height: var(--site-band-height);
-    padding-top: var(--nav-height);
-    box-sizing: border-box;
+    height: 100svh;
+    background-color: transparent;
+  }
+
+  .b-soil {
+    fill: color-mix(in srgb, var(--color-surface-raised) 80%, var(--color-formwork-dark));
   }
 
   .building-preview {
-    top: var(--nav-height);
+    top: 0;
   }
 
   .b-dim-label,
   .b-level-label,
   .b-plate {
+    display: none;
+  }
+
+  /*
+   * Windows are lit full amber, and the dimension lines drawn, while Work delivered is read (its
+   * blocks sit on plates). In Services and Projects the finished building stays lit, but in a flat
+   * muted amber, so no text is read over full amber.
+   */
+  .building-site-window:is([data-section='structure'], [data-section='envelope']) .b-pane {
+    fill: color-mix(
+      in srgb,
+      var(--color-work-lamp-amber) 30%,
+      var(--color-surface-raised)
+    ) !important;
+  }
+
+  .building-site-window:is([data-section='structure'], [data-section='envelope'])
+    :is(.b-dim, .b-dim-tick) {
     display: none;
   }
 }
@@ -256,6 +303,6 @@
 @media (width < 1024px) {
   .building-site-window[data-static='true'][data-stage='foundation'] .b-camera {
     transform: translateY(-190px);
-    transform-origin: 550px 620px;
+    transform-origin: 560px 620px;
   }
 }

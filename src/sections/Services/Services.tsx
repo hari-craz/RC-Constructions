@@ -42,7 +42,7 @@ export function Services() {
   );
 
   return (
-    <Sheet id={stage.sectionId} tone={stage.tone} className="services-sheet">
+    <Sheet id={stage.sectionId} tone={stage.tone} className="services-sheet" stage>
       <div ref={containerRef} className="sheet-column services-content">
         <header className="services-header">
           <h2 id={`${stage.sectionId}-heading`} className="services-title">

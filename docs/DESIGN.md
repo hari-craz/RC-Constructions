@@ -96,7 +96,7 @@ The hero opens with the building itself: a small **interactive 3D house** drawn 
 ### Visual Foundations
 
 - **Surface**: Pure flat concrete (`--color-concrete`, `#C4C4BC`). Strictly zero gradients, zero drop shadows, zero noisy canvas overlays, zero glassmorphism blurs.
-- **The Drawing (3D house)**: an original two-storey house (main block, garage, front porch, gable roofs, chimney) as plain data in `src/lib/model3d/`, projected by our own maths into one inline SVG. Limewash walls, concrete roofs, formwork-dark windows and doors, ink edges in the three-weight system. Dimension lines (overall width and height) and their labels follow the model in **amber exclusively** (`--color-work-lamp-amber`), with the labels on formwork-dark tags for contrast.
+- **The Drawing (3D house)**: an original two-storey house (main block with a two-door garage, a bay under a cross gable, a stone-based front porch with steps, a set-back wing, gable roofs, chimney) as plain data in `src/lib/model3d/`, projected by our own maths into one inline SVG. Limewash walls, concrete roofs, formwork-dark windows and doors, ink edges in the three-weight system. Dimension lines (overall width and height) and their labels follow the model in **amber exclusively** (`--color-work-lamp-amber`), with the labels on formwork-dark tags for contrast.
 
 ### Typography & Hierarchy
 
@@ -188,7 +188,7 @@ The custom cursor evokes a surveyor's optical level crosshair. It is engineered 
 
 ## 8. Phase 11 — Composition and Sheet Rules
 
-- **Grid**: one 12-column grid. Text owns columns 1-5, the fixed site window columns 6-12 (58.33% wide, full height, constant `#232622`) on desktop; on mobile the window is a fixed 42svh band. See `docs/BUILDING.md`.
+- **Grid**: one 12-column grid. Text owns columns 1-5, the fixed site window columns 6-12 (58.33% wide, full height, constant `#232622`) on desktop; below 1024 px the building is a fixed full-screen layer behind the text. See `docs/BUILDING.md`.
 - **Quiet text column**: one headline opens each section, then short body and the content module (table, register, steps, stats). No section labels, eyebrows, drawing codes, all-caps or monospace micro-labels. Body text uses `--font-size-body` (18-20 px); nothing is smaller than 14 px.
 - **Sheets**: tones are limewash or concrete (the ink tokens are re-pointed per tone in `SheetStack.css`). A sheet is as tall as its content plus `--sheet-bottom-pad` (at least 12vh); it never crops its content. Tall sheets pin their bottom edge, so the next sheet slides over padding. The dim on the sheet below is formwork at `MOTION.sheetStack.dimOverlayOpacity` (0.1), a darker version of its own surface.
 - **Projects**: the grey image slot was removed in Phase 14; the right-hand window previews the active row (section 10).
@@ -197,7 +197,7 @@ The custom cursor evokes a surveyor's optical level crosshair. It is engineered 
 
 ## 9. Phase 12 — Wide layouts, sheets and placeholders
 
-- **Panel-less sections** (Founder, Contact) use a centred grid: `.sheet-wide`, max `--wide-content-max` (75rem) plus gutters. On phones they do not reserve the building band. Sections with the site window keep text in grid columns 1-5.
+- **Panel-less sections** (Founder, Contact) use a centred grid: `.sheet-wide`, max `--wide-content-max` (75rem) plus gutters. Below 1024 px they are opaque light sheets over the background layer. Sections with the site window keep text in grid columns 1-5.
 - **Sheet stack**: sheets no longer scale (scaling revealed the dark body as side bars). The outgoing sheet is dimmed with formwork at `MOTION.sheetStack.dimOverlayOpacity`; the incoming sheet's top corners go from `radiusSheetPx` to square.
 - **Placeholders**: never a broken image and never code-comment text. Founder portrait: `FOUNDER_CONTENT.portraitAvailable` (false until the photo files are committed) switches between a quiet concrete block with one sentence and the `<picture>`. Photo slots read "Site photo to come" (section 10). The form's missing-ID note is a plain sentence beside a flat, readable disabled button.
 
@@ -214,15 +214,25 @@ The custom cursor evokes a surveyor's optical level crosshair. It is engineered 
 ## 11. Phase 14B — Map, hand-off and framing
 
 - Process steps 01 to 03 complete the foundation; step 04 raises the structure, 05 closes the envelope, 06 is the fit-out (`docs/BUILDING.md` section 3). Lit windows wait for the Work delivered headline to be centred.
-- Phone and tablet hand-off: the band rides with the arriving sheet's top edge; no empty region taller than 20% of the viewport.
+- Phone and tablet: the band of Phase 14B is gone (Phase 14D replaced it with a full-screen layer behind the text).
 - The foundation is framed by a lifted camera (`MOTION.building.siteCamera*`), not left low in an empty window.
 - The founder portrait falls back to the quiet placeholder if the file fails to load; `src/content/portrait.test.ts` requires real files of the right type before the flag can be switched on.
 
 ## 12. Phase 14C — Interactive 3D house in the hero
 
-- **Model**: `src/lib/model3d/` holds plain data (about 110 vertices, solids with flat window and door decals), rotation and projection maths (turn about y, then tilt about x, then roll about z; a mild perspective), back-face culling and a painter's sort by solid. No 3D library. One inline SVG; faces of one kind that are neighbours in paint order share a path to keep DOM work small.
+- **Model**: `src/lib/model3d/` holds plain data (about 700 vertices: solids with flat window, door and garage-panel decals and hairline siding, shingle and mullion lines), rotation and projection maths (turn about y, then tilt about x, then roll about z; a mild perspective), back-face culling and a painter's sort by solid. No 3D library. One inline SVG; faces of one kind that are neighbours in paint order share a path to keep DOM work small.
 - **Auto-rotate**: one turn in 20 s about y with an 8 degree bob on x, redrawn at most 30 times a second. It pauses on hover (mouse), when the model has keyboard focus, while dragging, while the hero is off-screen or the tab is hidden, and resumes after 3 s without input.
 - **Controls**: drag turns (y) and tilts (x, clamped to 80 degrees) with inertia; Shift + drag or a two-finger twist rolls (z). On touch `touch-action: pan-y` keeps vertical swipes scrolling the page. Always-visible buttons (Turn left, Turn right, Tilt up, Tilt down, Roll left, Roll right, Reset view, Auto-rotate) rotate 15 degrees with a short ease. The model is focusable (arrows, Q and E, 0 or Home, Space). Focus rings are 2 px ink with a 2 px offset. An x, y, z axis gizmo rotates with the model; one hint line ("Drag to turn the house") is removed after 6 s or the first interaction. Nothing is announced by a live region.
-- **Hand-off**: over the first quarter of the hero-to-window hand-off the house eases to its front elevation (all angles 0, perspective to orthographic); it then fades by opacity only before the window enters. Scrolling back restores the pose it had.
+- **Hand-off**: replaced by the Phase 14D morph (section 13).
 - **Fallbacks**: reduced motion as above; no-JS shows the house at its rest angle, inlined into `index.html` at build time (`%HERO_MODEL_SVG%`).
 - **Tokens**: `MOTION.model3d` in `src/lib/motion.ts`.
+
+## 13. Phase 14D: a detailed house, the morph, and the full-bleed background
+
+- **Detail** (an original model in our drawing system, not a trace of any reference): about 1,000 vertices and 470 faces in 21 solids. Massing: a two-storey main block with an integrated two-door garage, a projecting upper bay under a front cross gable, a set-back wing with an end gable, a lower porch with its own gable, roof overhangs with fascia boards, a chimney with cap. Openings: framed windows with sills, head trim and mullions (single, paired and triple groups), an entry with sidelights and a transom, two garage doors of five panels with a row of small lights. Surfaces (hairlines on, and clipped to, their faces): lap courses, vertical boards on the wing, shingle rows with staggered butt joints in the gables, battens, stone courses on the plinth, corner boards. Porch and ground: stone-based tapered posts, a beam, three steps, a driveway slab with control joints, a walkway and the plot outline. Fills are flat in at most three tones of one palette by facing direction (lit, side, shaded); no gradients, shadows, translucency or textures.
+- **Level of detail**: on phones (below 768 px) surface hairlines are dropped while the house is dragged or turning, and return 120 ms after it stops (`lodRestoreMs`); a hairline pattern whose lines would be closer than 1.5 px on screen (foreshortened by the angle it is seen at) is left out whatever the device.
+- **Cost**: one update (maths and DOM writes) is about 0.6 to 1 ms unthrottled and about 3.5 to 4 ms at a 4x CPU slowdown (`docs/PERFORMANCE.md`). Drawing units are viewport pixels; strokes are in CSS pixels with no `vector-effect`.
+- **Intro, controls, auto-rotate**: as Phase 14C, plus the first-load build in stages (`introSeconds`).
+- **Morph**: the house lands on the building's footprint and dissolves top first; the foundation then begins where it stood. See `docs/BUILDING.md` section 3 ("Hero to building morph"). Tokens: `MOTION.morph` and `MOTION.model3d` (`dissolveWindows`, `dissolveSettleMetres`, `minLinePx`, `lodRestoreMs`).
+- **Below 1024 px**: the house, then the building, fills the screen behind the text (`docs/BUILDING.md` section 1b). The hero text fades first; sheets are transparent and light-on-dark; Work delivered is on plates; everything else is read straight over the muted drawing.
+- **Palette**: the house is limewash and concrete on the hero (ink edges); on the window it steps one tone darker with steel edges (`--hm-mix`); below 1024 px its dark end is the same muted ghost as the building. Amber only on the dimension lines and labels (desktop) and the lit windows.

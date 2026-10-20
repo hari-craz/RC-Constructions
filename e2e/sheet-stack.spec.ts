@@ -46,6 +46,9 @@ test.describe('Phase 3 — Sheet Stack and Motion Foundation', () => {
       test.skip();
     }
 
+    // Below 1024 px the sheets are plain blocks over the fixed building layer (Phase 14D)
+    test.skip((page.viewportSize()?.width ?? 0) < 1024, 'No slide-over below 1024 px');
+
     const sheet1 = page.locator('#hero');
     const sheet2 = page.locator('#foundation');
 

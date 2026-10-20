@@ -43,7 +43,7 @@ export function Completion() {
   );
 
   return (
-    <Sheet id={COMPLETION_CONTENT.sectionId} tone="light" className="completion-sheet">
+    <Sheet id={COMPLETION_CONTENT.sectionId} tone="light" className="completion-sheet" stage>
       <div ref={contentRef} className="sheet-column completion-content">
         <header className="completion-header">
           <h2 id={`${COMPLETION_CONTENT.sectionId}-heading`} className="completion-title">

@@ -4,6 +4,8 @@
  * its place in the scroll; its natural place is the heights of the sheets before it plus its
  * offset inside its own sheet.
  */
+import { MOTION } from '../../lib/motion';
+
 function sheets(): HTMLElement[] {
   return [...document.querySelectorAll<HTMLElement>('.sheet-stack > .sheet')];
 }
@@ -25,11 +27,13 @@ function naturalTop(el: HTMLElement): number {
   return sheetTop(sheet) + (el.getBoundingClientRect().top - sheet.getBoundingClientRect().top);
 }
 
-/** Where the eye rests: the viewport centre, or the centre of the area under the phone band. */
+/**
+ * Where the eye rests. Desktop: the viewport centre. Below 1024 px the building is a fixed
+ * full-screen layer and the text is read in its upper part, with the building below it.
+ */
 function readingCentre(): number {
-  const win = document.querySelector<HTMLElement>('.building-site-window');
-  const band = window.matchMedia('(width < 1024px)').matches && win ? win.offsetHeight : 0;
-  return band + (window.innerHeight - band) / 2;
+  const narrow = window.matchMedia('(width < 1024px)').matches;
+  return window.innerHeight * (narrow ? MOTION.stageLayer.readingShare : 0.5);
 }
 
 /** Scroll position at which the element's box is centred in the reading area. */

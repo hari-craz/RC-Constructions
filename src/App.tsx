@@ -5,6 +5,7 @@ import { Building } from './components/Building';
 import { LoadingLine } from './components/LoadingLine';
 import { Nav } from './components/Nav';
 import { SheetStack } from './components/SheetStack';
+import { StageLayer } from './components/StageLayer';
 import { SurveyCursor } from './components/SurveyCursor';
 import { About } from './sections/About';
 import { Completion } from './sections/Completion';
@@ -27,6 +28,7 @@ export function App() {
         <LoadingLine />
         <SurveyCursor />
         <Nav />
+        <StageLayer />
         <Building />
         <main id="main">
           <SheetStack>

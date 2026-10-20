@@ -12,7 +12,9 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
 /** Inner markup (ground, faces, dimensions) for a frame; classes are styled in HeroModel.css. */
 function frameMarkup(frame: Frame): string {
-  const faces = frame.faces.map((f) => `<path class="hm-face hm-${f.kind}" d="${f.d}"/>`).join('');
+  const faces = frame.faces
+    .map((f) => `<path class="hm-face hm-${f.kind}${f.tone ? ` hm-t${f.tone}` : ''}" d="${f.d}"/>`)
+    .join('');
   const dims = frame.dimensions
     .map(
       (d) =>

@@ -54,7 +54,7 @@ export function Process() {
   );
 
   return (
-    <Sheet id={stage.sectionId} tone={stage.tone} className="process-sheet">
+    <Sheet id={stage.sectionId} tone={stage.tone} className="process-sheet" stage>
       <div ref={containerRef} className="sheet-column process-content">
         <header className="process-header">
           <h2 id={`${stage.sectionId}-heading`} className="process-title">

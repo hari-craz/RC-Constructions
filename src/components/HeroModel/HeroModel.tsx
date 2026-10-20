@@ -30,6 +30,8 @@ const STEP_BUTTONS: readonly StepButton[] = [
 export default function HeroModel({ reducedMotion }: HeroModelProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const sceneRef = useRef<SVGGElement | null>(null);
   const facesRef = useRef<SVGGElement | null>(null);
   const groundRef = useRef<SVGPathElement | null>(null);
   const dimsRef = useRef<SVGGElement | null>(null);
@@ -49,20 +51,25 @@ export default function HeroModel({ reducedMotion }: HeroModelProps) {
   useEffect(() => {
     const root = rootRef.current;
     const stage = stageRef.current;
+    const svg = svgRef.current;
+    const scene = sceneRef.current;
     const faces = facesRef.current;
     const ground = groundRef.current;
     const dims = dimsRef.current;
     const gizmo = gizmoRef.current;
-    if (!root || !stage || !faces || !ground || !dims || !gizmo) return;
+    if (!root || !stage || !svg || !scene || !faces || !ground || !dims || !gizmo) return;
     const instance = new ModelController(
       {
         root,
         stage,
+        heroSvg: svg,
+        // The fixed full-screen layer (StageLayer) that carries the house once it leaves the hero
+        layerSvg: document.querySelector<SVGSVGElement>('.stage-house'),
+        scene,
         faces,
         ground,
         dims,
         gizmo,
-        handoffTarget: () => document.getElementById('foundation'),
       },
       { reducedMotion, onInteract: dismissHint },
     );
@@ -85,14 +92,17 @@ export default function HeroModel({ reducedMotion }: HeroModelProps) {
         tabIndex={0}
       >
         <svg
+          ref={svgRef}
           className="hm-svg"
           viewBox={`0 0 ${VIEW.width} ${VIEW.height}`}
           aria-hidden="true"
           focusable="false"
         >
-          <path ref={groundRef} className="hm-ground" />
-          <g ref={facesRef} />
-          <g ref={dimsRef} />
+          <g ref={sceneRef}>
+            <path ref={groundRef} className="hm-ground" />
+            <g ref={dimsRef} />
+            <g ref={facesRef} />
+          </g>
         </svg>
         <svg
           className="hero-model-gizmo"

@@ -90,6 +90,12 @@
 }
 
 @media (width < 1024px) {
+  /* The first block arrives only after the hero text has faded and the backdrop has turned dark,
+     so no text is ever read on the wrong ground, and the house is seen landing and dissolving */
+  .about-sheet .sheet-inner {
+    padding-top: max(calc(var(--nav-height) + var(--space-6)), 48svh);
+  }
+
   .about-headline {
     font-size: var(--font-size-2xl);
   }

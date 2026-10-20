@@ -100,12 +100,25 @@
 }
 
 @media (width < 1024px) {
-  .sheet-inner {
-    padding-top: calc(var(--site-band-height) + var(--space-6));
+  /*
+   * No slide-over below 1024 px: sheets are plain blocks in the page flow, scrolling over the fixed
+   * building layer (StageLayer and Building). Sheets that are read over it are transparent with
+   * light ink; their blocks sit on flat opaque formwork plates, so no text depends on what the
+   * drawing happens to show behind it.
+   */
+  .sheet {
+    position: relative !important;
+    top: auto !important;
+    transform: none !important;
+    border-radius: 0 !important;
+    overflow: visible;
   }
 
-  /* Sections without the site window do not reserve the band */
-  .sheet-inner:has(> .sheet-wide) {
+  .sheet-dim-overlay {
+    display: none !important;
+  }
+
+  .sheet-inner {
     padding-top: calc(var(--nav-height) + var(--space-6));
   }
 
@@ -113,6 +126,22 @@
     grid-column: 1 / -1;
     justify-self: start;
     max-width: 44rem;
+  }
+
+  .sheet-stage {
+    --sheet-surface: transparent;
+    --color-ink: var(--color-limewash);
+    --color-ink-muted: color-mix(in srgb, var(--color-limewash) 40%, var(--color-concrete));
+    --color-line: var(--color-steel);
+    --color-line-subtle: rgb(122 126 120 / 35%);
+    --stage-plate: var(--color-formwork-dark);
+    --stage-plate-pad: var(--space-5);
+
+    color: var(--color-limewash);
+  }
+
+  .sheet-stage .sheet-column {
+    gap: var(--space-5);
   }
 }
 

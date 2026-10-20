@@ -134,9 +134,19 @@
   transform-origin: left center;
 }
 
-/* On phones the fixed band covers the top of the screen, so a row scrolled into view stops below it */
+/* Over the building layer (below 1024 px) the projects are read straight over the drawing; a row
+   scrolled into view stops below the header, and hover or the active row take a flat, slightly lighter formwork */
 @media (width < 1024px) {
   .projects-row-item {
-    scroll-margin-top: calc(var(--site-band-height) + var(--space-4));
+    scroll-margin-top: calc(var(--nav-height) + var(--space-4));
+  }
+
+  .projects-row-btn:hover,
+  .projects-row-btn:focus-visible {
+    background-color: color-mix(in srgb, var(--color-formwork-dark) 92%, var(--color-limewash));
+  }
+
+  .projects-row-item.is-active .projects-row-btn {
+    background-color: color-mix(in srgb, var(--color-formwork-dark) 88%, var(--color-limewash));
   }
 }

@@ -64,9 +64,10 @@ async function sampleWholePage(page: Page, step: number) {
         parts: (root.dataset.partProgress ?? '').split(',').map(Number),
         offsets: stepsEls.map((el) => {
           const r = el.getBoundingClientRect();
-          // Centre of the reading area: the viewport, or the part under the phone band
-          const band = window.innerWidth < 1024 ? (root.getBoundingClientRect().height ?? 0) : 0;
-          return r.top + r.height / 2 - (band + (window.innerHeight - band) / 2);
+          // Centre of the reading area: the viewport, or (below 1024 px) its upper part, with the
+          // building below it
+          const share = window.innerWidth < 1024 ? 0.34 : 0.5;
+          return r.top + r.height / 2 - window.innerHeight * share;
         }),
       });
     }
@@ -235,60 +236,13 @@ test.describe('Phase 14: stage sync', () => {
       );
     }
     await open(page, 'foundation');
+    // The morph is complete when About is at the top, and the foundation is only beginning
+    expect(await page.evaluate(() => document.documentElement.dataset.morphProgress)).toBe('1.000');
     const bp = Number(await windowAttr(page, 'data-build-progress'));
-    expect(bp).toBeGreaterThan(0);
+    expect(bp).toBeGreaterThanOrEqual(0);
     expect(bp).toBeLessThanOrEqual(1 / PARTS + 0.001);
   });
-
-  test('hero to window: the plot is gone before any edge of the window moves across it', async ({
-    page,
-    isMobile,
-  }, testInfo) => {
-    test.skip(
-      testInfo.project.use?.contextOptions?.reducedMotion === 'reduce',
-      'See reduced motion',
-    );
-    await open(page, 'hero');
-    const frames = await page.evaluate(async () => {
-      const lenis = (
-        window as unknown as {
-          __lenis?: { scrollTo: (y: number, o: { immediate: boolean }) => void };
-        }
-      ).__lenis;
-      const about = document.getElementById('foundation');
-      const hero = document.getElementById('hero');
-      if (!about || !hero) return [];
-      const top = hero.offsetHeight;
-      const out: { frac: number; plot: number; edge: number; band: number }[] = [];
-      for (let f = 1; f >= 0; f -= 0.05) {
-        const y = top - window.innerHeight * f;
-        lenis?.scrollTo(Math.max(0, y), { immediate: true });
-        await new Promise((r) => setTimeout(r, 40));
-        const plot = document.querySelector('.hero-model');
-        const win = document.querySelector('.building-site-window')?.getBoundingClientRect();
-        const plotOpacity = plot ? Number(getComputedStyle(plot).opacity) : 0;
-        // Distance the window has entered the viewport from its starting edge
-        const entered = win ? window.innerWidth - win.left : 0;
-        // Phones: how far the band's top edge sits above the arriving sheet's top edge
-        const sheetTop = about.getBoundingClientRect().top;
-        out.push({
-          frac: f,
-          plot: plotOpacity,
-          edge: window.innerWidth < 1024 ? 0 : entered,
-          band: win && window.innerWidth < 1024 ? sheetTop - win.top : 0,
-        });
-      }
-      return out;
-    });
-    expect(frames.length).toBeGreaterThan(10);
-    void isMobile;
-    for (const f of frames) {
-      // Desktop: the window enters from the right only after the plot has faded
-      if (f.edge > 24) expect(f.plot, `frac ${f.frac}`).toBeLessThanOrEqual(0.02);
-      // Phones: the band rides with the arriving sheet's top edge and is never above it
-      expect(f.band, `band vs sheet at frac ${f.frac}`).toBeLessThanOrEqual(2);
-    }
-  });
+  // The hero-to-window hand-off is now the Phase 14D morph (see phase-14d.spec.ts)
 });
 
 test.describe('Phase 14: reduced motion', () => {
@@ -358,7 +312,8 @@ test.describe('Phase 14: projects live preview', () => {
       };
     });
     expect(style.w).toBe('3px');
-    expect(style.c).toBe('rgb(35, 38, 34)');
+    // Ink on the sheet: formwork on desktop, limewash over the dark background below 1024 px
+    expect(style.c).toBe(isMobile ? 'rgb(233, 231, 223)' : 'rgb(35, 38, 34)');
     expect(await page.locator('.projects-row-btn[aria-current="true"]').count()).toBe(1);
 
     // Opacity-only cross-fade: no transform on the preview or the building

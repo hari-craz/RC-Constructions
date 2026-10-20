@@ -67,3 +67,9 @@ Mobile median of five: performance 98, LCP 2160 ms, TBT 82 ms, CLS 0 (Phase 14: 
 ## Phase 14C
 
 Mobile median of five: performance 98, LCP 2157 ms, TBT 64 ms, CLS 0 (Phase 14B: 98, 2160 ms, 82 ms, 0). Desktop median of three: 100. `pnpm size`: 134.12 kB brotlied (128.26 kB before; limit 180 kB). The hero 3D house is a lazy chunk of about 17 kB (6 kB gzipped), requested after first paint and idle; the LCP element is still the headline. Update cost of the house at a 4x CPU slowdown: about 3 to 4 ms per update when the machine is quiet, at most 30 updates a second.
+
+## Phase 14D
+
+Mobile median of five: performance 99, LCP 2117 ms, TBT 4 ms, CLS 0 (Phase 14C build measured the same way on the same machine: 99, 2117 ms, 5 ms, 0). Desktop median of five: 100 (LCP 488 ms against 489 ms). The LCP element is still the hero headline. `pnpm size`: 138.08 kB brotlied (133.72 kB before; limit 180 kB). The house is still its own lazy chunk (29.8 kB, 11 kB gzipped, was 19 kB), requested after first paint and idle; the morph clock (`src/lib/morph.ts`) and the stage layer are in the main chunk (under 1 kB).
+
+Update cost of the house (maths plus DOM writes, `data-frame-ms`) at a 4x CPU slowdown while it auto-rotates, median of eight one-second samples on a quiet machine: 3.5 ms at 1440x900, 3.4 ms at 390x844, 3.4 ms at 768x1024 (peaks up to 4.6 ms); the Phase 14C house cost about 1.8 ms the same way. Unthrottled it is 0.6 to 1 ms. It got there by formatting a vertex only when a visible face uses it, caching each path's class, opacity and `d`, dropping `vector-effect` (strokes are sized in CSS pixels instead), and setting the gizmo's fixed attributes once. Auto-rotate redraws at most 30 times a second.

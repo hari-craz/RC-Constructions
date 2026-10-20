@@ -18,18 +18,22 @@ const ALL = [
   { name: '1440x900', width: 1440, height: 900 },
   { name: '1280x800', width: 1280, height: 800 },
   { name: '1024x768', width: 1024, height: 768 },
+  { name: '1023x768', width: 1023, height: 768 },
   { name: '768x1024', width: 768, height: 1024 },
   { name: '390x844', width: 390, height: 844 },
+  { name: '360x640', width: 360, height: 640 },
 ];
 // Full set at the four review widths; 1280 and 1024 only get header and transition frames
-const REVIEW = new Set(['1904x1080', '1440x900', '768x1024', '390x844']);
+const REVIEW = new Set(['1904x1080', '1440x900', '768x1024', '390x844', '360x640']);
 const TRANSITION_WIDTHS = new Set([
   '1904x1080',
   '1440x900',
   '1280x800',
   '1024x768',
+  '1023x768',
   '768x1024',
   '390x844',
+  '360x640',
 ]);
 // ONLY_TRANSITIONS=1 captures just the hero-to-window frames (fast iteration)
 const ONLY_TRANSITIONS = Boolean(process.env.ONLY_TRANSITIONS);
@@ -70,7 +74,9 @@ async function centre(page, selector, index = 0) {
         const el = document.querySelectorAll(sel)[i];
         if (!el) return null;
         const r = el.getBoundingClientRect();
-        return window.scrollY + r.top + r.height / 2 - window.innerHeight / 2;
+        // Below 1024 px the text is read in the upper part of the screen (the building is below)
+        const share = window.innerWidth < 1024 ? 0.34 : 0.5;
+        return window.scrollY + r.top + r.height / 2 - window.innerHeight * share;
       },
       [selector, index],
     );

@@ -1,34 +1,41 @@
+import { HOUSE, type FaceKind } from '../../lib/model3d/house';
 import { clampTilt, wrapAngle } from '../../lib/model3d/math';
 import {
   buildFrame,
   DEFAULT_POSE,
+  fitScale,
   gizmoAxes,
+  landing,
   mergeRuns,
   REST_INV_DISTANCE,
-  restOptions,
-  VIEW,
   type Frame,
+  type FrameOptions,
   type Pose,
 } from '../../lib/model3d/render';
+import { morphRamp, onMorph, type MorphState } from '../../lib/morph';
 import { MOTION } from '../../lib/motion';
+import { siteTarget } from '../../lib/siteTarget';
 
 const M = MOTION.model3d;
-/** Font size of dimension labels in drawing units (HeroModel.css). */
-const LABEL_FONT_UNITS = 15;
+const MO = MOTION.morph;
+const NARROW_QUERY = '(width < 1024px)';
 
 export type Axis = 'turn' | 'tilt' | 'roll';
 
 export interface ControllerElements {
   /** The whole widget; receives data-* state and focus/hover events. */
   root: HTMLElement;
-  /** The interactive area (pointer drag, keyboard). */
+  /** The interactive area (pointer drag, keyboard); on desktop also the area the house stands in. */
   stage: HTMLElement;
+  /** The svg inside the hero, and the fixed full-screen layer svg that carries the house later. */
+  heroSvg: SVGSVGElement;
+  layerSvg: SVGSVGElement | null;
+  /** The group holding ground, dimensions and faces; it moves between the two svgs. */
+  scene: SVGGElement;
   faces: SVGGElement;
   ground: SVGPathElement;
   dims: SVGGElement;
   gizmo: SVGGElement;
-  /** The hero element used to measure scroll hand-off progress (the About sheet). */
-  handoffTarget: () => HTMLElement | null;
 }
 
 export interface ControllerOptions {
@@ -36,15 +43,57 @@ export interface ControllerOptions {
   onInteract: () => void;
 }
 
+interface PoolSlot {
+  path: SVGPathElement;
+  d: string;
+  cls: string;
+  opacity: number;
+  hidden: boolean;
+}
+
+/** The class string of a face run by kind and tone, built once. */
+const KINDS: FaceKind[] = [
+  'wall',
+  'roof',
+  'trim',
+  'stone',
+  'glass',
+  'door',
+  'line',
+  'muntin',
+  'slab',
+];
+const CLASSES = Object.fromEntries(
+  KINDS.map((k) => [k, [`hm-face hm-${k}`, `hm-face hm-${k} hm-t1`, `hm-face hm-${k} hm-t2`]]),
+) as Record<FaceKind, [string, string, string]>;
+
 const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
 const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 const svgNs = 'http://www.w3.org/2000/svg';
 
+/** The dissolve value (0 to 1) for a morph value. */
+const dissolveOf = (m: number) =>
+  clamp01((m - MO.dissolveStart) / (MO.dissolveEnd - MO.dissolveStart));
+
+/** The drawing area the house is fitted to, in viewport pixels (drawing units are CSS pixels). */
+interface View {
+  cx: number;
+  cy: number;
+  halfSize: number;
+  fill: number;
+  /** Fitted scale at rest (px per metre). */
+  scale0: number;
+}
+
 /**
- * Drives the hero house: auto-rotate, drag with inertia, button and key steps, the scroll hand-off
- * to the front elevation, and the axis gizmo. One requestAnimationFrame loop runs only while
- * something moves; at rest nothing is scheduled.
+ * Drives the hero house: auto-rotate, drag with inertia, button and key steps, the scroll morph
+ * (front elevation, landing on the building's footprint, dissolving top first) and the axis gizmo.
+ * One requestAnimationFrame loop runs only while something moves; at rest nothing is scheduled.
+ *
+ * Drawing units are CSS pixels of the viewport, so the same scene can sit in the hero svg or in
+ * the fixed layer svg without any change of coordinates.
  */
 export class ModelController {
   private pose: Pose = { ...DEFAULT_POSE };
@@ -56,7 +105,7 @@ export class ModelController {
   private dragging = false;
   private visible = true;
   private resumeAt = 0;
-  private handoff = 0;
+  private morph: MorphState = { m: 0, beyond: 0 };
   private bobAmp = 0;
   private bobPhase = 0;
   private wasAuto = false;
@@ -68,20 +117,35 @@ export class ModelController {
   private frameMsSum = 0;
   private frameCount = 0;
   private frameStatAt = 0;
-  private paths: SVGPathElement[] = [];
+  private pool: PoolSlot[] = [];
   private dimNodes: { line: SVGPathElement; label: SVGGElement; text: SVGTextElement }[] = [];
-  private gizmoNodes: { line: SVGLineElement; text: SVGTextElement }[] = [];
+  private gizmoNodes: {
+    label: string;
+    line: SVGLineElement;
+    text: SVGTextElement;
+    anchor: string;
+  }[] = [];
   private frames = 0;
   private autoSpin = false;
+  /** How much of the house has been raised (the intro): 0 to 1. */
+  private built = 0;
+  private view: View = { cx: 500, cy: 400, halfSize: 400, fill: 1.08, scale0: 40 };
+  /** Scale and centre that put the house's ground line and footprint on the building's. */
+  private target = { scale: 40, cx: 500, cy: 400 };
+  private narrow = window.matchMedia(NARROW_QUERY).matches;
+  private host: 'hero' | 'layer' = 'hero';
+  private mixNow = -1;
   private resumeTimer = 0;
-  /** Labels are enlarged so their text is never smaller than MOTION.model3d.minLabelPx on screen. */
-  private labelScale = 1;
+  private lodOn = false;
+  private lodTimer = 0;
+  private phoneQuery = window.matchMedia('(width < 768px)');
   private cleanups: (() => void)[] = [];
 
   constructor(
     private readonly el: ControllerElements,
     private readonly opts: ControllerOptions,
   ) {
+    this.built = opts.reducedMotion ? 1 : 0;
     this.buildStatic();
     this.bind();
     this.render();
@@ -96,6 +160,7 @@ export class ModelController {
     this.destroyed = true;
     cancelAnimationFrame(this.raf);
     window.clearTimeout(this.resumeTimer);
+    window.clearTimeout(this.lodTimer);
     this.cleanups.forEach((fn) => fn());
     this.cleanups = [];
   }
@@ -179,7 +244,8 @@ export class ModelController {
       !this.dragging &&
       !this.anim &&
       now >= this.resumeAt &&
-      this.handoff < 0.005
+      this.morph.m < MO.autoStopShare &&
+      this.built >= 1
     );
   }
 
@@ -226,6 +292,11 @@ export class ModelController {
       if (Math.abs(this.vel.rx) < M.inertiaMinSpeed) this.vel.rx = 0;
     }
 
+    // Intro: the house is raised in stages behind the headline
+    if (this.built < 1) {
+      this.built = Math.min(1, this.built + dt / M.introSeconds);
+    }
+
     // Auto-rotate with a gentle bob; pausing bakes the bob into the pose so nothing jumps
     const auto = this.autoActive(now);
     if (auto) {
@@ -242,6 +313,9 @@ export class ModelController {
     }
     this.wasAuto = auto;
     this.autoSpin = auto;
+    this.updateLod(
+      auto || this.dragging || this.anim !== null || this.vel.ry !== 0 || this.vel.rx !== 0,
+    );
     this.pose.ry = wrapAngle(this.pose.ry);
     if (!this.anim) this.pose.rz = wrapAngle(this.pose.rz);
 
@@ -256,7 +330,8 @@ export class ModelController {
       this.frameStatAt = now;
     }
 
-    const moving = auto || this.anim !== null || this.vel.ry !== 0 || this.vel.rx !== 0;
+    const moving =
+      auto || this.built < 1 || this.anim !== null || this.vel.ry !== 0 || this.vel.rx !== 0;
     if (moving) this.request();
     else this.last = 0;
   }
@@ -265,11 +340,39 @@ export class ModelController {
     return M.bobDeg * this.bobAmp * Math.sin((this.bobPhase * 2 * Math.PI) / M.bobSeconds);
   }
 
+  /**
+   * Level of detail on phones: surface hairlines are left out while the house is being dragged or
+   * turns by itself, and come back shortly after it stops (massing, openings and trim stay).
+   */
+  private updateLod(moving: boolean) {
+    if (!this.phoneQuery.matches) {
+      this.lodOn = false;
+      return;
+    }
+    if (moving) {
+      this.lodOn = true;
+      window.clearTimeout(this.lodTimer);
+      this.lodTimer = 0;
+    } else if (this.lodOn && !this.lodTimer) {
+      this.lodTimer = window.setTimeout(() => {
+        this.lodTimer = 0;
+        this.lodOn = false;
+        if (!this.destroyed) this.render();
+      }, M.lodRestoreMs);
+    }
+  }
+
   // ----- rendering -----------------------------------------------------------------------------
 
+  /** The morph value in use: none at all under reduced motion (the house simply swaps out). */
+  private morphValue(): number {
+    return this.opts.reducedMotion ? 0 : this.morph.m;
+  }
+
+  /** The pose and perspective for this frame: the turning house eases to the front elevation. */
   private displayPose(): { pose: Pose; invDistance: number } {
     const rx = this.pose.rx + (this.wasAuto ? this.bobOffset() : 0);
-    const e = this.opts.reducedMotion ? 0 : easeInOut(Math.min(1, this.handoff / M.frontShare));
+    const e = easeInOut(clamp01(this.morphValue() / MO.frontEnd));
     if (e === 0)
       return { pose: { rx, ry: this.pose.ry, rz: this.pose.rz }, invDistance: REST_INV_DISTANCE };
     return {
@@ -282,25 +385,45 @@ export class ModelController {
     };
   }
 
+  /** Options for one frame: the fit, the landing on the building, the intro and the dissolve. */
+  private frameOptions(invDistance: number): FrameOptions {
+    const v = this.view;
+    const m = this.morphValue();
+    const land = morphRamp(m, MO.landStart, MO.landEnd);
+    return {
+      invDistance,
+      halfSize: v.halfSize,
+      cx: lerp(v.cx, this.target.cx, land),
+      cy: lerp(v.cy, this.target.cy, land),
+      fill: v.fill,
+      scale: lerp(v.scale0, this.target.scale, land),
+      build: this.built,
+      dissolve: dissolveOf(m),
+      lines: !this.lodOn,
+    };
+  }
+
   private buildStatic() {
     const { gizmo } = this.el;
-    // Gizmo: three axis lines with labels, plus a centre pip
+    // Gizmo: three axis lines with labels
     for (const label of ['x', 'y', 'z'] as const) {
       const line = document.createElementNS(svgNs, 'line');
       line.setAttribute('class', 'hm-axis');
+      line.setAttribute('x1', '0');
+      line.setAttribute('y1', '0');
       const text = document.createElementNS(svgNs, 'text');
       text.setAttribute('class', 'hm-axis-label');
       text.textContent = label;
       gizmo.append(line, text);
-      this.gizmoNodes.push({ line, text });
+      this.gizmoNodes.push({ label, line, text, anchor: '' });
     }
   }
 
   private ensureFacePool(n: number) {
-    while (this.paths.length < n) {
+    while (this.pool.length < n) {
       const path = document.createElementNS(svgNs, 'path');
       this.el.faces.appendChild(path);
-      this.paths.push(path);
+      this.pool.push({ path, d: '', cls: '', opacity: 1, hidden: false });
     }
   }
 
@@ -325,56 +448,111 @@ export class ModelController {
     }
   }
 
+  /**
+   * Where the scene is drawn. Below 1024 px it lives in the fixed full-screen layer behind the text
+   * all the time. On desktop it stands in the hero (behind the headline) until the morph begins,
+   * then moves to the layer above the site window, so it can land on the window's footprint.
+   */
+  private placeScene(m: number) {
+    const layer = this.el.layerSvg;
+    const want: 'hero' | 'layer' = layer && (this.narrow || m > 0) ? 'layer' : 'hero';
+    if (want === this.host) return;
+    (want === 'layer' && layer ? layer : this.el.heroSvg).appendChild(this.el.scene);
+    this.host = want;
+  }
+
+  /** Palette mix (0 on the limewash hero, 1 on the dark window), written only when it changes. */
+  private applyMix(m: number) {
+    const mix = Math.round(morphRamp(m, MO.recolourStart, MO.recolourEnd) * 50) / 50;
+    if (mix === this.mixNow) return;
+    this.mixNow = mix;
+    this.el.heroSvg.style.setProperty('--hm-mix', String(mix));
+    this.el.layerSvg?.style.setProperty('--hm-mix', String(mix));
+  }
+
   private render() {
     const { pose, invDistance } = this.displayPose();
-    const frame = buildFrame(pose, restOptions(invDistance));
+    const m = this.morphValue();
+    this.placeScene(m);
+    this.applyMix(m);
+    const frame = buildFrame(pose, this.frameOptions(invDistance));
 
     const runs = mergeRuns(frame.faces);
     this.ensureFacePool(runs.length);
-    runs.forEach((f, i) => {
-      const path = this.paths[i] as SVGPathElement;
-      path.setAttribute('d', f.d);
-      const cls = `hm-face hm-${f.kind}`;
-      if (path.getAttribute('class') !== cls) path.setAttribute('class', cls);
-      if (path.style.display) path.style.display = '';
-    });
-    for (let i = runs.length; i < this.paths.length; i++) {
-      const path = this.paths[i] as SVGPathElement;
-      if (path.style.display !== 'none') path.style.display = 'none';
+    const pool = this.pool;
+    for (let i = 0; i < runs.length; i++) {
+      const f = runs[i] as (typeof runs)[number];
+      const slot = pool[i] as PoolSlot;
+      if (slot.d !== f.d) {
+        slot.path.setAttribute('d', f.d);
+        slot.d = f.d;
+      }
+      const cls = CLASSES[f.kind][f.tone];
+      if (slot.cls !== cls) {
+        slot.path.setAttribute('class', cls);
+        slot.cls = cls;
+      }
+      if (slot.opacity !== f.opacity) {
+        if (f.opacity < 1) slot.path.setAttribute('opacity', String(f.opacity));
+        else slot.path.removeAttribute('opacity');
+        slot.opacity = f.opacity;
+      }
+      if (slot.hidden) {
+        slot.path.style.display = '';
+        slot.hidden = false;
+      }
+    }
+    for (let i = runs.length; i < pool.length; i++) {
+      const slot = pool[i] as PoolSlot;
+      if (!slot.hidden) {
+        slot.path.style.display = 'none';
+        slot.hidden = true;
+      }
     }
     this.el.ground.setAttribute('d', frame.ground);
+    this.el.ground.setAttribute('opacity', (1 - clamp01(m / MO.groundFadeEnd)).toFixed(2));
+
+    // After the dissolve only the plinth is left; it fades as the pit is dug where it stood, and the
+    // drawing is hidden once nothing of the house remains (under reduced motion, once the hero has
+    // left the viewport)
+    const plinth =
+      m >= 1 ? 1 - clamp01(this.morph.beyond / (window.innerHeight * MO.plinthFadeViewport)) : 1;
+    const gone = this.opts.reducedMotion ? this.morph.m >= 1 : plinth <= 0;
+    this.el.scene.setAttribute('opacity', plinth.toFixed(2));
+    const svg = this.host === 'layer' ? this.el.layerSvg : this.el.heroSvg;
+    if (svg) {
+      const display = gone ? 'none' : '';
+      if (svg.style.display !== display) svg.style.display = display;
+    }
 
     this.ensureDims(frame);
     frame.dimensions.forEach((d, i) => {
       const node = this.dimNodes[i];
       if (!node) return;
-      const hide = d.length < M.minDimensionUnits;
+      const hide = d.length < M.minDimensionUnits || this.built < 1 || m > 0.001;
       const display = hide ? 'none' : '';
       if (node.line.style.display !== display) {
         node.line.style.display = display;
         node.label.style.display = display;
       }
       node.line.setAttribute('d', d.d);
-      node.label.setAttribute(
-        'transform',
-        `translate(${d.lx.toFixed(1)} ${d.ly.toFixed(1)}) scale(${this.labelScale})`,
-      );
+      node.label.setAttribute('transform', `translate(${d.lx.toFixed(1)} ${d.ly.toFixed(1)})`);
       if (node.text.textContent !== d.label) node.text.textContent = d.label;
     });
 
-    const axes = gizmoAxes(pose, M.gizmoLength, 0, 0);
-    axes.forEach((a) => {
-      const node = this.gizmoNodes.find((n) => n.text.textContent === a.label);
-      if (!node) return;
-      node.line.setAttribute('x1', '0');
-      node.line.setAttribute('y1', '0');
+    for (const a of gizmoAxes(pose, M.gizmoLength, 0, 0)) {
+      const node = this.gizmoNodes.find((n) => n.label === a.label);
+      if (!node) continue;
       node.line.setAttribute('x2', a.x.toFixed(1));
       node.line.setAttribute('y2', a.y.toFixed(1));
-      const tx = a.x + (a.x >= 0 ? 6 : -6);
-      node.text.setAttribute('x', tx.toFixed(1));
+      node.text.setAttribute('x', (a.x + (a.x >= 0 ? 6 : -6)).toFixed(1));
       node.text.setAttribute('y', (a.y + 4).toFixed(1));
-      node.text.setAttribute('text-anchor', a.x >= 0 ? 'start' : 'end');
-    });
+      const anchor = a.x >= 0 ? 'start' : 'end';
+      if (node.anchor !== anchor) {
+        node.text.setAttribute('text-anchor', anchor);
+        node.anchor = anchor;
+      }
+    }
 
     // State for tests and styles; written every fourth frame while auto-rotating (cheaper)
     this.frames += 1;
@@ -385,7 +563,10 @@ export class ModelController {
     ds.rz = pose.rz.toFixed(2);
     ds.auto = this.autoActive(performance.now()) ? 'true' : 'false';
     ds.autoRotate = this.autoOn ? 'on' : 'off';
-    ds.handoff = this.handoff.toFixed(3);
+    ds.built = this.built.toFixed(3);
+    ds.dissolve = dissolveOf(m).toFixed(3);
+    ds.host = this.host;
+    ds.plinth = plinth.toFixed(2);
   }
 
   // ----- input ---------------------------------------------------------------------------------
@@ -471,6 +652,7 @@ export class ModelController {
       this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       this.lastMove = now;
       this.interact();
+      this.updateLod(true);
       this.render();
     });
     const release = (e: PointerEvent) => {
@@ -506,19 +688,49 @@ export class ModelController {
       if (handled) e.preventDefault();
     });
 
-    // Keep label text readable: enlarge it when the drawing is shown small
+    // The drawing area, in viewport pixels. Below 1024 px it is the whole screen (the fixed layer,
+    // house behind the text); on desktop it is the stage beside the headline.
     const measure = () => {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      this.narrow = window.matchMedia(NARROW_QUERY).matches;
       const r = this.el.stage.getBoundingClientRect();
-      const unitsPx = Math.min(r.width / VIEW.width, r.height / VIEW.height) || 1;
-      this.labelScale = Math.min(3, Math.max(1, M.minLabelPx / (LABEL_FONT_UNITS * unitsPx)));
+      const nav = parseFloat(getComputedStyle(document.documentElement).fontSize) * 3.5;
+      const area = this.narrow
+        ? { left: 0, top: nav, width: vw, height: vh - nav }
+        : { left: r.left, top: r.top, width: r.width || 1, height: r.height || 1 };
+      const halfSize = Math.min(area.width, area.height) / 2;
+      const fill = this.narrow ? M.overlayFill : 1.08;
+      const cx = area.left + area.width / 2;
+      const cy = area.top + area.height * (this.narrow ? M.overlayCentreY : 0.5);
+      this.view = {
+        cx,
+        cy,
+        halfSize,
+        fill,
+        scale0: fitScale(HOUSE, { invDistance: REST_INV_DISTANCE, halfSize, fill, cx, cy }),
+      };
+
+      // Where the house lands: the ground line and width of the building's footprint
+      const t = siteTarget(vw, vh, this.narrow);
+      this.target = landing(t);
+
+      // Both svgs use viewport pixels as drawing units
+      this.el.heroSvg.setAttribute(
+        'viewBox',
+        `${r.left.toFixed(1)} ${r.top.toFixed(1)} ${(r.width || 1).toFixed(1)} ${(r.height || 1).toFixed(1)}`,
+      );
+      this.el.layerSvg?.setAttribute('viewBox', `0 0 ${vw} ${vh}`);
       this.render();
     };
     const ro = new ResizeObserver(measure);
     ro.observe(this.el.stage);
     this.cleanups.push(() => ro.disconnect());
+    window.addEventListener('resize', measure, { passive: true });
+    this.cleanups.push(() => window.removeEventListener('resize', measure));
     measure();
 
-    // Off-screen, hidden tab and scroll hand-off
+    // Off-screen and hidden tab
     const io = new IntersectionObserver((entries) => {
       this.visible = entries.some((en) => en.isIntersecting);
       if (this.visible) this.request();
@@ -532,31 +744,28 @@ export class ModelController {
     document.addEventListener('visibilitychange', onVisibility);
     this.cleanups.push(() => document.removeEventListener('visibilitychange', onVisibility));
 
-    const onScroll = () => {
-      const target = this.el.handoffTarget();
-      if (!target) return;
-      const vh = window.innerHeight || 1;
-      const next = Math.max(0, Math.min(1, 1 - target.getBoundingClientRect().top / vh));
-      if (next !== this.handoff) {
-        this.handoff = next;
-        // The controls and hint sit low in the hero, so the arriving sheet reaches them first
-        const keep = this.opts.reducedMotion ? 1 : 1 - Math.min(1, next / M.controlsFadeEndShare);
-        this.el.root.style.setProperty('--hm-controls-opacity', keep.toFixed(3));
-        // Hold the idle timer while the hero scrolls away so auto-rotate restarts calmly
-        if (next > 0) this.scheduleResume(400);
-        this.request();
-      }
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll, { passive: true });
-    this.cleanups.push(() => {
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onScroll);
+    // The morph follows the scroll (see lib/morph.ts)
+    let seen = false;
+    const offMorph = onMorph((state) => {
+      const changed = !seen || state.m !== this.morph.m || state.beyond !== this.morph.beyond;
+      const prev = this.morph.m;
+      seen = true;
+      this.morph = state;
+      // The controls and hint (low in the hero) go first, and the house can no longer be handled
+      const keep = this.opts.reducedMotion ? 1 : 1 - clamp01(state.m / MO.controlsFadeEnd);
+      root.style.setProperty('--hm-controls-opacity', keep.toFixed(3));
+      const away = state.m >= MO.controlsFadeEnd;
+      if (root.inert !== away) root.inert = away;
+      // Hold the idle timer while the hero scrolls away so auto-rotate restarts calmly
+      if (state.m > 0 && state.m !== prev) this.scheduleResume(400);
+      if (changed) this.request();
     });
-    onScroll();
+    this.cleanups.push(offMorph);
 
     // Hold the rest angle for a moment, then start turning
-    this.scheduleResume(M.restHoldMs);
+    this.scheduleResume(
+      this.opts.reducedMotion ? M.restHoldMs : M.introSeconds * 1000 + M.restHoldMs,
+    );
     this.request();
   }
 }

@@ -15,39 +15,39 @@
 }
 
 .pv-ground {
-  stroke: var(--color-limewash);
+  stroke: var(--b-ground-line, var(--color-limewash));
   stroke-width: 3px;
 }
 
 /* Heavy section cut */
 .pv-cut {
-  fill: var(--color-concrete);
-  stroke: var(--color-limewash);
+  fill: var(--b-mass, var(--color-concrete));
+  stroke: var(--b-mass-line, var(--color-limewash));
   stroke-width: 3px;
 }
 
 /* Medium members and lines */
 .pv-member {
-  fill: var(--color-concrete);
-  stroke: var(--color-steel);
+  fill: var(--b-mass, var(--color-concrete));
+  stroke: var(--b-steel, var(--color-steel));
   stroke-width: 2px;
 }
 
 .pv-line {
   fill: none;
-  stroke: var(--color-steel);
+  stroke: var(--b-steel, var(--color-steel));
   stroke-width: 2px;
 }
 
 .pv-edge {
   fill: none;
-  stroke: var(--color-limewash);
+  stroke: var(--b-mass-line, var(--color-limewash));
   stroke-width: 2px;
 }
 
 .pv-wall {
-  fill: var(--color-limewash);
-  stroke: var(--color-steel);
+  fill: var(--b-wall, var(--color-limewash));
+  stroke: var(--b-steel, var(--color-steel));
   stroke-width: 1px;
 }
 
@@ -55,7 +55,7 @@
 .pv-void,
 .pv-pipe {
   fill: var(--color-formwork-dark);
-  stroke: var(--color-steel);
+  stroke: var(--b-steel, var(--color-steel));
   stroke-width: 2px;
 }
 
@@ -66,7 +66,7 @@
 /* Hairline */
 .pv-hair {
   fill: none;
-  stroke: var(--color-steel);
+  stroke: var(--b-steel, var(--color-steel));
   stroke-width: 1px;
 }
 
@@ -76,8 +76,8 @@
   fill: var(--color-limewash);
 }
 
-/* Too small to read in the phone band, where the list above already names the project */
-@media (width < 768px) {
+/* Below 1024 px the drawing is a ghost behind the text; its labels would be text over text */
+@media (width < 1024px) {
   .pv-label {
     display: none;
   }

@@ -20,7 +20,7 @@ Every value that is not a verified company fact. Rule: **no placeholder text is 
 | ----------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | Six projects                              | `src/content/projects.ts`                   | Labelled once on the page: "Sample projects for this demo." No real client or brand.             |
 | Project and image slots                   | `Projects` image slot, overlay gallery      | "Elevation drawing to come" and "Drawing to come" (image slots only)                             |
-| House model dimensions                    | `src/lib/model3d/house.ts`, building labels | Illustrative drawing figures (12.0 m, 8.2 m, 15.40 m, 17.40 m); not claims about a real building |
+| House model dimensions                    | `src/lib/model3d/house.ts`, building labels | Illustrative drawing figures (14.8 m, 8.6 m, 15.40 m, 17.40 m); not claims about a real building |
 | Tagline, call to action, navigation label | `src/content/site.ts`                       | Wording the client may replace                                                                   |
 | Services list                             | `src/content/services.ts`                   | General trades; confirm with the company                                                         |
 | Process steps                             | `src/content/process.ts`                    | Describe a typical order of work; confirm with the company                                       |

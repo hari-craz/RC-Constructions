@@ -55,22 +55,69 @@ export const MOTION = {
     restRy: -35,
     restRz: 0,
     restInvDistance: 1 / 60,
-    /** Scroll hand-off: share of the hand-off by which the house reaches the front elevation. */
-    frontShare: 0.15,
-    /** Share of the hand-off at which the model starts to fade (opacity only). */
-    fadeStartShare: 0.1,
-    /** The house is gone before the arriving sheet reaches its base: desktop and phone. */
-    fadeEndShare: 0.3,
-    fadeEndSharePhone: 0.56,
-    /** The controls and hint (low in the hero) go first. */
-    controlsFadeEndShare: 0.1,
     /** Axis gizmo reach in drawing units. */
     gizmoLength: 36,
     /** Dimension label text is never drawn smaller than this on screen (px), and lines shorter than this many drawing units are hidden. */
     minLabelPx: 12,
     minDimensionUnits: 70,
     /** The house holds the rest angle this long before auto-rotate starts. */
-    restHoldMs: 1500,
+    restHoldMs: 600,
+    /** Seconds the house takes to raise itself on first load (stage by stage). */
+    introSeconds: 3.2,
+    /**
+     * Taking the house down, top first, as shares of the dissolve: roof, upper storey, ground
+     * storey, porch. Each fades by opacity and settles a little downward; the plinth stays.
+     */
+    dissolveWindows: [
+      [0, 0.4],
+      [0.2, 0.62],
+      [0.4, 0.86],
+      [0.5, 0.9],
+    ],
+    dissolveSettleMetres: 0.45,
+    /** Surface hairlines closer than this on screen are left out; they return this long after a turn stops on phones. */
+    minLinePx: 1.5,
+    lodRestoreMs: 120,
+    /** Overlay layout below 1024 px: where the house centres in the hero and how much of the width it may use. */
+    overlayCentreY: 0.46,
+    overlayFill: 1.15,
+  },
+  /*
+   * The morph from the hero house to the building (src/lib/morph.ts). m runs 0 to 1 while the About
+   * sheet arrives; every number below is a share of m. Scrubbed by scroll, so it reverses exactly.
+   */
+  morph: {
+    /** The house reaches its front elevation (orthographic) by this share. */
+    frontEnd: 0.25,
+    /** It moves and scales until its ground line and width match the building's footprint. */
+    landStart: 0.05,
+    landEnd: 0.45,
+    /** Its palette steps one tone darker and its ink turns to steel as it meets the dark window. */
+    recolourStart: 0.2,
+    recolourEnd: 0.45,
+    /** The site window slides in (desktop) or the drawing appears behind the text (phones). */
+    windowStart: 0.3,
+    windowEnd: 0.5,
+    /** The house dissolves top first: roof, upper storey, ground storey, porch. */
+    dissolveStart: 0.5,
+    dissolveEnd: 0.92,
+    /** The ground hairlines fade out by this share. */
+    groundFadeEnd: 0.4,
+    /** The controls and hint (low in the hero) go first. */
+    controlsFadeEnd: 0.1,
+    /** Below 1024 px: the hero text fades, then the stage backdrop turns from concrete to formwork. */
+    heroTextFadeStart: 0.03,
+    heroTextFadeEnd: 0.16,
+    backdropStart: 0.18,
+    backdropEnd: 0.3,
+    /** The plinth that stays on the ground line fades over this much scroll (viewports) as the pit is dug. */
+    plinthFadeViewport: 0.2,
+    /** The house stops turning by itself once the morph has begun. */
+    autoStopShare: 0.005,
+  },
+  /** Below 1024 px the building is a fixed full-screen layer; text is read in the upper part of it. */
+  stageLayer: {
+    readingShare: 0.34,
   },
   building: {
     // While the foundation is drawn the whole drawing is lifted (and may be scaled) so the site
@@ -104,8 +151,8 @@ export const MOTION = {
     windowSwitchDuration: 0.01,
     dimensionDrawDuration: 0.5,
     dimensionLabelDelay: 0.3,
-    plotFadeShare: 0.5,
-    windowEnterViewport: 1,
+    /** The first part of the foundation (excavation) is scrubbed over at least this much scroll (viewports). */
+    foundationMinViewport: 0.25,
   },
   stats: {
     countDuration: 1.6,

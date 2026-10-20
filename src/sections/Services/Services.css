@@ -140,3 +140,18 @@
   line-height: var(--line-height-normal);
   color: var(--color-ink-muted);
 }
+
+/* Over the building layer (below 1024 px) the services are read straight over the drawing: the
+   rules draw on a dark ground, and a hovered row is lifted with a limewash tint */
+@media (width < 1024px) {
+  /* The title can arrive while Work delivered still has its windows lit, so it sits on a plate */
+  .services-header {
+    padding: var(--stage-plate-pad);
+    background-color: var(--stage-plate);
+  }
+
+  .services-row:hover,
+  .services-row:focus-visible {
+    background-color: color-mix(in srgb, var(--color-formwork-dark) 92%, var(--color-limewash));
+  }
+}

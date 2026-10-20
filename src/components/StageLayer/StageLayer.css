@@ -1,0 +1,37 @@
+/* Backdrop: only below 1024 px, where the building is a full-screen layer behind the text */
+.stage-backdrop {
+  display: none;
+}
+
+/* The house layer: carries the hero house above the site window while it lands and dissolves */
+.stage-house {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-site-window) + 1);
+  width: 100%;
+  height: 100dvh;
+  pointer-events: none;
+  overflow: visible;
+}
+
+@media (width < 1024px) {
+  .stage-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-stage-backdrop);
+    display: block;
+    pointer-events: none;
+
+    /* Flat concrete (the hero) to flat formwork (the site); --morph-backdrop is set by lib/morph */
+    background-color: color-mix(
+      in srgb,
+      var(--color-formwork-dark) calc(var(--morph-backdrop, 0) * 100%),
+      var(--color-concrete)
+    );
+  }
+
+  .stage-house {
+    z-index: var(--z-stage-house);
+    height: 100svh;
+  }
+}

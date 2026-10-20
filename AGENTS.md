@@ -17,7 +17,7 @@ Section order, the stage map and the sync rules live in `docs/BUILDING.md` secti
 
 ## Hero Model Law
 
-The hero 3D house is our own projection code (`src/lib/model3d/`) in a lazy chunk (`src/components/HeroModel/`); never add a 3D or animation library. It must stay at the front elevation at the end of the hero scroll, keep 44 px control targets and 2 px ink focus rings, and snap (no easing) under reduced motion.
+The hero 3D house is our own projection code (`src/lib/model3d/`) in a lazy chunk (`src/components/HeroModel/`); never add a 3D or animation library. It must stay at the front elevation at the end of the hero scroll, keep ink text at 4.5:1 over every fill when it is the hero background (below 1024 px), keep the morph (`src/lib/morph.ts`) a pure function of the scroll so it reverses exactly, keep the muted background (below 1024 px) at 4.5:1 for text, keep 44 px control targets and 2 px ink focus rings, and snap (no easing) under reduced motion.
 
 ## The Three Rules That Matter Most
 

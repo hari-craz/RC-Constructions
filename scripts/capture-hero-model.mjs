@@ -45,7 +45,17 @@ for (const [w, h] of SIZES) {
   const page = await browser.newPage({ viewport: { width: w, height: h } });
   await page.goto(`${base}/`);
   await page.locator('.hero-model-widget').waitFor();
-  await page.waitForTimeout(700);
+  // The intro: the house is raised in stages
+  await page.waitForTimeout(500);
+  if (w === 1440 || w === 390)
+    await page.screenshot({ path: path.join(out, `${w}x${h}-intro-1.png`) });
+  await page.waitForTimeout(900);
+  if (w === 1440 || w === 390)
+    await page.screenshot({ path: path.join(out, `${w}x${h}-intro-2.png`) });
+  await page.waitForTimeout(1000);
+  if (w === 1440 || w === 390)
+    await page.screenshot({ path: path.join(out, `${w}x${h}-intro-3.png`) });
+  await page.waitForTimeout(2600);
   await page.screenshot({ path: path.join(out, `${w}x${h}-01-hero.png`) });
   if (w === 1440 || w === 390) {
     const toggle = page.getByRole('switch', { name: 'Auto-rotate' });

@@ -122,8 +122,8 @@ test.describe('Phase 14B: lit windows wait for the Completion headline', () => {
           const heading = document.getElementById('completion-heading');
           const win = document.querySelector<HTMLElement>('.building-site-window');
           if (!heading || !win) return { lit: -1, early: [] as number[] };
-          const band = window.innerWidth < 1024 ? win.offsetHeight : 0;
-          const centre = band + (window.innerHeight - band) / 2;
+          // Reading position: the viewport centre, or the upper part of the screen below 1024 px
+          const centre = window.innerHeight * (window.innerWidth < 1024 ? 0.34 : 0.5);
           const max = document.documentElement.scrollHeight - window.innerHeight;
           const early: number[] = [];
           let firstLit = -1;
@@ -131,9 +131,11 @@ test.describe('Phase 14B: lit windows wait for the Completion headline', () => {
           for (let y = 0; y <= max; y += 20) {
             go(y);
             await new Promise((r) => setTimeout(r, 22));
-            const lit = [...document.querySelectorAll('.b-pane')].filter(
-              (p) => getComputedStyle(p).fill === amber,
-            ).length;
+            // Below 1024 px the finished building is lit in a muted amber once Work delivered is behind
+            const lit = [...document.querySelectorAll('.b-pane')].filter((p) => {
+              const fill = getComputedStyle(p).fill;
+              return window.innerWidth < 1024 ? fill !== 'rgb(44, 48, 43)' : fill === amber;
+            }).length;
             const r = heading.getBoundingClientRect();
             const headingOffset = r.top + r.height / 2 - centre; // > 0 while still below the centre
             if (lit > 0 && firstLit < 0) firstLit = y;
@@ -188,19 +190,18 @@ test.describe('Phase 14B: leftovers', () => {
         [
           png.toString('base64'),
           await page.evaluate(() => {
-            // Below the header, and below the building band on phones
-            const nav = document.querySelector('.nav-bar')?.getBoundingClientRect().bottom ?? 56;
-            const band =
-              window.innerWidth < 1024
-                ? (document.querySelector('.building-site-window')?.getBoundingClientRect()
-                    .bottom ?? 0)
-                : 0;
-            return Math.max(nav, band);
+            // Just below the header
+            return document.querySelector('.nav-bar')?.getBoundingClientRect().bottom ?? 56;
           }),
         ] as const,
       );
-      expect(px[0], `${vp.width}: pixel under the header is limewash`).toBeGreaterThan(220);
-      expect(px[1]).toBeGreaterThan(220);
+      if (vp.width < 1024) {
+        // Below 1024 px the sheet is transparent over the dark backdrop: no concrete hero shows
+        expect(px[0], `${vp.width}: pixel under the header is formwork`).toBeLessThan(80);
+      } else {
+        expect(px[0], `${vp.width}: pixel under the header is limewash`).toBeGreaterThan(220);
+        expect(px[1]).toBeGreaterThan(220);
+      }
     }
   });
 
@@ -220,11 +221,17 @@ test.describe('Phase 14B: leftovers', () => {
           return win && line ? (line.top - win.top) / win.height : -1;
         });
       await open(page, 'foundation');
-      expect(await ground(), `${vp.width}: ground line while the foundation is drawn`).toBeLessThan(
-        0.72,
-      );
+      const lifted = await ground();
       await open(page, 'structure');
-      expect(await ground(), `${vp.width}: ground line at rest`).toBeGreaterThan(0.72);
+      const rest = await ground();
+      // Lifted for the foundation, settled low for the finished building
+      expect(rest, `${vp.width}: ground line at rest`).toBeGreaterThan(
+        vp.width < 1024 ? 0.55 : 0.72,
+      );
+      expect(lifted, `${vp.width}: ground line while the foundation is drawn`).toBeLessThan(
+        rest - 0.04,
+      );
+      expect(lifted).toBeGreaterThan(0.4);
     }
   });
 
@@ -248,17 +255,16 @@ test.describe('Phase 14B: leftovers', () => {
     }
   });
 
-  test('D5: the Services heading is never under the phone band after a jump', async ({ page }) => {
+  test('D5: the Services heading is never under the header after a jump', async ({ page }) => {
     for (const vp of [VIEWPORTS[0], VIEWPORTS[1]]) {
       await page.setViewportSize(vp);
       await open(page, 'structure');
       const m = await page.evaluate(() => {
-        const band =
-          document.querySelector('.building-site-window')?.getBoundingClientRect().bottom ?? 0;
+        const band = document.querySelector('.nav-bar')?.getBoundingClientRect().bottom ?? 0;
         const h = document.getElementById('structure-heading')?.getBoundingClientRect().top ?? 0;
         return { band, h };
       });
-      expect(m.h, `${vp.width}: heading top vs band bottom (anchor)`).toBeGreaterThanOrEqual(
+      expect(m.h, `${vp.width}: heading top vs header bottom (anchor)`).toBeGreaterThanOrEqual(
         m.band,
       );
       // And through the section indicator
@@ -270,12 +276,11 @@ test.describe('Phase 14B: leftovers', () => {
         .click();
       await page.waitForTimeout(2600);
       const m2 = await page.evaluate(() => {
-        const band =
-          document.querySelector('.building-site-window')?.getBoundingClientRect().bottom ?? 0;
+        const band = document.querySelector('.nav-bar')?.getBoundingClientRect().bottom ?? 0;
         const h = document.getElementById('structure-heading')?.getBoundingClientRect().top ?? 0;
         return { band, h };
       });
-      expect(m2.h, `${vp.width}: heading top vs band bottom (indicator)`).toBeGreaterThanOrEqual(
+      expect(m2.h, `${vp.width}: heading top vs header bottom (indicator)`).toBeGreaterThanOrEqual(
         m2.band,
       );
     }

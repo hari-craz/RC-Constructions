@@ -109,3 +109,17 @@
   line-height: var(--line-height-normal);
   color: var(--color-ink);
 }
+
+/* Over the building layer (below 1024 px) each block is a flat plate */
+@media (width < 1024px) {
+  .completion-header,
+  .completion-handover,
+  .completion-stats-band {
+    background-color: var(--stage-plate);
+    padding: var(--stage-plate-pad);
+  }
+
+  .completion-stats-band {
+    border-top: 0;
+  }
+}

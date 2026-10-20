@@ -1,5 +1,44 @@
-/* Face styles for the hero house: flat fills, ink edges in the three-weight system. */
+/*
+ * Face styles for the hero house: flat fills in at most three tones of one palette (by the way a
+ * face points), ink edges in the three-weight system. Drawing units are screen pixels.
+ *
+ * --hm-mix runs from 0 (the house on the limewash hero) to 1 (the house on the dark site window):
+ * the fills step darker and the ink edges turn to steel as the house lands on the window. Below
+ * 1024 px the dark end is a muted ghost of the house, so limewash text read over it keeps 4.5:1.
+ */
 .hm-svg {
+  --hm-mix: 0;
+
+  /* The light palette: three tones for walls, then darker steps for roofs and stone */
+  --hm-s0: var(--color-limewash);
+  --hm-s1: color-mix(in srgb, var(--color-limewash) 50%, var(--color-concrete));
+  --hm-s2: var(--color-concrete);
+  --hm-s3: color-mix(in srgb, var(--color-concrete) 65%, var(--color-steel));
+  --hm-s4: color-mix(in srgb, var(--color-concrete) 35%, var(--color-steel));
+  --hm-s5: color-mix(in srgb, var(--color-concrete) 15%, var(--color-steel));
+
+  /* The same tones at mix 1 (desktop: one step darker, on the dark window) */
+  --hm-w0: var(--hm-s2);
+  --hm-w1: var(--hm-s3);
+  --hm-w2: var(--hm-s4);
+  --hm-r0: var(--hm-s4);
+  --hm-r1: var(--hm-s5);
+  --hm-r2: var(--color-steel);
+  --hm-k0: var(--hm-s3);
+  --hm-k1: var(--hm-s4);
+  --hm-k2: var(--hm-s5);
+
+  /* Edges and hairlines: ink on the hero, steel on the window */
+  --hm-edge-light: var(--color-formwork-dark);
+  --hm-edge-dark: var(--color-steel);
+  --hm-hair-dark: var(--color-steel);
+  --hm-edge: color-mix(
+    in srgb,
+    var(--hm-edge-dark) calc(var(--hm-mix) * 100%),
+    var(--hm-edge-light)
+  );
+  --hm-hair: color-mix(in srgb, var(--hm-hair-dark) calc(var(--hm-mix) * 100%), var(--color-steel));
+
   display: block;
   width: 100%;
   height: 100%;
@@ -9,7 +48,6 @@
 .hm-face,
 .hm-ground,
 .hm-dim {
-  vector-effect: non-scaling-stroke;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
@@ -20,28 +58,72 @@
   stroke-width: 1px;
 }
 
-.hm-wall {
-  fill: var(--color-limewash);
-  stroke: var(--color-formwork-dark);
+/* A fill is the light step on limewash and the dark step on the window */
+.hm-wall,
+.hm-trim {
+  fill: color-mix(in srgb, var(--hm-w0) calc(var(--hm-mix) * 100%), var(--hm-s0));
+  stroke: var(--hm-edge);
   stroke-width: 1.5px;
+}
+
+.hm-wall.hm-t1,
+.hm-trim.hm-t1 {
+  fill: color-mix(in srgb, var(--hm-w1) calc(var(--hm-mix) * 100%), var(--hm-s1));
+}
+
+.hm-wall.hm-t2,
+.hm-trim.hm-t2 {
+  fill: color-mix(in srgb, var(--hm-w2) calc(var(--hm-mix) * 100%), var(--hm-s2));
+}
+
+.hm-stone,
+.hm-slab {
+  fill: color-mix(in srgb, var(--hm-k0) calc(var(--hm-mix) * 100%), var(--hm-s2));
+  stroke: var(--hm-edge);
+  stroke-width: 1px;
+}
+
+.hm-stone.hm-t1,
+.hm-slab.hm-t1 {
+  fill: color-mix(in srgb, var(--hm-k1) calc(var(--hm-mix) * 100%), var(--hm-s3));
+}
+
+.hm-stone.hm-t2,
+.hm-slab.hm-t2 {
+  fill: color-mix(in srgb, var(--hm-k2) calc(var(--hm-mix) * 100%), var(--hm-s4));
 }
 
 .hm-roof {
-  fill: var(--color-concrete);
-  stroke: var(--color-formwork-dark);
+  fill: color-mix(in srgb, var(--hm-r0) calc(var(--hm-mix) * 100%), var(--hm-s3));
+  stroke: var(--hm-edge);
   stroke-width: 2px;
 }
 
-.hm-trim {
-  fill: var(--color-concrete);
-  stroke: var(--color-formwork-dark);
-  stroke-width: 1.5px;
+.hm-roof.hm-t1 {
+  fill: color-mix(in srgb, var(--hm-r1) calc(var(--hm-mix) * 100%), var(--hm-s4));
+}
+
+.hm-roof.hm-t2 {
+  fill: color-mix(in srgb, var(--hm-r2) calc(var(--hm-mix) * 100%), var(--hm-s5));
+}
+
+/* Hairline detail: siding, shingle rows, battens (steel) and window mullions (limewash) */
+.hm-line {
+  fill: none;
+  stroke: var(--hm-hair);
+  stroke-width: 1px;
+}
+
+.hm-muntin {
+  fill: none;
+  stroke: var(--color-limewash);
+  stroke-width: 1px;
 }
 
 .hm-glass,
 .hm-door {
   fill: var(--color-formwork-dark);
-  stroke: var(--color-formwork-dark);
+  stroke: var(--hm-edge);
   stroke-width: 1px;
 }
 
@@ -68,4 +150,44 @@
   width: min(100%, 40rem);
   margin: var(--space-6) auto;
   aspect-ratio: 5 / 4;
+}
+
+/*
+ * Phones and tablets: the house is the background of the whole page, so it is drawn quietly.
+ * Edges are steel hairlines and the amber dimension marks are left out. At mix 1 every fill and
+ * every stroke is dark enough that limewash text keeps 4.5:1 over any pixel of it.
+ */
+@media (width < 1024px) {
+  .hm-svg {
+    --hm-edge-light: var(--color-steel);
+    --hm-edge-dark: color-mix(in srgb, var(--color-steel) 58%, var(--color-formwork-dark));
+    --hm-hair-dark: var(--hm-edge-dark);
+    --hm-w0: color-mix(in srgb, var(--color-steel) 28%, var(--color-surface-raised));
+    --hm-w1: color-mix(in srgb, var(--color-steel) 22%, var(--color-surface-raised));
+    --hm-w2: color-mix(in srgb, var(--color-steel) 16%, var(--color-surface-raised));
+    --hm-r0: color-mix(in srgb, var(--color-steel) 34%, var(--color-surface-raised));
+    --hm-r1: color-mix(in srgb, var(--color-steel) 28%, var(--color-surface-raised));
+    --hm-r2: color-mix(in srgb, var(--color-steel) 22%, var(--color-surface-raised));
+    --hm-k0: color-mix(in srgb, var(--color-steel) 40%, var(--color-surface-raised));
+    --hm-k1: color-mix(in srgb, var(--color-steel) 34%, var(--color-surface-raised));
+    --hm-k2: color-mix(in srgb, var(--color-steel) 28%, var(--color-surface-raised));
+  }
+
+  .hm-glass,
+  .hm-door {
+    fill: color-mix(
+      in srgb,
+      var(--color-formwork-dark) calc(var(--hm-mix) * 100%),
+      var(--color-concrete)
+    );
+  }
+
+  .hm-muntin {
+    stroke: var(--hm-hair);
+  }
+
+  .hm-dim,
+  .hm-dim-label {
+    display: none;
+  }
 }
