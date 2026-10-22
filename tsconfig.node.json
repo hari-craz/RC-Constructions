@@ -37,6 +37,8 @@
     "src/lib/model3d/houseModel.ts",
     "src/lib/model3d/house.bsp.json",
     "src/lib/model3d/render.ts",
+    "src/lib/buildingStatic.ts",
+    "src/components/Building/geometry.ts",
     "src/lib/model3d/staticSvg.ts"
   ]
 }

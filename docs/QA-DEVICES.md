@@ -162,3 +162,25 @@ This protocol validates scroll physics, dynamic viewports, and visual stability 
 - **Phone and tablet.** The house is the background of the hero with the text over it (it can be dragged, swiped past, and rolled with two fingers). Scroll on: the text fades, the page turns dark, the house lands low on the screen and dissolves, then the building is built behind the text as each section is read. Check at 360x640, 390x844 and 768x1024 that text is legible everywhere (the muted drawing is faint by design; Work delivered has lit windows and plates), that nothing scrolls sideways, and that a turn from portrait to landscape at 1024 px switches cleanly to the desktop layout.
 - **Reduced motion.** The house stays finished and still while the hero is in view and is swapped for the building, with no animation, once the hero has left.
 - **Performance.** On a mid-range phone, drag the house: it follows the finger (hairlines return when you let go).
+
+---
+
+## Phase 15A manual pass (done on a laptop with browser emulation; real devices still to do)
+
+Checked by hand or script in Chromium at 360x640, 390x844, 412x915 (Pixel 7), 768x1024 and 1440x900, in WebKit and Firefox at desktop size, and in a container (`docs/review/phase-15a/`). Items that only a real device can confirm are marked **needs real device**.
+
+| Check                                                                                                     | Result                                                                                         |
+| --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| No sideways scroll at 360, 390, 768 and 1440 px, every section                                            | Pass (`e2e/phase-14d.spec.ts`, `e2e/phase-15a.spec.ts`)                                        |
+| Phone control strip: Turn, Tilt, Reset, Auto-rotate, More; 44 px targets; no wrapping at 360 px           | Pass (`e2e/phase-15a.spec.ts`)                                                                 |
+| Text legible over the building at every scroll position (390 and 768)                                     | Pass (pixel sampling, `e2e/phase-14d.spec.ts`)                                                 |
+| Detail under text cleared by region; none cleared at 1440 px                                              | Pass (`e2e/phase-15a.spec.ts`); frames in `docs/review/phase-15a/after/`                       |
+| No JavaScript: static house, then the finished building, desktop and phone width                          | Pass (`e2e/phase-15a.spec.ts`)                                                                 |
+| Reduced motion: no morph, no auto-rotate, snap on buttons                                                 | Pass (`chromium-reduced-motion` project)                                                       |
+| Keyboard only: tab through the hero controls, the header and the form                                     | Pass (existing specs); focus rings are 2 px ink                                                |
+| Form with a mocked endpoint, the spam trap, the "sending is switched off" sentence only without a form ID | Pass (`e2e/contact.spec.ts`, `src/sections/Contact/Contact.test.tsx`, a no-ID container build) |
+| Two-finger twist rolls the house                                                                          | **Needs real device** (Playwright cannot make a two-finger gesture)                            |
+| iOS Safari and Android Chrome address bar showing and hiding without the page jumping (`100svh` layer)    | **Needs real device**                                                                          |
+| Touch flick inertia, trackpad, stepped mouse wheel, 120 Hz smoothness                                     | **Needs real device**                                                                          |
+| Real font rendering and text sharpness on a phone; dark-mode or forced-colours settings                   | **Needs real device**                                                                          |
+| House frame rate on a mid-range phone (laptop measurement: about 3.5 ms a frame at 4x slowdown)           | **Needs real device**                                                                          |

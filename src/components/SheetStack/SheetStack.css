@@ -143,6 +143,15 @@
   .sheet-stage .sheet-column {
     gap: var(--space-5);
   }
+
+  /* A clear gap between text blocks, so the building behind them reads between the blocks */
+  .sheet-stage :is(.services-desc-cell, .process-step-item, .completion-handover-item) {
+    padding-block-end: var(--space-5);
+  }
+
+  .sheet-stage .projects-row-btn {
+    padding-block: var(--space-5);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

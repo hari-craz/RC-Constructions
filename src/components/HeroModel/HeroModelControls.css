@@ -126,6 +126,30 @@
   }
 }
 
+/* Phones (up to 640 px): one row of Turn, Tilt, Reset and Auto-rotate, with "More" under it */
+@media (width <= 640px) {
+  /* One row: Turn, Tilt, Reset, Auto-rotate (takes the room that is left) and More */
+  .hero-model-controls[data-phone='true'] {
+    grid-template-columns: auto auto auto minmax(0, 1fr) auto;
+    gap: var(--space-1);
+  }
+
+  .hero-model-controls[data-phone='true'] > .hero-model-btn {
+    min-width: 44px;
+  }
+
+  .hero-model-more {
+    grid-column: auto;
+  }
+
+  .hero-model-extra {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-1);
+  }
+}
+
 /* Phones and tablets: the model fills the hero behind the text; controls in a strip at the top */
 @media (width < 1024px) {
   .hero-model-widget {

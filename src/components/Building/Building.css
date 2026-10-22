@@ -272,6 +272,15 @@
     display: none;
   }
 
+  /* Under a block of text (see textClear.ts): detail is hidden and structure keeps only its fill */
+  .building-site-window [data-clear='hide'] {
+    visibility: hidden;
+  }
+
+  .building-site-window [data-clear='bare'] {
+    stroke: none;
+  }
+
   /*
    * Windows are lit full amber, and the dimension lines drawn, while Work delivered is read (its
    * blocks sit on plates). In Services and Projects the finished building stays lit, but in a flat

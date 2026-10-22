@@ -86,3 +86,7 @@ body {
 .legal-main p + p {
   margin-top: var(--space-3);
 }
+
+.legal-draft {
+  font-weight: 600;
+}

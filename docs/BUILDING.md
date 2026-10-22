@@ -91,6 +91,13 @@ Controls fade first (`controlsFadeEnd`) and the widget is `inert` once the hero 
 - `e2e/phase-14d.spec.ts` samples the pixels behind every visible text block (text hidden, page screenshot) at 390x844 and 768x1024 from the end of the hero to the end of Projects: body text 4.5:1, large text 3:1.
 - At 1024 px and above (including a tablet in landscape) the desktop layout applies; at 1023 and below the layer applies. `e2e/phase-14d.spec.ts` checks the switch and a portrait to landscape turn.
 
+## 3b. Release candidate changes (Phase 15A)
+
+- **Text over the building (below 1024 px).** `src/components/Building/textClear.ts` measures every line of text in the sheets once (document coordinates, again on resize or font load) and, on each scroll frame, hides building detail that lies under a line (window frames and openings, mullions, lit panes, rails, the stair, set-out strings: `visibility: hidden`) and removes the outline of structure there (`stroke: none`; the ghost fill stays). Both are `data-clear` attributes styled in `Building.css`; nothing is removed or moved. The margin is `MOTION.textClear.marginPx`. Between text blocks the building is drawn whole. The gap between text blocks on phones is wider (`SheetStack.css`). Nothing is cleared at 1024 px and above.
+- **Phone house tone.** The house is drawn at the full tones of the window palette until the dissolve starts. `--hm-dim` (0 to 1, written by `ModelController.applyMix` from the morph) takes every fill and stroke to the ghost during the dissolve (`MOTION.morph.dissolveStart` to `dimEnd`). It is 0 in the hero, so the hero is unchanged, and it goes back exactly on reverse scroll.
+- **Phone control strip.** Up to 640 px: Turn, Tilt, Reset, Auto-rotate and More (`HeroModel.tsx`). More opens Turn left, Tilt down, Roll left and Roll right. Roll is also a two-finger twist. Wider screens keep all eight controls.
+- **No JavaScript.** The static house and the finished building (all windows lit, entrance, name plate; `src/lib/buildingStatic.ts` from the same geometry as the scrolled drawing) are inlined from `index.html` at build time, styled by `StaticBuilding.css`.
+
 ## 4. Motion architecture
 
 - The building mounts after `motionGate()` (first input or an anchor in the URL). `Building.tsx` builds one scrubbed timeline per part, each in its own task (`inOwnTask`), with `scrubPart(key, range, build)`. All three of GSAP, ScrollTrigger and `useGSAP` come from `src/lib/gsap.ts`; there is one `useGSAP` hook.

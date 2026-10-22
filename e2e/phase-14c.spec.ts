@@ -35,6 +35,19 @@ async function stopAuto(page: Page) {
   await page.waitForTimeout(350);
 }
 
+/**
+ * A control button by its name. On phones only Turn, Tilt, Reset and Auto-rotate are shown; the
+ * other directions and roll sit behind "More", which is opened when the button is not there.
+ */
+async function control(page: Page, name: string) {
+  const button = page.getByRole('button', { name, exact: true });
+  if ((await button.count()) === 0) {
+    const more = page.getByRole('button', { name: 'More', exact: true });
+    if ((await more.getAttribute('aria-expanded')) !== 'true') await more.click();
+  }
+  return button;
+}
+
 const isReduced = (testInfo: TestInfo) =>
   testInfo.project.use?.contextOptions?.reducedMotion === 'reduce';
 
@@ -66,7 +79,7 @@ test.describe('Phase 14C: hero 3D house', () => {
       'Roll right',
       'Reset view',
     ]) {
-      const btn = page.getByRole('button', { name });
+      const btn = await control(page, name);
       await expect(btn).toBeVisible();
       const box = await btn.boundingBox();
       expect(box?.height ?? 0, name).toBeGreaterThanOrEqual(44);
@@ -193,7 +206,7 @@ test.describe('Phase 14C: hero 3D house', () => {
     await stopAuto(page);
     const start = await pose(page);
     const press = async (name: string) => {
-      await page.getByRole('button', { name }).click();
+      await (await control(page, name)).click();
       await page.waitForTimeout(450);
       return pose(page);
     };
@@ -230,7 +243,7 @@ test.describe('Phase 14C: hero 3D house', () => {
     await page.waitForTimeout(500);
     expect((await pose(page)).rx).toBeLessThanOrEqual(80.01);
     for (let i = 0; i < 16; i++) {
-      await page.getByRole('button', { name: 'Tilt down' }).click();
+      await (await control(page, 'Tilt down')).click();
       await page.waitForTimeout(60);
     }
     await page.waitForTimeout(500);
@@ -280,28 +293,39 @@ test.describe('Phase 14C: hero 3D house', () => {
     await page.keyboard.press('Shift');
     await page.locator('.hero-model-stage').focus();
     await expect(page.locator('.hero-model-stage')).toBeFocused();
-    const ring = await page.locator('.hero-model-stage').evaluate((el) => {
-      const cs = getComputedStyle(el);
-      return { w: cs.outlineWidth, o: cs.outlineOffset, c: cs.outlineColor, s: cs.outlineStyle };
-    });
-    expect(ring).toEqual({ w: '2px', o: '2px', c: 'rgb(35, 38, 34)', s: 'solid' });
+    // The browser eases the ring in over a frame (even under reduced motion), so wait until the
+    // computed style has settled on its final value instead of reading it at once
+    await expect
+      .poll(() =>
+        page.locator('.hero-model-stage').evaluate((el) => {
+          const cs = getComputedStyle(el);
+          return {
+            w: cs.outlineWidth,
+            o: cs.outlineOffset,
+            c: cs.outlineColor,
+            s: cs.outlineStyle,
+          };
+        }),
+      )
+      .toEqual({ w: '2px', o: '2px', c: 'rgb(35, 38, 34)', s: 'solid' });
     const btn = page.getByRole('button', { name: 'Reset view' });
     await page.keyboard.press('Shift');
     await btn.focus();
     await expect(btn).toBeFocused();
-    // The browser eases the ring in over a frame (even under reduced motion)
-    await page.waitForTimeout(150);
-    const ring2 = await btn.evaluate((el) => {
-      const cs = getComputedStyle(el);
-      return { w: cs.outlineWidth, o: cs.outlineOffset };
-    });
-    expect(ring2).toEqual({ w: '2px', o: '2px' });
+    await expect
+      .poll(() =>
+        btn.evaluate((el) => {
+          const cs = getComputedStyle(el);
+          return { w: cs.outlineWidth, o: cs.outlineOffset };
+        }),
+      )
+      .toEqual({ w: '2px', o: '2px' });
   });
 
   test('the hint is removed (not just hidden) at the first interaction', async ({ page }) => {
     await openHero(page);
     await expect(page.locator('.hero-model-hint')).toHaveCount(1);
-    await page.getByRole('button', { name: 'Turn left' }).click();
+    await (await control(page, 'Turn left')).click();
     await expect(page.locator('.hero-model-hint')).toHaveCount(0);
   });
 
@@ -523,7 +547,7 @@ test.describe('Phase 14C: reduced motion', () => {
     // No ease: the very next read already shows the full step
     const c = await pose(page);
     expect(wrap(c.ry - a.ry)).toBeCloseTo(15, 0);
-    await page.getByRole('button', { name: 'Roll left' }).click();
+    await (await control(page, 'Roll left')).click();
     expect((await pose(page)).rz).toBeCloseTo(15, 0);
     await page.getByRole('button', { name: 'Reset view' }).click();
     const d = await pose(page);

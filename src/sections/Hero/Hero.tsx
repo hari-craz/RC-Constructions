@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Button } from '../../components/Button';
+import '../../components/Building/StaticBuilding.css';
 import '../../components/HeroModel/HeroModel.css';
 import { Sheet } from '../../components/SheetStack';
 import { SITE } from '../../content/site';

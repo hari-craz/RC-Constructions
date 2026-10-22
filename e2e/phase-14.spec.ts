@@ -79,6 +79,8 @@ async function sampleWholePage(page: Page, step: number) {
 test.describe('Phase 14: section order', () => {
   test('sheets appear in the new story order with unchanged ids', async ({ page }) => {
     await page.goto('/');
+    // The sheets are rendered by React: wait for them, not for a timeout
+    await expect(page.locator('.sheet-stack > .sheet')).toHaveCount(ORDER.length);
     const ids = await page
       .locator('.sheet-stack > .sheet')
       .evaluateAll((els) => els.map((e) => e.id));

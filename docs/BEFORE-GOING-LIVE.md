@@ -14,7 +14,7 @@ The site currently shows **sample** contact details. They look real and are not.
 | Address `Survey Plot 104, Industrial Corridor, Chennai` | `contact.address`                                                       |
 | Hours `Monday to Saturday, 08:00 to 18:00 IST`          | `contact.workingHours`                                                  |
 
-The same values reach the page footer area, the Contact section, the no-JavaScript fallback, the privacy and terms pages, the error screen, and `security.txt`. They are no longer published as structured data.
+The Contact section says "Sample contact details for this demo." while `contact.isSample` is `true`; setting it to `false` removes that line. The same values reach the page footer area, the Contact section, the no-JavaScript fallback, the privacy and terms pages, the error screen, and `security.txt`. They are no longer published as structured data.
 
 Also sample: the **six projects** (labelled "Sample projects for this demo" on the page) and the **privacy retention period** (`legal.retentionPeriod`, flagged `retentionIsSample`).
 
@@ -56,3 +56,20 @@ node scripts/check-live.mjs https://<live host>     # headers, canonical consist
 ```
 
 Then run the form test yourself once (section 1, step 4 of `docs/FORM-AND-DOMAIN.md`).
+
+## 5. Phase 15B: the exact list (owner approval needed for every item; none is done)
+
+Phase 15A only prepares the release candidate. Nothing below has been done, and none of it changes the code. The detail for each is in `docs/FORM-AND-DOMAIN.md` and `docs/DEPLOYMENT.md`.
+
+| #   | Item                                       | What to do                                                                                                                                                    | Evidence to keep                               |
+| --- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| 1   | Domain and DNS                             | Choose the final domain; add it in Vercel; set the DNS records Vercel shows; edit `src/config/site.json` and the `vercel.json` CORS origin together; redeploy | `node scripts/check-live.mjs https://<domain>` |
+| 2   | Formspree allowed domain and an owner test | Set `VITE_FORMSPREE_ID` in Vercel (Production) and redeploy; allow exactly the live host in Formspree; the owner sends one test enquiry and deletes it        | The email arrives; the send button is amber    |
+| 3   | SPF, DKIM and DMARC                        | Publish the records the company's mail provider gives for the company domain                                                                                  | A mail-tester or provider "verified" result    |
+| 4   | Branch protection                          | Protect `main`: require the `ci-pass` check and the security checks, no force pushes                                                                          | Repository settings screenshot                 |
+| 5   | Renovate                                   | Install the Renovate GitHub app for the repository (`renovate.json` pins TypeScript and ESLint majors)                                                        | The onboarding pull request appears            |
+| 6   | The `v0.1.0` tag                           | Tag the release commit once items 1 to 5 are done (release-please then manages versions)                                                                      | The tag and the GHCR image                     |
+| 7   | Uptime monitoring                          | Monitor `https://<domain>/healthz` (or `/`) from an external service and alert the owner                                                                      | A monitor and an alert contact                 |
+| 8   | `security.txt` expiry reminder             | `Expires` is set under a year ahead on every build: put a calendar reminder 11 months after the last deploy, and redeploy before it                           | A reminder in the owner's calendar             |
+
+Also before real visitors: sections 0 to 3 above (real contact details, real projects and photos, the adviser's review of `/privacy` and `/terms`).

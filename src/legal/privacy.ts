@@ -18,6 +18,7 @@ export function renderPrivacy(): string {
     ? ` Our address is ${escapeHtml(COMPANY.contact.address)}.`
     : '';
   return `<h1>Privacy notice</h1>
+<p class="legal-draft">Draft, pending legal review.</p>
 <p>This notice explains what happens to the details you send through the enquiry form on this website. It is written to be read, not to impress.</p>
 
 <h2>Who is responsible</h2>
@@ -33,7 +34,7 @@ export function renderPrivacy(): string {
 <p>The form is run by Formspree (Formspree, Inc.), a form service provider. Formspree receives what you submit and forwards it to us by email. Formspree's privacy policy, as last updated on 24 April 2022 when we read it, says it uses personal information in the United States and any other country where it operates, so your details may be handled outside India. Formspree's own policy governs its copy of your details.</p>
 
 <h2>How long we keep it</h2>
-<p>We keep enquiry details for ${retention}.</p>
+<p>We keep enquiry details for ${retention}${COMPANY.legal.retentionIsSample ? ' (a sample period, to be confirmed by the company)' : ''}.</p>
 
 <h2>Cookies and analytics</h2>
 <p>This website does not set cookies. It keeps one small flag in your browser's session storage so the opening line animation plays once per visit; the browser clears it when you close the tab. We use Vercel Web Analytics to count visits. Vercel's documentation says it works without cookies and records visits anonymously, without identifying individual visitors. We do not use advertising cookies or trackers.</p>

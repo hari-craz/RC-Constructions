@@ -1,0 +1,31 @@
+PASS  GET / is 200
+PASS  home is text/html
+PASS  CSP present, no unsafe sources or wildcard
+PASS  framing is blocked
+PASS  HSTS max-age at least one year
+PASS  X-Content-Type-Options: nosniff
+PASS  Referrer-Policy present
+PASS  Permissions-Policy present
+PASS  no wildcard Access-Control-Allow-Origin
+PASS  home page is not cached as immutable
+PASS  hashed asset is 200
+PASS  hashed asset is cached as immutable
+PASS  no wildcard CORS on assets
+PASS  canonical link matches the live origin
+PASS  og:url matches the live origin
+PASS  JSON-LD url matches the live origin
+PASS  src/config/site.json matches the checked origin
+PASS  robots.txt points at this origin sitemap
+PASS  sitemap.xml lists only this origin
+PASS  security.txt is 200
+PASS  security.txt is text/plain
+PASS  security.txt has Contact
+PASS  security.txt Expires is 30 to 365 days ahead
+PASS  security.txt Canonical matches
+PASS  /privacy is 200 with a heading
+PASS  /terms is 200 with a heading
+PASS  unknown path is 404
+PASS  desktop: clean console, no failed or non-2xx request, no broken image
+PASS  mobile: clean console, no failed or non-2xx request, no broken image
+
+All checks passed.

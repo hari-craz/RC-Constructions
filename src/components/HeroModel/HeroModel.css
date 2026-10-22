@@ -178,24 +178,76 @@
 }
 
 /*
- * Phones and tablets: the house is the background of the whole page, so it is drawn quietly.
- * Edges are steel hairlines and the amber dimension marks are left out. At mix 1 every fill and
- * every stroke is dark enough that limewash text keeps 4.5:1 over any pixel of it.
+ * Phones and tablets: the house is the background of the whole page. It keeps the full tones of the
+ * window palette (desktop) until it begins to dissolve; --hm-dim (0 to 1, set by the controller
+ * from the dissolve) then takes every fill and stroke to a quiet ghost, dark enough that limewash
+ * text read over it keeps 4.5:1 over any pixel. The amber dimension marks are left out.
  */
 @media (width < 1024px) {
   .hm-svg {
+    --hm-dim: 0;
     --hm-edge-light: var(--color-steel);
-    --hm-edge-dark: color-mix(in srgb, var(--color-steel) 58%, var(--color-formwork-dark));
+    --hm-edge-dark: color-mix(
+      in srgb,
+      color-mix(in srgb, var(--color-steel) 58%, var(--color-formwork-dark))
+        calc(var(--hm-dim) * 100%),
+      var(--color-steel)
+    );
     --hm-hair-dark: var(--hm-edge-dark);
-    --hm-w0: color-mix(in srgb, var(--color-steel) 28%, var(--color-surface-raised));
-    --hm-w1: color-mix(in srgb, var(--color-steel) 22%, var(--color-surface-raised));
-    --hm-w2: color-mix(in srgb, var(--color-steel) 16%, var(--color-surface-raised));
-    --hm-r0: color-mix(in srgb, var(--color-steel) 34%, var(--color-surface-raised));
-    --hm-r1: color-mix(in srgb, var(--color-steel) 28%, var(--color-surface-raised));
-    --hm-r2: color-mix(in srgb, var(--color-steel) 22%, var(--color-surface-raised));
-    --hm-k0: color-mix(in srgb, var(--color-steel) 40%, var(--color-surface-raised));
-    --hm-k1: color-mix(in srgb, var(--color-steel) 34%, var(--color-surface-raised));
-    --hm-k2: color-mix(in srgb, var(--color-steel) 28%, var(--color-surface-raised));
+    --hm-w0: color-mix(
+      in srgb,
+      color-mix(in srgb, var(--color-steel) 28%, var(--color-surface-raised))
+        calc(var(--hm-dim) * 100%),
+      var(--hm-s2)
+    );
+    --hm-w1: color-mix(
+      in srgb,
+      color-mix(in srgb, var(--color-steel) 22%, var(--color-surface-raised))
+        calc(var(--hm-dim) * 100%),
+      var(--hm-s3)
+    );
+    --hm-w2: color-mix(
+      in srgb,
+      color-mix(in srgb, var(--color-steel) 16%, var(--color-surface-raised))
+        calc(var(--hm-dim) * 100%),
+      var(--hm-s4)
+    );
+    --hm-r0: color-mix(
+      in srgb,
+      color-mix(in srgb, var(--color-steel) 34%, var(--color-surface-raised))
+        calc(var(--hm-dim) * 100%),
+      var(--hm-s4)
+    );
+    --hm-r1: color-mix(
+      in srgb,
+      color-mix(in srgb, var(--color-steel) 28%, var(--color-surface-raised))
+        calc(var(--hm-dim) * 100%),
+      var(--hm-s5)
+    );
+    --hm-r2: color-mix(
+      in srgb,
+      color-mix(in srgb, var(--color-steel) 22%, var(--color-surface-raised))
+        calc(var(--hm-dim) * 100%),
+      var(--color-steel)
+    );
+    --hm-k0: color-mix(
+      in srgb,
+      color-mix(in srgb, var(--color-steel) 40%, var(--color-surface-raised))
+        calc(var(--hm-dim) * 100%),
+      var(--hm-s3)
+    );
+    --hm-k1: color-mix(
+      in srgb,
+      color-mix(in srgb, var(--color-steel) 34%, var(--color-surface-raised))
+        calc(var(--hm-dim) * 100%),
+      var(--hm-s4)
+    );
+    --hm-k2: color-mix(
+      in srgb,
+      color-mix(in srgb, var(--color-steel) 28%, var(--color-surface-raised))
+        calc(var(--hm-dim) * 100%),
+      var(--hm-s5)
+    );
   }
 
   .hm-glass,

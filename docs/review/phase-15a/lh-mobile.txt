@@ -1,0 +1,1 @@
+{"preset":"mobile","runs":5,"performance":98,"accessibility":100,"bestPractices":100,"seo":100,"fcpMs":1357,"lcpMs":2256,"tbtMs":0,"cls":0,"allPerformance":[97,98,98,99,99]}

@@ -135,6 +135,7 @@ export class ModelController {
   private narrow = window.matchMedia(NARROW_QUERY).matches;
   private host: 'hero' | 'layer' = 'hero';
   private mixNow = -1;
+  private dimNow = -1;
   private groundOpacity = '';
   private plinthOpacity = '';
   private idMode = false;
@@ -486,10 +487,18 @@ export class ModelController {
   /** Palette mix (0 on the limewash hero, 1 on the dark window), written only when it changes. */
   private applyMix(m: number) {
     const mix = Math.round(morphRamp(m, MO.recolourStart, MO.recolourEnd) * 50) / 50;
-    if (mix === this.mixNow) return;
-    this.mixNow = mix;
-    this.el.heroSvg.style.setProperty('--hm-mix', String(mix));
-    this.el.layerSvg?.style.setProperty('--hm-mix', String(mix));
+    if (mix !== this.mixNow) {
+      this.mixNow = mix;
+      this.el.heroSvg.style.setProperty('--hm-mix', String(mix));
+      this.el.layerSvg?.style.setProperty('--hm-mix', String(mix));
+    }
+    // Below 1024 px the house is drawn at full tone until it begins to dissolve, then it is dimmed
+    const dim = Math.round(morphRamp(m, MO.dissolveStart, MO.dimEnd) * 50) / 50;
+    if (dim !== this.dimNow) {
+      this.dimNow = dim;
+      this.el.heroSvg.style.setProperty('--hm-dim', String(dim));
+      this.el.layerSvg?.style.setProperty('--hm-dim', String(dim));
+    }
   }
 
   private render() {

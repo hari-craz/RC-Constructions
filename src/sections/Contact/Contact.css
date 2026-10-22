@@ -94,6 +94,14 @@
   min-height: 48px;
 }
 
+/* One quiet line saying the details above are samples (shown while contact.isSample is true) */
+.contact-sample-note {
+  margin: var(--space-3) 0 0;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--color-formwork-dark);
+}
+
 a.contact-channel-value:hover {
   text-decoration: underline;
 }

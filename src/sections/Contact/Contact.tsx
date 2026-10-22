@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type ChangeEvent, type FormEvent } from 'react';
 import { Sheet } from '../../components/SheetStack';
+import { COMPANY } from '../../content/company';
 import { CONTACT_CONFIG, CONTACT_CONTENT } from '../../content/contact';
 import { SERVICES_CONTENT } from '../../content/services';
 import { useScroll } from '../../hooks/useScroll';
@@ -199,6 +200,9 @@ export function Contact() {
                 </li>
               ))}
             </ul>
+            {COMPANY.contact.isSample && (
+              <p className="contact-sample-note">Sample contact details for this demo.</p>
+            )}
           </div>
 
           {/* Right Column: Enquiry Form & States */}

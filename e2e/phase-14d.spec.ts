@@ -57,6 +57,17 @@ async function walkTo(page: Page, target: number) {
     await page.waitForTimeout(12);
   }
   await scrollTo(page, target);
+  // Wait on real signals, not a timeout: the published morph value has caught up with the scroll
+  // position, and two frames have been drawn since (the house is redrawn from the morph)
+  await page.waitForFunction((y) => {
+    const hero = document.getElementById('hero')?.offsetHeight ?? 0;
+    const vh = window.innerHeight;
+    const m = Math.max(0, Math.min(1, (y - (hero - vh)) / vh));
+    return Math.abs(Number(document.documentElement.dataset.morphProgress) - m) < 0.01;
+  }, target);
+  await page.evaluate(
+    () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+  );
   await page.waitForTimeout(260);
 }
 
@@ -649,6 +660,9 @@ test.describe('Phase 14D, part C: the full-bleed background below 1024 px', () =
     page.on('console', (m) => {
       if (browserName === 'webkit' && /preloaded using link preload but not used/.test(m.text()))
         return;
+      // Firefox's advisory about scroll-linked effects is about the design (a scrubbed building
+      // and smooth scroll), not an error in our code, and it appears only at times
+      if (browserName === 'firefox' && /scroll-linked positioning effect/.test(m.text())) return;
       if (m.type() === 'error' || m.type() === 'warning') errors.push(m.text());
     });
     for (const vp of [

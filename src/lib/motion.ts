@@ -105,6 +105,8 @@ export const MOTION = {
     /** The house dissolves top first: roof, upper storey, ground storey, porch. */
     dissolveStart: 0.5,
     dissolveEnd: 0.92,
+    /** Below 1024 px the house is dimmed (to a ghost that text can be read over) across this stretch of the dissolve. */
+    dimEnd: 0.6,
     /** The ground hairlines fade out by this share. */
     groundFadeEnd: 0.4,
     /** The controls and hint (low in the hero) go first. */
@@ -118,6 +120,11 @@ export const MOTION = {
     plinthFadeViewport: 0.2,
     /** The house stops turning by itself once the morph has begun. */
     autoStopShare: 0.005,
+  },
+  /** Below 1024 px, building detail (hairlines, window frames, lit panes) under a block of text is hidden. */
+  textClear: {
+    /** How far around each line of text the detail is cleared. */
+    marginPx: 6,
   },
   /** Below 1024 px the building is a fixed full-screen layer; text is read in the upper part of it. */
   stageLayer: {

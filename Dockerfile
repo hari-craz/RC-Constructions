@@ -24,7 +24,7 @@ ENV VITE_FORMSPREE_ID=${VITE_FORMSPREE_ID}
 RUN pnpm build
 
 # Stage 3: Runtime
-FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
+FROM nginxinc/nginx-unprivileged:1.30-alpine AS runtime
 
 LABEL org.opencontainers.image.title="RC Constructions" \
       org.opencontainers.image.description="Single-page scroll-driven architectural construction portfolio" \

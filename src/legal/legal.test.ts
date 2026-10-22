@@ -13,6 +13,13 @@ describe('privacy notice', () => {
     expect(termsSource).toContain('REVIEW BY COMPANY ADVISER');
   });
 
+  it('says it is a draft pending legal review, and flags the sample retention period', () => {
+    for (const page of [renderPrivacy(), renderTerms()]) {
+      expect(page).toContain('Draft, pending legal review.');
+    }
+    expect(html).toContain('a sample period, to be confirmed by the company');
+  });
+
   it('covers who, what, why, who else, how long, cookies, choices and complaints', () => {
     for (const heading of [
       'Who is responsible',

@@ -49,6 +49,7 @@ import {
   wallBounds,
 } from './geometry';
 import { centreScroll, sheetEndScroll, sheetTop } from './stageSync';
+import { startTextClear } from './textClear';
 import './Building.css';
 
 export interface BuildingProps {
@@ -128,6 +129,12 @@ export function Building({ className = '' }: BuildingProps) {
       cancelled = true;
     };
   }, []);
+
+  // Below 1024 px, hairlines and lit panes under a block of text are hidden (by region)
+  useEffect(() => {
+    if (!mounted || !containerRef.current) return;
+    return startTextClear(containerRef.current);
+  }, [mounted]);
 
   // Reduced motion: no scrubbing. The building shows the state for the section (or process step)
   // in view and swaps it without animation.

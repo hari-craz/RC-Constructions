@@ -73,3 +73,20 @@ Mobile median of five: performance 98, LCP 2157 ms, TBT 64 ms, CLS 0 (Phase 14B:
 Mobile median of five: performance 99, LCP 2117 ms, TBT 4 ms, CLS 0 (Phase 14C build measured the same way on the same machine: 99, 2117 ms, 5 ms, 0). Desktop median of five: 100 (LCP 488 ms against 489 ms). The LCP element is still the hero headline. `pnpm size`: 138.08 kB brotlied (133.72 kB before; limit 180 kB). The house is still its own lazy chunk (29.8 kB, 11 kB gzipped, was 19 kB), requested after first paint and idle; the morph clock (`src/lib/morph.ts`) and the stage layer are in the main chunk (under 1 kB).
 
 Update cost of the house (maths plus DOM writes, `data-frame-ms`) at a 4x CPU slowdown while it auto-rotates, median of eight one-second samples on a quiet machine: 3.5 ms at 1440x900, 3.4 ms at 390x844, 3.4 ms at 768x1024 (peaks up to 4.6 ms); the Phase 14C house cost about 1.8 ms the same way. Unthrottled it is 0.6 to 1 ms. It got there by formatting a vertex only when a visible face uses it, caching each path's class, opacity and `d`, dropping `vector-effect` (strokes are sized in CSS pixels instead), and setting the gizmo's fixed attributes once. Auto-rotate redraws at most 30 times a second.
+
+## Phase 15A: release candidate (production build, median of five)
+
+Measured on `vite preview` of the release-candidate build, mobile defaults (simulated Slow 4G, 4x CPU) and the desktop preset, Chrome headless, `node scripts/lh-median.mjs <preset> 5`. Raw output: `docs/review/phase-15a/lh-mobile.txt` and `lh-desktop.txt`.
+
+| Metric         | Mobile | Desktop | Target                      |
+| -------------- | ------ | ------- | --------------------------- |
+| Performance    | 98     | 100     | mobile >= 95, desktop >= 98 |
+| Accessibility  | 100    | 100     | 100                         |
+| Best practices | 100    | 100     | 100                         |
+| SEO            | 100    | 100     | 100                         |
+| FCP            | 1.36 s | 0.33 s  |                             |
+| LCP            | 2.26 s | 0.49 s  | <= 2.5 s                    |
+| TBT            | 0 ms   | 0 ms    | <= 200 ms                   |
+| CLS            | 0      | 0       | <= 0.01                     |
+
+The five mobile runs scored 97, 98, 98, 99 and 99. Earlier the same day (before the last test-only changes) the median of five was 99 with LCP 2.10 s; the spread between runs on this machine is about two points and 150 ms of LCP. The JavaScript budget (`pnpm size`, brotli, all chunks including the lazy house chunk) is 145.47 kB against 180 kB. The new no-JavaScript building is inlined in `index.html` (about 4.6 kB before compression), outside the JavaScript budget.

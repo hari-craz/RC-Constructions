@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import indexHtml from '../../index.html?raw';
 import privacyHtml from '../../privacy.html?raw';
 import termsHtml from '../../terms.html?raw';
+import { staticBuildingSvg } from '../lib/buildingStatic';
 import { staticHouseSvg } from '../lib/model3d/staticSvg';
 import { fillPlaceholders } from '../lib/siteFiles';
 import { COMPANY, SITE_URL } from './company';
@@ -15,6 +16,7 @@ const values = {
   LEGAL_TITLE: 'Title',
   YEAR: '2026',
   HERO_MODEL_SVG: staticHouseSvg(),
+  BUILDING_SVG: staticBuildingSvg(COMPANY.name),
 };
 const html = fillPlaceholders(indexHtml, values);
 

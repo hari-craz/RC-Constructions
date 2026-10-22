@@ -14,14 +14,45 @@ interface StepButton {
   direction: 1 | -1;
 }
 
+const TURN_LEFT: StepButton = { label: 'Turn left', axis: 'turn', direction: -1 };
+const TURN_RIGHT: StepButton = { label: 'Turn right', axis: 'turn', direction: 1 };
+const TILT_UP: StepButton = { label: 'Tilt up', axis: 'tilt', direction: 1 };
+const TILT_DOWN: StepButton = { label: 'Tilt down', axis: 'tilt', direction: -1 };
+const ROLL_LEFT: StepButton = { label: 'Roll left', axis: 'roll', direction: 1 };
+const ROLL_RIGHT: StepButton = { label: 'Roll right', axis: 'roll', direction: -1 };
+
+/** Wider screens: every step has its own button. */
 const STEP_BUTTONS: readonly StepButton[] = [
-  { label: 'Turn left', axis: 'turn', direction: -1 },
-  { label: 'Turn right', axis: 'turn', direction: 1 },
-  { label: 'Tilt up', axis: 'tilt', direction: 1 },
-  { label: 'Tilt down', axis: 'tilt', direction: -1 },
-  { label: 'Roll left', axis: 'roll', direction: 1 },
-  { label: 'Roll right', axis: 'roll', direction: -1 },
+  TURN_LEFT,
+  TURN_RIGHT,
+  TILT_UP,
+  TILT_DOWN,
+  ROLL_LEFT,
+  ROLL_RIGHT,
 ];
+
+/**
+ * Phones: Turn, Tilt, Reset and Auto-rotate only. The short label is what is seen; the full name
+ * (which contains it) is what a screen reader hears. The other directions and roll sit behind
+ * "More"; roll is also a two-finger twist on the model.
+ */
+const PHONE_BUTTONS: readonly (StepButton & { short: string })[] = [
+  { ...TURN_RIGHT, short: 'Turn' },
+  { ...TILT_UP, short: 'Tilt' },
+];
+const PHONE_MORE: readonly StepButton[] = [TURN_LEFT, TILT_DOWN, ROLL_LEFT, ROLL_RIGHT];
+const PHONE_QUERY = '(width <= 640px)';
+
+function usePhone(): boolean {
+  const [phone, setPhone] = useState(() => window.matchMedia(PHONE_QUERY).matches);
+  useEffect(() => {
+    const mql = window.matchMedia(PHONE_QUERY);
+    const on = () => setPhone(mql.matches);
+    mql.addEventListener('change', on);
+    return () => mql.removeEventListener('change', on);
+  }, []);
+  return phone;
+}
 
 /**
  * The hero house: an interactive 3D model drawn with our own projection into one inline SVG.
@@ -39,6 +70,8 @@ export default function HeroModel({ reducedMotion }: HeroModelProps) {
   const controller = useRef<ModelController | null>(null);
   const [hint, setHint] = useState(true);
   const [autoOn, setAutoOn] = useState(true);
+  const phone = usePhone();
+  const [more, setMore] = useState(false);
 
   // The hint goes away for good on the first interaction (or after a few seconds)
   const dismissHint = useCallback(() => setHint(false), []);
@@ -109,8 +142,9 @@ export default function HeroModel({ reducedMotion }: HeroModelProps) {
         >
           <g ref={sceneRef}>
             <path ref={groundRef} className="hm-ground" />
-            <g ref={dimsRef} />
             <g ref={facesRef} />
+            {/* Dimensions are drawn over the house, so a label is never hidden behind a roof */}
+            <g ref={dimsRef} />
           </g>
         </svg>
         <svg
@@ -125,23 +159,41 @@ export default function HeroModel({ reducedMotion }: HeroModelProps) {
 
       {hint && <p className="hero-model-hint">Drag to turn the house</p>}
 
-      <div className="hero-model-controls" role="group" aria-label="House view controls">
-        {STEP_BUTTONS.map((b) => (
-          <button
-            key={b.label}
-            type="button"
-            className="hero-model-btn"
-            onClick={() => controller.current?.step(b.axis, b.direction)}
-          >
-            {b.label}
-          </button>
-        ))}
+      <div
+        className="hero-model-controls"
+        role="group"
+        aria-label="House view controls"
+        data-phone={phone ? 'true' : undefined}
+      >
+        {phone
+          ? PHONE_BUTTONS.map((b) => (
+              <button
+                key={b.label}
+                type="button"
+                className="hero-model-btn"
+                aria-label={b.label}
+                onClick={() => controller.current?.step(b.axis, b.direction)}
+              >
+                {b.short}
+              </button>
+            ))
+          : STEP_BUTTONS.map((b) => (
+              <button
+                key={b.label}
+                type="button"
+                className="hero-model-btn"
+                onClick={() => controller.current?.step(b.axis, b.direction)}
+              >
+                {b.label}
+              </button>
+            ))}
         <button
           type="button"
           className="hero-model-btn"
+          aria-label="Reset view"
           onClick={() => controller.current?.reset()}
         >
-          Reset view
+          {phone ? 'Reset' : 'Reset view'}
         </button>
         <button
           type="button"
@@ -155,6 +207,31 @@ export default function HeroModel({ reducedMotion }: HeroModelProps) {
         >
           Auto-rotate
         </button>
+        {phone && (
+          <button
+            type="button"
+            className="hero-model-btn hero-model-more"
+            aria-expanded={more}
+            aria-controls="hero-model-more"
+            onClick={() => setMore((v) => !v)}
+          >
+            More
+          </button>
+        )}
+        {phone && more && (
+          <div id="hero-model-more" className="hero-model-extra" role="group" aria-label="More">
+            {PHONE_MORE.map((b) => (
+              <button
+                key={b.label}
+                type="button"
+                className="hero-model-btn"
+                onClick={() => controller.current?.step(b.axis, b.direction)}
+              >
+                {b.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

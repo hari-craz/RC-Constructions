@@ -1,0 +1,67 @@
+/*
+ * The no-JavaScript fallback building (index.html <noscript>): the finished drawing, flat and
+ * still, on the site's formwork surface. Same palette and line weights as the scrolled drawing.
+ */
+.static-building {
+  width: min(100%, 52rem);
+  margin: var(--space-6) auto;
+  padding: var(--space-4);
+  background-color: var(--color-formwork-dark);
+}
+
+.sb-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+}
+
+.sb-soil {
+  fill: var(--color-surface-raised);
+}
+
+.sb-wall {
+  fill: var(--color-limewash);
+  stroke: var(--color-steel);
+  stroke-width: 1px;
+}
+
+.sb-mass {
+  fill: var(--color-concrete);
+  stroke: var(--color-steel);
+  stroke-width: 2px;
+}
+
+.sb-open {
+  fill: var(--color-formwork-dark);
+  stroke: var(--color-steel);
+  stroke-width: 1.5px;
+}
+
+.sb-lit {
+  fill: var(--color-accent);
+}
+
+.sb-line {
+  fill: none;
+  stroke: var(--color-formwork-dark);
+  stroke-width: 1.5px;
+}
+
+.sb-plate {
+  fill: var(--color-formwork-dark);
+  stroke: var(--color-limewash);
+  stroke-width: 1px;
+}
+
+.sb-plate-text {
+  font-family: var(--font-body);
+  font-size: 11px;
+  fill: var(--color-limewash);
+}
+
+.sb-ground {
+  fill: none;
+  stroke: var(--color-limewash);
+  stroke-width: 3px;
+}

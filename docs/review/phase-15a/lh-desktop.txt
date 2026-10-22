@@ -1,0 +1,1 @@
+{"preset":"desktop","runs":5,"performance":100,"accessibility":100,"bestPractices":100,"seo":100,"fcpMs":329,"lcpMs":489,"tbtMs":0,"cls":0,"allPerformance":[100,100,100,100,100]}

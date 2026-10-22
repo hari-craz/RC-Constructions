@@ -15,6 +15,7 @@ export function renderTerms(): string {
     ? `\n<h2>Governing law</h2>\n<p>These terms are governed by ${escapeHtml(COMPANY.legal.governingLaw)}.</p>`
     : '';
   return `<h1>Terms of use</h1>
+<p class="legal-draft">Draft, pending legal review.</p>
 <p>These terms apply to your use of this website. By using it you accept them.</p>
 
 <h2>Information on this site</h2>

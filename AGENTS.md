@@ -19,6 +19,10 @@ Section order, the stage map and the sync rules live in `docs/BUILDING.md` secti
 
 The hero 3D house is our own projection code (`src/lib/model3d/`) in a lazy chunk (`src/components/HeroModel/`); never add a 3D or animation library. It must stay at the front elevation at the end of the hero scroll, keep ink text at 4.5:1 over every fill when it is the hero background (below 1024 px), keep the morph (`src/lib/morph.ts`) a pure function of the scroll so it reverses exactly, keep the muted background (below 1024 px) at 4.5:1 for text, draw the house from its BSP (`pnpm model:bsp`; see `docs/BUILDING.md` section 6) and never by sorting faces by depth, keep its orientation a quaternion with the tilt limit on elevation, keep 44 px control targets and 2 px ink focus rings, and snap (no easing) under reduced motion.
 
+## Release Candidate Law (Phase 15A)
+
+Sample content must be marked on the page (contact details, projects, retention period, "Draft, pending legal review." on the legal pages) and listed in `docs/CONTENT-STATUS.md`; run `node scripts/check-links.mjs` before a release (no dead links, and `mailto:`, `tel:` and WhatsApp links must match `company.ts`). No-JS shows the static house and the finished building (`%HERO_MODEL_SVG%`, `%BUILDING_SVG%` in `index.html`). Below 1024 px text over the building clears its hairlines by region (`src/components/Building/textClear.ts`) and the house dims only while it dissolves; phones show Turn, Tilt, Reset and Auto-rotate with the rest behind "More". Deploy, DNS, GitHub and Vercel settings belong to Phase 15B and need the owner's approval.
+
 ## The Three Rules That Matter Most
 
 1. **Never Start Unrequested Phases**: Only implement the current, explicitly requested phase. Do not build forward into upcoming milestones.
