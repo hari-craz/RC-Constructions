@@ -1,6 +1,7 @@
 import { MOTION } from '../motion';
-import { DISSOLVE_CLASSES, HOUSE, type FaceKind, type HouseModel } from './house';
-import { apply, pose as poseMatrix, project, sub, type Camera, type Vec3 } from './math';
+import type { FaceKind } from './house';
+import { DETAIL_STRIDE, DISSOLVE_CLASSES, HOUSE, ITEM_STRIDE, type BspModel } from './houseModel';
+import { apply, pose as poseMatrix, project, sub, type Camera, type Mat3, type Vec3 } from './math';
 
 export interface Pose {
   rx: number;
@@ -8,11 +9,41 @@ export interface Pose {
   rz: number;
 }
 
-export interface FrameFace {
+/** The kinds in the order the shipped model numbers them (checked by the model test). */
+const KINDS: readonly FaceKind[] = [
+  'wall',
+  'roof',
+  'trim',
+  'stone',
+  'glass',
+  'door',
+  'line',
+  'muntin',
+  'slab',
+];
+
+/**
+ * Appearance classes: a kind, a flat tone (0 lit, 1 side, 2 shaded) and how it is drawn. A face with
+ * only real edges is one path (fill and edge); a piece with a seam (a cut made by the BSP) is a fill
+ * whose stroke is its own colour, so no crack shows, followed by a stroke-only path of its real edges.
+ */
+const FACE_MOD = { solid: 0, seam: 1, open: 2 } as const;
+export const FACE_CLASSES: readonly string[] = KINDS.flatMap((k) =>
+  [0, 1, 2].flatMap((tone) => {
+    const base = `hm-face hm-${k}${tone ? ` hm-t${tone}` : ''}`;
+    return [base, `${base} hm-seam`, `${base} hm-open`];
+  }),
+);
+const classOf = (kind: number, tone: number, mod: number) => (kind * 3 + tone) * 3 + mod;
+/** The kind of an appearance class. */
+export const kindOfClass = (cls: number): FaceKind => KINDS[Math.floor(cls / 9)] as FaceKind;
+/** How an appearance class is drawn (see FACE_MOD). */
+export const modOfClass = (cls: number): number => cls % 3;
+
+interface FrameFace {
   d: string;
-  kind: FaceKind;
-  /** Flat tone 0 (lit), 1 or 2 (shaded) by the way the face points. */
-  tone: 0 | 1 | 2;
+  /** Index into FACE_CLASSES. */
+  cls: number;
   /** Opacity of the face while the house dissolves (1 = whole). */
   opacity: number;
 }
@@ -28,11 +59,11 @@ interface FrameDimension {
 }
 
 export interface Frame {
-  /** Visible faces, farthest first. */
+  /** Paths in paint order (farthest first); neighbours of one class that cannot overlap are joined. */
   faces: FrameFace[];
   ground: string;
   dimensions: FrameDimension[];
-  /** Screen y of the ground plane under the middle of the house (the clip line while it sinks). */
+  /** Screen y of the ground plane under the middle of the house. */
   groundY: number;
 }
 
@@ -55,13 +86,23 @@ export interface FrameOptions {
   unitsPerPx?: number;
   /** Override the fitted scale (drawing units per metre), used when the house lands on the window. */
   scale?: number;
+  /**
+   * Path coordinates are whole numbers of 1/quantum drawing units (default 1): integers are far
+   * cheaper to format and to parse than decimals. The group that holds the faces is scaled by
+   * 1 / quantum, and stroke widths in the face CSS are multiplied by quantum.
+   */
+  quantum?: number;
 }
 
+/** The eye never comes closer to the model centre than this many bounding radii. */
+const MIN_EYE_RADII = 1.5;
+
 /** Pixels per model unit that keeps the whole bounding sphere inside the drawing at any rotation. */
-export function fitScale(model: HouseModel, opts: FrameOptions): number {
+export function fitScale(model: BspModel, opts: FrameOptions): number {
   if (opts.scale !== undefined) return opts.scale;
-  const fill = opts.fill ?? 1.08;
-  const nearest = 1 / (1 - model.radius * opts.invDistance);
+  const fill = opts.fill ?? 1;
+  const nearest =
+    1 / (1 - model.radius * Math.min(opts.invDistance, 1 / (MIN_EYE_RADII * model.radius)));
   return (opts.halfSize * fill) / (model.radius * nearest);
 }
 
@@ -72,7 +113,7 @@ export function fitScale(model: HouseModel, opts: FrameOptions): number {
  */
 export function landing(
   target: { x0: number; x1: number; groundY: number },
-  model: HouseModel = HOUSE,
+  model: BspModel = HOUSE,
 ): { scale: number; cx: number; cy: number } {
   const scale = (target.x1 - target.x0) / (model.footprint.x1 - model.footprint.x0);
   const footCentre = (model.footprint.x0 + model.footprint.x1) / 2;
@@ -83,11 +124,6 @@ export function landing(
   };
 }
 
-const num = (n: number) => n.toFixed(1);
-
-const pathOf = (pts: { x: number; y: number }[], close = true) =>
-  `M${pts.map((p) => `${num(p.x)} ${num(p.y)}`).join('L')}${close ? 'Z' : ''}`;
-
 const smooth = (t: number) => t * t * (3 - 2 * t);
 
 /** Progress (0 to 1) of one dissolve class for an overall dissolve value. */
@@ -97,18 +133,93 @@ function dissolveClassProgress(dissolve: number, cls: number): number {
   return Math.max(0, Math.min(1, (dissolve - w[0]) / (w[1] - w[0])));
 }
 
+const matrixOf = (o: Pose | Mat3): Mat3 => ('rx' in o ? poseMatrix(o.rx, o.ry, o.rz) : o);
+
+/** The eye's position in model space (far away along the view axis when orthographic). */
+function eyeOf(m: Mat3, model: BspModel, inv: number): [number, number, number] {
+  const e = inv > 0 ? 1 / inv : 1e6;
+  return [
+    model.centre[0] + (m[6] ?? 0) * e,
+    model.centre[1] + (m[7] ?? 0) * e,
+    model.centre[2] + (m[8] ?? 0) * e,
+  ];
+}
+
 /**
- * Rotate, project, cull and sort the house for one pose. Solids are sorted back to front by their
- * mean depth (with a small bias for parts that sit on others); faces inside a solid keep their
- * order, so windows and doors are painted after the wall they lie on.
- *
- * This runs every animation frame, so it works on flat number arrays, builds each path string once
- * and formats a vertex only when a visible face uses it.
+ * Walk the BSP from the eye, calling `visit` for each node's coplanar items, farthest first. An item
+ * is passed only if it faces the eye (back faces are culled by the side of the plane the eye is on).
  */
-export function buildFrame(pose: Pose, opts: FrameOptions, model: HouseModel = HOUSE): Frame {
-  const m = poseMatrix(pose.rx, pose.ry, pose.rz);
+function walk(
+  model: BspModel,
+  eye: readonly [number, number, number],
+  visit: (item: number, node: number) => void,
+) {
+  const { nodes, nodePlane, itemSign } = model;
+  const go = (n: number) => {
+    if (n < 0) return;
+    const p = n * 4;
+    const side =
+      (nodePlane[p] as number) * eye[0] +
+      (nodePlane[p + 1] as number) * eye[1] +
+      (nodePlane[p + 2] as number) * eye[2] -
+      (nodePlane[p + 3] as number);
+    const sign = side > 0 ? 1 : -1;
+    go(nodes[p + (side > 0 ? 3 : 2)] as number);
+    const first = nodes[p] as number;
+    const count = nodes[p + 1] as number;
+    for (let k = 0; k < count; k++) {
+      if ((itemSign[first + k] as number) * sign > 0) visit(first + k, n);
+    }
+    go(nodes[p + (side > 0 ? 2 : 3)] as number);
+  };
+  go(0);
+}
+
+interface Run {
+  cls: number;
+  opacity: number;
+  d: string;
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+}
+
+/** How many runs back a new path may look for one of its class to join. */
+const LOOK_BACK = 24;
+/** Stroke allowance when testing whether two paths could overlap. */
+const MARGIN = 2.5;
+
+/**
+ * Per-frame scratch: projected vertices and their formatted text, filled on first use so only
+ * vertices of visible pieces are formatted.
+ */
+const scratch = {
+  stamp: new Int32Array(0),
+  sx: new Float64Array(0),
+  sy: new Float64Array(0),
+  text: [] as string[],
+  frame: 0,
+};
+
+/**
+ * Rotate, order, cull and project the house for one orientation. The order comes from the model's
+ * BSP walked from the eye, so it is correct at every angle; each piece is followed at once by its own
+ * detail (clipped to it), so detail can never show through a nearer face. Paths are joined into as
+ * few runs as the order allows: a path may join an earlier run of its class only if it cannot overlap
+ * anything painted since (compared by bounding box).
+ *
+ * This runs every animation frame, so it works on flat number arrays and formats a vertex only when
+ * a visible piece uses it.
+ */
+export function buildFrame(
+  orientation: Pose | Mat3,
+  opts: FrameOptions,
+  model: BspModel = HOUSE,
+): Frame {
+  const m = matrixOf(orientation);
   const scale = fitScale(model, opts);
-  const inv = opts.invDistance;
+  const inv = Math.min(opts.invDistance, 1 / (MIN_EYE_RADII * model.radius));
   const eyeZ = inv > 0 ? 1 / inv : 1;
   const [cxm, cym, czm] = model.centre;
   const m0 = m[0] ?? 0,
@@ -120,20 +231,22 @@ export function buildFrame(pose: Pose, opts: FrameOptions, model: HouseModel = H
     m6 = m[6] ?? 0,
     m7 = m[7] ?? 0,
     m8 = m[8] ?? 0;
+  void eyeZ;
 
   // How far each solid has been raised (a smoothstep over its build window), and how far it has
   // dissolved (opacity and a small settle downward)
-  const groups = model.groupBias.length;
+  const groups = model.groups;
   const build = opts.build ?? 1;
   const dissolve = opts.dissolve ?? 0;
   const drawLines = opts.lines ?? true;
+  const Q = opts.quantum ?? 1;
   const pxScale = scale / (opts.unitsPerPx ?? 1);
   const groupK = new Float64Array(groups);
   const groupOpacity = new Float64Array(groups);
   const groupDrop = new Float64Array(groups);
   for (let g = 0; g < groups; g++) {
-    const w = model.groupBuild[g] as { start: number; end: number };
-    const t = build >= 1 ? 1 : Math.max(0, Math.min(1, (build - w.start) / (w.end - w.start)));
+    const w = model.groupBuild[g] as readonly [number, number];
+    const t = build >= 1 ? 1 : Math.max(0, Math.min(1, (build - w[0]) / (w[1] - w[0])));
     groupK[g] = smooth(t);
     const cls = model.groupDissolve[g] as number;
     const dp =
@@ -142,122 +255,186 @@ export function buildFrame(pose: Pose, opts: FrameOptions, model: HouseModel = H
     groupDrop[g] = dp * MOTION.model3d.dissolveSettleMetres;
   }
 
-  // Rotated vertices (x, y, z triples) and their screen positions
-  const n = model.vertices.length;
-  const rx = new Float64Array(n * 3);
-  const sxN = new Float64Array(n * 2);
-  for (let i = 0; i < n; i++) {
-    const v = model.vertices[i] as Vec3;
-    const g = model.vertexGroup[i] as number;
+  const nv = model.v.length / 3;
+  if (scratch.stamp.length < nv) {
+    scratch.stamp = new Int32Array(nv);
+    scratch.sx = new Float64Array(nv);
+    scratch.sy = new Float64Array(nv);
+    scratch.text = new Array<string>(nv).fill('');
+  }
+  const frameId = ++scratch.frame;
+  const { stamp, sx, sy, text } = scratch;
+  const { v, vg, slots, items, details, nodePlane } = model;
+
+  /** Project a vertex on first use this frame. */
+  const touch = (i: number) => {
+    if (stamp[i] === frameId) return;
+    stamp[i] = frameId;
+    const g = vg[i] as number;
     const base = model.groupBase[g] as number;
-    const x = v[0] - cxm;
-    const y = base + (v[1] - base) * (groupK[g] as number) - (groupDrop[g] as number) - cym;
-    const z = v[2] - czm;
+    const x = (v[i * 3] as number) - cxm;
+    const y =
+      base +
+      ((v[i * 3 + 1] as number) - base) * (groupK[g] as number) -
+      (groupDrop[g] as number) -
+      cym;
+    const z = (v[i * 3 + 2] as number) - czm;
     const px = m0 * x + m1 * y + m2 * z;
     const py = m3 * x + m4 * y + m5 * z;
     const pz = m6 * x + m7 * y + m8 * z;
-    rx[i * 3] = px;
-    rx[i * 3 + 1] = py;
-    rx[i * 3 + 2] = pz;
     const f = 1 / (1 - pz * inv);
-    sxN[i * 2] = Math.round((opts.cx + px * scale * f) * 10) / 10;
-    sxN[i * 2 + 1] = Math.round((opts.cy - py * scale * f) * 10) / 10;
-  }
-  // Screen coordinates are formatted on first use (a vertex is shared by several faces)
-  const sx: (string | undefined)[] = new Array<string | undefined>(n);
-  const text = (i: number): string => {
-    let t = sx[i];
-    if (t === undefined) {
-      t = `${sxN[i * 2]} ${sxN[i * 2 + 1]}`;
-      sx[i] = t;
-    }
-    return t;
+    const X = Math.round((opts.cx + px * scale * f) * Q);
+    const Y = Math.round((opts.cy - py * scale * f) * Q);
+    sx[i] = X;
+    sy[i] = Y;
+    text[i] = `${X} ${Y}`;
   };
 
-  // Mean depth per solid
-  const zSum = new Float64Array(groups);
-  const zCount = new Float64Array(groups);
-  for (const face of model.faces) {
-    for (const i of face.v) {
-      zSum[face.group] = (zSum[face.group] ?? 0) + (rx[i * 3 + 2] ?? 0);
-      zCount[face.group] = (zCount[face.group] ?? 0) + 1;
+  const runs: Run[] = [];
+  const add = (
+    cls: number,
+    opacity: number,
+    d: string,
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+  ) => {
+    let k = runs.length - 1;
+    const margin = MARGIN * Q;
+    for (let steps = 0; k >= 0 && steps < LOOK_BACK; steps++, k--) {
+      const r = runs[k] as Run;
+      if (r.cls === cls && r.opacity === opacity) {
+        r.d += d;
+        if (x0 < r.x0) r.x0 = x0;
+        if (y0 < r.y0) r.y0 = y0;
+        if (x1 > r.x1) r.x1 = x1;
+        if (y1 > r.y1) r.y1 = y1;
+        return;
+      }
+      if (r.x0 - margin <= x1 && r.x1 + margin >= x0 && r.y0 - margin <= y1 && r.y1 + margin >= y0)
+        break;
     }
-  }
-  const groupKey = new Float64Array(groups);
-  for (let g = 0; g < groups; g++) {
-    groupKey[g] = (zSum[g] ?? 0) / Math.max(1, zCount[g] ?? 1) - (model.groupBias[g] ?? 0) * 10;
-  }
+    runs.push({ cls, opacity, d, x0, y0, x1, y1 });
+  };
 
-  const visible: {
-    key: number;
-    order: number;
-    d: string;
-    kind: FaceKind;
-    tone: 0 | 1 | 2;
-    opacity: number;
-  }[] = [];
-  const faceList = model.faces;
-  for (let order = 0; order < faceList.length; order++) {
-    const face = faceList[order] as (typeof faceList)[number];
-    if ((groupK[face.group] as number) < 0.002) continue;
-    const opacity = groupOpacity[face.group] as number;
-    if (opacity < 0.01) continue;
-    if (!drawLines && face.kind === 'line') continue;
-    const a = (face.v[0] as number) * 3;
-    const ax = rx[a] ?? 0,
-      ay = rx[a + 1] ?? 0,
-      az = rx[a + 2] ?? 0;
-    let nx: number, ny: number, nz: number;
-    if (face.normal) {
-      // A hairline carries the outward normal of the surface it lies on
-      const q = face.normal;
-      nx = m0 * q[0] + m1 * q[1] + m2 * q[2];
-      ny = m3 * q[0] + m4 * q[1] + m5 * q[2];
-      nz = m6 * q[0] + m7 * q[1] + m8 * q[2];
-    } else {
-      const b = (face.v[1] as number) * 3;
-      const c = (face.v[2] as number) * 3;
-      const ux = (rx[b] ?? 0) - ax,
-        uy = (rx[b + 1] ?? 0) - ay,
-        uz = (rx[b + 2] ?? 0) - az;
-      const vx = (rx[c] ?? 0) - ax,
-        vy = (rx[c + 1] ?? 0) - ay,
-        vz = (rx[c + 2] ?? 0) - az;
-      nx = uy * vz - uz * vy;
-      ny = uz * vx - ux * vz;
-      nz = ux * vy - uy * vx;
-    }
-    const facing = inv > 0 ? nx * -ax + ny * -ay + nz * (eyeZ - az) > 0 : nz > 0;
-    if (!facing) continue;
-    // A pattern whose lines would sit closer than 1.5 px on screen (foreshortened by the angle
-    // at which the face is seen) is left out rather than drawn as a smear
-    if (face.gap !== undefined && face.kind === 'line') {
-      const cos = Math.abs(nz) / (Math.hypot(nx, ny, nz) || 1);
-      if (face.gap * pxScale * cos < MOTION.model3d.minLinePx) continue;
-    }
+  /** A polygon of `n` slots from `start`: its path, bounding box, and path of real edges. */
+  const polygon = (
+    start: number,
+    n: number,
+    mask: number,
+    kind: number,
+    tone: number,
+    opacity: number,
+  ) => {
     let d = '';
-    for (let k = 0; k < face.v.length; k++) {
-      d += `${k === 0 ? 'M' : 'L'}${text(face.v[k] as number)}`;
+    let x0 = Infinity,
+      y0 = Infinity,
+      x1 = -Infinity,
+      y1 = -Infinity;
+    for (let k = 0; k < n; k++) {
+      const i = slots[start + k] as number;
+      touch(i);
+      d += `${k === 0 ? 'M' : 'L'}${text[i]}`;
+      const X = sx[i] as number;
+      const Y = sy[i] as number;
+      if (X < x0) x0 = X;
+      if (X > x1) x1 = X;
+      if (Y < y0) y0 = Y;
+      if (Y > y1) y1 = Y;
     }
-    visible.push({
-      key: groupKey[face.group] ?? 0,
-      order,
-      d: face.normal ? d : `${d}Z`,
-      kind: face.kind,
-      tone: face.tone,
+    if (mask === (1 << n) - 1) {
+      add(classOf(kind, tone, FACE_MOD.solid), opacity, `${d}Z`, x0, y0, x1, y1);
+      return;
+    }
+    add(classOf(kind, tone, FACE_MOD.seam), opacity, `${d}Z`, x0, y0, x1, y1);
+    let e = '';
+    let open = false;
+    for (let k = 0; k < n; k++) {
+      if (mask & (1 << k)) {
+        const a = slots[start + k] as number;
+        const b = slots[start + ((k + 1) % n)] as number;
+        if (!open) e += `M${text[a]}`;
+        e += `L${text[b]}`;
+        open = true;
+      } else open = false;
+    }
+    if (e) add(classOf(kind, tone, FACE_MOD.open), opacity, e, x0, y0, x1, y1);
+  };
+
+  const eye = eyeOf(m, model, inv);
+  walk(model, eye, (it, node) => {
+    const o = it * ITEM_STRIDE;
+    const g = items[o + 2] as number;
+    if ((groupK[g] as number) < 0.002) return;
+    const opacity = groupOpacity[g] as number;
+    if (opacity < 0.01) return;
+    polygon(
+      items[o + 4] as number,
+      items[o + 5] as number,
+      items[o + 6] as number,
+      items[o] as number,
+      items[o + 1] as number,
       opacity,
-    });
-  }
-  visible.sort((p, q) => p.key - q.key || p.order - q.order);
+    );
+    // Detail lying on this piece, painted straight after it
+    const first = items[o + 7] as number;
+    const count = items[o + 8] as number;
+    if (count === 0) return;
+    // How squarely the piece faces the viewer, for the rule that hides crowded hairlines
+    const cos = Math.abs(
+      (nodePlane[node * 4] as number) * m6 +
+        (nodePlane[node * 4 + 1] as number) * m7 +
+        (nodePlane[node * 4 + 2] as number) * m8,
+    );
+    for (let k = 0; k < count; k++) {
+      const q = (first + k) * DETAIL_STRIDE;
+      const kind = details[q] as number;
+      const n = details[q + 3] as number;
+      if (n === 2) {
+        // A hairline: dropped on phones while turning, and when its pattern is crowded
+        const gap = details[q + 5] as number;
+        if (kind === 6) {
+          if (!drawLines) continue;
+          if (gap > 0 && (gap / 1000) * pxScale * cos < MOTION.model3d.minLinePx) continue;
+        }
+        const a = slots[details[q + 2] as number] as number;
+        const b = slots[(details[q + 2] as number) + 1] as number;
+        touch(a);
+        touch(b);
+        add(
+          classOf(kind, 0, FACE_MOD.solid),
+          opacity,
+          `M${text[a]}L${text[b]}`,
+          Math.min(sx[a] as number, sx[b] as number),
+          Math.min(sy[a] as number, sy[b] as number),
+          Math.max(sx[a] as number, sx[b] as number),
+          Math.max(sy[a] as number, sy[b] as number),
+        );
+      } else {
+        polygon(
+          details[q + 2] as number,
+          n,
+          details[q + 4] as number,
+          kind,
+          details[q + 1] as number,
+          opacity,
+        );
+      }
+    }
+  });
 
   // Ground outline and dimension lines (a handful of points; plain helpers are fine here)
   const cam: Camera = { invDistance: inv, scale, cx: opts.cx, cy: opts.cy };
-  const rotate = (v: Vec3): Vec3 => apply(m, sub(v, model.centre));
-  const proj = (v: Vec3) => project(rotate(v), cam);
-  const plus = (v: Vec3, t: Vec3, k: number): Vec3 => [
-    v[0] + t[0] * k,
-    v[1] + t[1] * k,
-    v[2] + t[2] * k,
+  const rotate = (p: Vec3): Vec3 => apply(m, sub(p, model.centre));
+  const proj = (p: Vec3) => project(rotate(p), cam);
+  const num = (n: number) => n.toFixed(1);
+  const pathOf = (pts: { x: number; y: number }[], close = true) =>
+    `M${pts.map((p) => `${num(p.x)} ${num(p.y)}`).join('L')}${close ? 'Z' : ''}`;
+  const plus = (p: Vec3, t: Vec3, k: number): Vec3 => [
+    p[0] + t[0] * k,
+    p[1] + t[1] * k,
+    p[2] + t[2] * k,
   ];
 
   const dimensions = model.dimensions.map((dim) => {
@@ -283,25 +460,51 @@ export function buildFrame(pose: Pose, opts: FrameOptions, model: HouseModel = H
   });
 
   return {
-    faces: visible.map((v) => ({ d: v.d, kind: v.kind, tone: v.tone, opacity: v.opacity })),
+    faces: runs.map((r) => ({ d: r.d, cls: r.cls, opacity: r.opacity })),
     ground: model.ground.map((outline) => pathOf(outline.map(proj))).join(''),
     dimensions,
     groundY: proj([model.centre[0], 0, model.centre[2]]).y,
   };
 }
 
+export interface IdPolygon {
+  /** Source face index (the face of the source geometry this piece was cut from). */
+  id: number;
+  pts: { x: number; y: number }[];
+}
+
 /**
- * Join neighbouring faces of the same kind into one path (same fill and stroke, so the picture is
- * the same) to keep the DOM work per frame small.
+ * The house's body pieces only (no detail), farthest first, projected: for the reference test, which
+ * paints each in a unique colour and compares with a z-buffer render of the source geometry.
  */
-export function mergeRuns(faces: readonly FrameFace[]): FrameFace[] {
-  const out: FrameFace[] = [];
-  for (const f of faces) {
-    const last = out[out.length - 1];
-    if (last && last.kind === f.kind && last.tone === f.tone && last.opacity === f.opacity) {
-      last.d += f.d;
-    } else out.push({ d: f.d, kind: f.kind, tone: f.tone, opacity: f.opacity });
-  }
+export function buildIdPolygons(
+  orientation: Pose | Mat3,
+  opts: FrameOptions,
+  model: BspModel = HOUSE,
+): IdPolygon[] {
+  const m = matrixOf(orientation);
+  const scale = fitScale(model, opts);
+  const inv = Math.min(opts.invDistance, 1 / (MIN_EYE_RADII * model.radius));
+  const out: IdPolygon[] = [];
+  const eye = eyeOf(m, model, inv);
+  const { v, slots, items } = model;
+  walk(model, eye, (it) => {
+    const o = it * ITEM_STRIDE;
+    const start = items[o + 4] as number;
+    const n = items[o + 5] as number;
+    const pts: { x: number; y: number }[] = [];
+    for (let k = 0; k < n; k++) {
+      const i = (slots[start + k] as number) * 3;
+      const p = apply(m, [
+        (v[i] as number) - model.centre[0],
+        (v[i + 1] as number) - model.centre[1],
+        (v[i + 2] as number) - model.centre[2],
+      ] as Vec3);
+      const f = 1 / (1 - p[2] * inv);
+      pts.push({ x: opts.cx + p[0] * scale * f, y: opts.cy - p[1] * scale * f });
+    }
+    out.push({ id: items[o + 3] as number, pts });
+  });
   return out;
 }
 
@@ -313,8 +516,13 @@ export interface GizmoAxis {
 }
 
 /** The x, y and z axes under the same rotation, as end points around (cx, cy). */
-export function gizmoAxes(pose: Pose, length: number, cx: number, cy: number): GizmoAxis[] {
-  const m = poseMatrix(pose.rx, pose.ry, pose.rz);
+export function gizmoAxes(
+  orientation: Pose | Mat3,
+  length: number,
+  cx: number,
+  cy: number,
+): GizmoAxis[] {
+  const m = matrixOf(orientation);
   const axes: [GizmoAxis['label'], Vec3][] = [
     ['x', [1, 0, 0]],
     ['y', [0, 1, 0]],
@@ -347,5 +555,6 @@ export function restOptions(invDistance = REST_INV_DISTANCE): FrameOptions {
     halfSize: Math.min(VIEW.width, VIEW.height) / 2,
     cx: VIEW.cx,
     cy: VIEW.cy,
+    fill: 0.98,
   };
 }

@@ -6,3 +6,4 @@ playwright-report
 .lighthouseci
 coverage
 .husky
+src/lib/model3d/house.bsp.json

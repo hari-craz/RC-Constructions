@@ -1,4 +1,4 @@
-import { cross, dot, sub, type Vec3 } from './math';
+import { cross, dot, sub, type Vec3 } from './math.ts';
 
 /*
  * An original two-storey house as plain data, in metres. Front is +z. A main block holds an
@@ -31,9 +31,8 @@ const RANK: Record<FaceKind, number> = {
 
 /** Dissolve classes, in the order the house is taken down. */
 const DISSOLVE = { roof: 0, upper: 1, lower: 2, porch: 3, plinth: 4 } as const;
-export const DISSOLVE_CLASSES = 5;
 
-interface Face {
+interface SourceFace {
   /** Indices into `vertices`, wound anticlockwise seen from outside (two for a line). */
   v: readonly number[];
   kind: FaceKind;
@@ -45,6 +44,11 @@ interface Face {
   gap?: number;
   /** Flat tone 0 (lit), 1 or 2 (shaded) from the way the face points; only for solid fills. */
   tone: 0 | 1 | 2;
+  /**
+   * A face of a solid, a free-standing board, or detail lying on a face of its solid (decals and
+   * hairlines). Only solid faces and boards take part in drawing order.
+   */
+  role: 'solid' | 'board' | 'detail';
 }
 
 interface Dimension {
@@ -57,11 +61,11 @@ interface Dimension {
   labelShift: Vec3;
 }
 
-export interface HouseModel {
+export interface HouseSource {
   vertices: readonly Vec3[];
   /** The solid each vertex belongs to (vertices are not shared between solids). */
   vertexGroup: readonly number[];
-  faces: readonly Face[];
+  faces: readonly SourceFace[];
   /** Per solid: a depth bias that pulls it toward the viewer when depths tie (negative = nearer). */
   groupBias: readonly number[];
   /** Per solid: when it is raised during the intro, as fractions of the whole (0 to 1). */
@@ -200,10 +204,10 @@ const LIGHT: Vec3 = (() => {
   return [v[0] / n, v[1] / n, v[2] / n];
 })();
 
-function build(): HouseModel {
+export function buildHouseSource(): HouseSource {
   const vertices: Vec3[] = [];
   const vertexGroup: number[] = [];
-  const faces: (Face & { order: number })[] = [];
+  const faces: (SourceFace & { order: number })[] = [];
   const groupBias: number[] = [];
   const groupBuild: { start: number; end: number }[] = [];
   const groupBase: number[] = [];
@@ -257,6 +261,7 @@ function build(): HouseModel {
         kind: poly.kind,
         group,
         tone: toneOf(normalOf(pts)),
+        role: 'solid',
         order: faces.length,
       });
     }
@@ -264,13 +269,14 @@ function build(): HouseModel {
   };
 
   /** A flat quad lying on a wall with outward normal `normal`. */
-  const decal = (group: number, kind: FaceKind, pts: Vec3[], normal: Vec3) => {
+  const decal = (group: number, kind: FaceKind, pts: Vec3[], normal: Vec3, board = false) => {
     const pp = dot(normalOf(pts), normal) < 0 ? [...pts].reverse() : pts;
     faces.push({
       v: pp.map((q) => addVertex(q, group)),
       kind,
       group,
       tone: toneOf(normal),
+      role: board ? 'board' : 'detail',
       order: faces.length,
     });
   };
@@ -284,6 +290,7 @@ function build(): HouseModel {
       normal,
       ...(gap === undefined ? {} : { gap }),
       tone: 0,
+      role: 'detail',
       order: faces.length,
     });
   };
@@ -602,8 +609,15 @@ function build(): HouseModel {
     'trim',
     wallQuad('z', ZF + 0.45, X0 - 0.45, X1 + 0.45, H2 - 0.2, H2),
     FRONT,
+    true,
   );
-  decal(mainRoof.group, 'trim', wallQuad('z', ZB - 0.45, X0 - 0.45, X1 + 0.45, H2 - 0.2, H2), BACK);
+  decal(
+    mainRoof.group,
+    'trim',
+    wallQuad('z', ZB - 0.45, X0 - 0.45, X1 + 0.45, H2 - 0.2, H2),
+    BACK,
+    true,
+  );
   // Left gable end: board-and-batten with a tall louvre window
   battens(mainRoof, mainRoofParts.ends[1] as Vec3[], 10);
   windowOn(mainRoof.group, 'x', X0 - 0.45, -0.6, 0.6, H2 + 0.5, H2 + 1.4, LEFT, 'tall');
@@ -682,8 +696,8 @@ function build(): HouseModel {
   // Order faces inside each solid: bodies, lines, stone, trim, glass and doors, mullions
   const sorted = [...faces]
     .sort((a, b) => a.group - b.group || RANK[a.kind] - RANK[b.kind] || a.order - b.order)
-    .map((f): Face => {
-      const face: Face = { v: f.v, kind: f.kind, group: f.group, tone: f.tone };
+    .map((f): SourceFace => {
+      const face: SourceFace = { v: f.v, kind: f.kind, group: f.group, tone: f.tone, role: f.role };
       if (f.normal) face.normal = f.normal;
       if (f.gap !== undefined) face.gap = f.gap;
       return face;
@@ -724,5 +738,3 @@ function build(): HouseModel {
     ground,
   };
 }
-
-export const HOUSE: HouseModel = build();

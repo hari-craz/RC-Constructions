@@ -43,6 +43,15 @@ export default function HeroModel({ reducedMotion }: HeroModelProps) {
   // The hint goes away for good on the first interaction (or after a few seconds)
   const dismissHint = useCallback(() => setHint(false), []);
 
+  // A real signal that the model chunk has run (tests wait on it, not on a timeout)
+  useEffect(() => {
+    document.documentElement.dataset.heroModel = 'ready';
+    performance.mark('hero-model-ready');
+    return () => {
+      delete document.documentElement.dataset.heroModel;
+    };
+  }, []);
+
   useEffect(() => {
     const timer = window.setTimeout(dismissHint, MOTION.model3d.hintMs);
     return () => window.clearTimeout(timer);

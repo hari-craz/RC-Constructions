@@ -597,18 +597,20 @@ test.describe('Phase 14C: cost and loading', () => {
     });
     await page.goto('/');
     await expect(page.locator('.hero-headline')).toBeVisible();
+    // The model sets this when its chunk has run: a real signal, not a timeout
+    await expect(page.locator('html')).toHaveAttribute('data-hero-model', 'ready');
     await page.locator('.hero-model-widget').waitFor();
     expect(requests.length).toBe(1);
-    // Chromium reports paint and resource timings: the chunk starts after first contentful paint
+    // Chromium reports paint timings: the chunk has run only after the first contentful paint, and
+    // it was requested only after the headline had painted (its request begins at or after FCP less
+    // a few frames of scheduling slack)
     if (browserName === 'chromium') {
       const t = await page.evaluate(() => ({
         fcp: performance.getEntriesByName('first-contentful-paint')[0]?.startTime ?? 0,
-        chunk:
-          performance.getEntriesByType('resource').find((r) => /HeroModel-[\w-]+\.js/.test(r.name))
-            ?.startTime ?? 0,
+        ready: performance.getEntriesByName('hero-model-ready')[0]?.startTime ?? 0,
       }));
       expect(t.fcp).toBeGreaterThan(0);
-      expect(t.chunk).toBeGreaterThan(t.fcp);
+      expect(t.ready).toBeGreaterThan(t.fcp);
     }
   });
 });

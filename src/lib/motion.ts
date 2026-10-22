@@ -47,6 +47,8 @@ export const MOTION = {
     dragDegPerPx: 0.45,
     inertiaDecay: 3.5,
     inertiaMinSpeed: 4,
+    /** A fling never spins faster than this (deg/s), whatever the pointer events' timing; its travel (speed / inertiaDecay) stays under half a turn. */
+    inertiaMaxSpeed: 360,
     tiltLimitDeg: 80,
     /** Roll while twisting with two fingers or dragging with Shift. */
     rollDegPerPx: 0.4,
@@ -79,8 +81,10 @@ export const MOTION = {
     minLinePx: 1.5,
     lodRestoreMs: 120,
     /** Overlay layout below 1024 px: where the house centres in the hero and how much of the width it may use. */
-    overlayCentreY: 0.46,
-    overlayFill: 1.15,
+    overlayCentreY: 0.49,
+    overlayFill: 0.96,
+    /** The share of its container the house's bounding sphere may fill at any rotation (it never clips). */
+    heroFill: 0.98,
   },
   /*
    * The morph from the hero house to the building (src/lib/morph.ts). m runs 0 to 1 while the About

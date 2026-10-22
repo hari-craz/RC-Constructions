@@ -1,0 +1,8 @@
+{
+  "samples": 2000,
+  "oldPathOverGeodesicMean": 1.142,
+  "oldPathOverGeodesicWorst": 3.122,
+  "oldPathsMoreThan1_5xGeodesic": 117,
+  "oldWorstStepDeg": 5.91,
+  "newWorstStepDeg": 3
+}

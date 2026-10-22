@@ -192,7 +192,11 @@ test.describe('Phase 14D, part B: the morph', () => {
           .evaluateAll((els) =>
             [...new Set(els.map((e) => (e.getAttribute('class') ?? '').split(' ')[1]))].sort(),
           );
-        return { m: await morphValue(page), ...w, faces, kinds };
+        // Roof pieces that are part way through dissolving (they carry an opacity)
+        const fadingRoofs = await page
+          .locator('.hm-face.hm-roof[opacity]:not([style*="display: none"])')
+          .count();
+        return { m: await morphValue(page), ...w, faces, kinds, fadingRoofs };
       };
 
       const down: Record<string, Awaited<ReturnType<typeof snap>>> = {};
@@ -208,7 +212,10 @@ test.describe('Phase 14D, part B: the morph', () => {
       expect(down['1']?.dissolve).toBe(1);
       // Piece by piece, top first: the roofs go before the ground storey and the door
       expect(down['0.55']?.kinds).toContain('hm-door');
-      expect(down['0.7']?.kinds).not.toContain('hm-roof');
+      expect(down['0.55']?.fadingRoofs ?? 0).toBeGreaterThan(0);
+      // (The porch roof belongs to the porch, which goes later, so a roof slope can still be seen
+      // from the front by perspective; the house's own roofs are gone.)
+      expect(down['0.7']?.fadingRoofs).toBe(0);
       // At the end only the plinth is left
       const end = down['1'];
       expect(end?.kinds.every((k) => k === 'hm-stone' || k === 'hm-slab' || k === 'hm-line')).toBe(
@@ -620,10 +627,12 @@ test.describe('Phase 14D, part C: the full-bleed background below 1024 px', () =
         ctx.fillRect(0, 0, 1, 1);
         return [...ctx.getImageData(0, 0, 1, 1).data].slice(0, 3);
       };
+      // A face's colour is carried by `color` (fill is currentcolor); stroke-only paths have no fill
       const fills = ['wall', 'roof', 'trim', 'stone', 'glass', 'door'].flatMap((k) =>
         [...document.querySelectorAll(`.hm-${k}`)]
+          .filter((el) => getComputedStyle(el).fill !== 'none')
           .slice(0, 6)
-          .map((el) => [k, resolve(getComputedStyle(el).fill)]),
+          .map((el) => [k, resolve(getComputedStyle(el).color)]),
       );
       return { ink: resolve(ink), fills };
     });

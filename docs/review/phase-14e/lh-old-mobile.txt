@@ -1,0 +1,3 @@
+{"preset":"mobile","runs":5,"performance":99,"accessibility":100,"bestPractices":100,"seo":100,"fcpMs":1367,"lcpMs":2115,"tbtMs":2,"cls":0,"allPerformance":[99,99,99,99,99]}
+(node:4196) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)

@@ -103,3 +103,50 @@ Controls fade first (`controlsFadeEnd`) and the widget is `inert` once the hero 
 `e2e/phase-14.spec.ts` covers section order, the four sync rules by sampling the whole page every 40 px (desktop and phone), reverse scrolling, anchor jumps, reduced motion, the Projects preview and drawer, the header indicator at 390, 768, 1024, 1280, 1440 and 1904 px, form focus and the photo placeholders. `e2e/phase-11.spec.ts` and `e2e/phase-12.spec.ts` (no broken images, no `//` or placeholder text, quiet portrait slot, readable disabled send button, centred wide layouts) check window size and constant surface, the mobile layer, stage state per part, flat lit windows, reduced-motion state, stroke contrast, no labels, one headline per section, no text under 14 px or uppercase micro-labels, sheets never crop content, amber allowlist and header contrast. `src/styles/banned-patterns.test.ts` checks banned CSS patterns and the amber allowlist in source.
 
 Assertions changed in Phase 14 because they asserted behaviour the brief replaced: the old "each stage complete at its anchor" (now: complete where its part ends), the grey preview slot, "first project active by default", the "Drawing to come" label (now "Site photo to come"), and the reduced-motion "finished building at `#foundation`" (now: the stage of the section in view).
+
+## 6. How the house is drawn, and how to edit it safely (Phase 14E)
+
+The house is correct at every angle because its draw order is not computed per frame from depths but
+read from a binary space partition (BSP) built once from the source geometry.
+
+- **Source** (`src/lib/model3d/house.ts`, `buildHouseSource()`): metres, front is +z. Faces have a role.
+  `solid` faces belong to a convex solid and are wound outward; a `board` is a free-standing thin face
+  (the fascia boards); `detail` faces (decals: window frames, glass, doors, trim; hairlines: siding,
+  shingles, mullions) lie on a solid face of their own solid and carry its facing. Each solid has a build
+  window (the intro) and a dissolve class (the morph). The source is not shipped.
+- **Build** (`pnpm model:bsp`, `scripts/build-model-bsp.mjs`, builder in `src/lib/model3d/bsp.ts`, Node
+  built-ins only; Node strips the types): writes `src/lib/model3d/house.bsp.json` (about 40 kB, compact
+  numbers, loaded by `houseModel.ts` with no work at load). `pnpm test` fails if the file differs from a
+  fresh build, so the two never drift. Steps: (1) trim: the part of a solid's face that lies inside
+  another solid is cut away (the porch roof ends at the bay and wall, the cross gable meets the main roof
+  along the valley); an interface between two solids is dropped unless the other solid is taken down
+  first (so the plinth keeps its top); (2) attach: every decal and hairline is attached to the face it
+  lies on and clipped to each piece of it, so it is always drawn with its face; (3) partition: pieces are
+  split by the planes of other pieces (a handful of splits: the splitter is chosen among the largest
+  pieces to cut the fewest others).
+- **Draw** (`render.ts`, `buildFrame`): walk the tree from the eye (far side first); a node's pieces are
+  drawn only if they face the eye (back-face culling is the side of the plane the eye is on), each
+  followed at once by its detail. Pieces cut by the partition have a seam, not an edge: they are a fill
+  whose stroke is its own colour (no anti-aliasing crack) plus a stroke-only path of their real edges.
+  Paths are joined into runs: a path joins an earlier run of its class only if its bounding box cannot
+  overlap anything painted since. Coordinates are whole quarter pixels (`quantum`), because integers are
+  far cheaper to format and parse; the face group is scaled by 0.25 and the face CSS strokes are four
+  times their pixel width. The eye is never nearer than 1.5 bounding radii.
+- **Orientation** (`orientation.ts`): a unit quaternion. Drag, buttons, keys and auto-rotate apply small
+  rotations about the world vertical (turn), the screen's horizontal axis (tilt, stopping where the
+  elevation reaches the limit, in steps of at most 4 degrees so it cannot cross the pole) and the view
+  axis (roll). The matrix is made once per frame. Reset and the morph's ease to the front elevation are
+  spherical interpolations. A fling is capped at `MOTION.model3d.inertiaMaxSpeed`.
+- **Fit**: the bounding sphere fills at most `MOTION.model3d.heroFill` (desktop) or `overlayFill`
+  (below 1024 px) of its container, so the house never clips at any rotation.
+- **Editing safely**: keep every face flat, convex and wound outward (the unit tests check it); put each
+  decal exactly on a face of its own solid (the builder stops with an error if one lies on none); make a
+  solid convex; use `board` only for free-standing thin faces; then run `pnpm model:bsp`, `pnpm test` and
+  `pnpm exec playwright test e2e/phase-14e.spec.ts`.
+- **Proof**: `src/lib/model3d/reference.ts` is a z-buffer renderer used only by tests.
+  `reference.test.ts` compares the real renderer's order with it over the whole turntable grid (y every 15
+  degrees, x from -80 to 80 in 20, z from -45 to 45 in 15) and 50 random orientations;
+  `e2e/phase-14e.spec.ts` does the same on the real SVG (`?hm-test` draws each piece in its own flat
+  colour with no edges, detail or anti-aliasing, and exposes `window.__hm`) at 390x844 and 1440x900.
+  Pass: fewer than 0.3 percent of the model's pixels differ, ignoring a 1 px band round face edges.
+  `e2e/phase-14e-behaviour.spec.ts` checks no clipping, no flips and the tilt limit.

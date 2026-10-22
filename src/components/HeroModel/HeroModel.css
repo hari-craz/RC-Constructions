@@ -1,4 +1,7 @@
 /*
+ * Face paths are drawn in quarter pixels (integers are far cheaper to build and parse than decimals)
+ * inside a group scaled by 0.25, so every stroke width on a face below is four times its pixel width.
+ *
  * Face styles for the hero house: flat fills in at most three tones of one palette (by the way a
  * face points), ink edges in the three-weight system. Drawing units are screen pixels.
  *
@@ -61,70 +64,92 @@
 /* A fill is the light step on limewash and the dark step on the window */
 .hm-wall,
 .hm-trim {
-  fill: color-mix(in srgb, var(--hm-w0) calc(var(--hm-mix) * 100%), var(--hm-s0));
+  color: color-mix(in srgb, var(--hm-w0) calc(var(--hm-mix) * 100%), var(--hm-s0));
+  fill: currentcolor;
   stroke: var(--hm-edge);
-  stroke-width: 1.5px;
+  stroke-width: 6px;
 }
 
 .hm-wall.hm-t1,
 .hm-trim.hm-t1 {
-  fill: color-mix(in srgb, var(--hm-w1) calc(var(--hm-mix) * 100%), var(--hm-s1));
+  color: color-mix(in srgb, var(--hm-w1) calc(var(--hm-mix) * 100%), var(--hm-s1));
+  fill: currentcolor;
 }
 
 .hm-wall.hm-t2,
 .hm-trim.hm-t2 {
-  fill: color-mix(in srgb, var(--hm-w2) calc(var(--hm-mix) * 100%), var(--hm-s2));
+  color: color-mix(in srgb, var(--hm-w2) calc(var(--hm-mix) * 100%), var(--hm-s2));
+  fill: currentcolor;
 }
 
 .hm-stone,
 .hm-slab {
-  fill: color-mix(in srgb, var(--hm-k0) calc(var(--hm-mix) * 100%), var(--hm-s2));
+  color: color-mix(in srgb, var(--hm-k0) calc(var(--hm-mix) * 100%), var(--hm-s2));
+  fill: currentcolor;
   stroke: var(--hm-edge);
-  stroke-width: 1px;
+  stroke-width: 4px;
 }
 
 .hm-stone.hm-t1,
 .hm-slab.hm-t1 {
-  fill: color-mix(in srgb, var(--hm-k1) calc(var(--hm-mix) * 100%), var(--hm-s3));
+  color: color-mix(in srgb, var(--hm-k1) calc(var(--hm-mix) * 100%), var(--hm-s3));
+  fill: currentcolor;
 }
 
 .hm-stone.hm-t2,
 .hm-slab.hm-t2 {
-  fill: color-mix(in srgb, var(--hm-k2) calc(var(--hm-mix) * 100%), var(--hm-s4));
+  color: color-mix(in srgb, var(--hm-k2) calc(var(--hm-mix) * 100%), var(--hm-s4));
+  fill: currentcolor;
 }
 
 .hm-roof {
-  fill: color-mix(in srgb, var(--hm-r0) calc(var(--hm-mix) * 100%), var(--hm-s3));
+  color: color-mix(in srgb, var(--hm-r0) calc(var(--hm-mix) * 100%), var(--hm-s3));
+  fill: currentcolor;
   stroke: var(--hm-edge);
-  stroke-width: 2px;
+  stroke-width: 8px;
 }
 
 .hm-roof.hm-t1 {
-  fill: color-mix(in srgb, var(--hm-r1) calc(var(--hm-mix) * 100%), var(--hm-s4));
+  color: color-mix(in srgb, var(--hm-r1) calc(var(--hm-mix) * 100%), var(--hm-s4));
+  fill: currentcolor;
 }
 
 .hm-roof.hm-t2 {
-  fill: color-mix(in srgb, var(--hm-r2) calc(var(--hm-mix) * 100%), var(--hm-s5));
+  color: color-mix(in srgb, var(--hm-r2) calc(var(--hm-mix) * 100%), var(--hm-s5));
+  fill: currentcolor;
 }
 
 /* Hairline detail: siding, shingle rows, battens (steel) and window mullions (limewash) */
 .hm-line {
   fill: none;
   stroke: var(--hm-hair);
-  stroke-width: 1px;
+  stroke-width: 4px;
 }
 
 .hm-muntin {
   fill: none;
   stroke: var(--color-limewash);
-  stroke-width: 1px;
+  stroke-width: 4px;
 }
 
 .hm-glass,
 .hm-door {
-  fill: var(--color-formwork-dark);
+  color: var(--color-formwork-dark);
+  fill: currentcolor;
   stroke: var(--hm-edge);
-  stroke-width: 1px;
+  stroke-width: 4px;
+}
+
+/* A piece cut by the model's partition has no edge on the cut: its stroke is its own fill, which
+   closes any anti-aliasing crack (the fill colour is carried by `color`), and its real edges follow
+   as a stroke-only path */
+.hm-face.hm-seam {
+  stroke: currentcolor;
+  stroke-width: 4px;
+}
+
+.hm-face.hm-open {
+  fill: none;
 }
 
 /* Dimension lines and their labels: amber only here */
@@ -175,11 +200,12 @@
 
   .hm-glass,
   .hm-door {
-    fill: color-mix(
+    color: color-mix(
       in srgb,
       var(--color-formwork-dark) calc(var(--hm-mix) * 100%),
       var(--color-concrete)
     );
+    fill: currentcolor;
   }
 
   .hm-muntin {

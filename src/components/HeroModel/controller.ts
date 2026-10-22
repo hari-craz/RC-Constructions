@@ -1,16 +1,26 @@
-import { HOUSE, type FaceKind } from '../../lib/model3d/house';
-import { clampTilt, wrapAngle } from '../../lib/model3d/math';
+import { HOUSE } from '../../lib/model3d/houseModel';
+import {
+  eulerOf,
+  Q_IDENTITY,
+  qFromEuler,
+  qSlerp,
+  qToMat3,
+  rollQ,
+  tiltQ,
+  turnQ,
+  type Quat,
+} from '../../lib/model3d/orientation';
 import {
   buildFrame,
+  buildIdPolygons,
   DEFAULT_POSE,
+  FACE_CLASSES,
   fitScale,
   gizmoAxes,
   landing,
-  mergeRuns,
   REST_INV_DISTANCE,
   type Frame,
   type FrameOptions,
-  type Pose,
 } from '../../lib/model3d/render';
 import { morphRamp, onMorph, type MorphState } from '../../lib/morph';
 import { MOTION } from '../../lib/motion';
@@ -46,26 +56,15 @@ export interface ControllerOptions {
 interface PoolSlot {
   path: SVGPathElement;
   d: string;
-  cls: string;
   opacity: number;
   hidden: boolean;
 }
 
-/** The class string of a face run by kind and tone, built once. */
-const KINDS: FaceKind[] = [
-  'wall',
-  'roof',
-  'trim',
-  'stone',
-  'glass',
-  'door',
-  'line',
-  'muntin',
-  'slab',
-];
-const CLASSES = Object.fromEntries(
-  KINDS.map((k) => [k, [`hm-face hm-${k}`, `hm-face hm-${k} hm-t1`, `hm-face hm-${k} hm-t2`]]),
-) as Record<FaceKind, [string, string, string]>;
+/** The rest orientation (three-quarter view), and the front elevation the morph eases to. */
+const Q_REST = qFromEuler(DEFAULT_POSE.rx, DEFAULT_POSE.ry, DEFAULT_POSE.rz);
+
+/** Face paths are whole numbers of quarter pixels; their group is scaled to match (see the face CSS). */
+const FACE_QUANTUM = 4;
 
 const easeOutCubic = (t: number) => 1 - (1 - t) ** 3;
 const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
@@ -96,8 +95,9 @@ interface View {
  * the fixed layer svg without any change of coordinates.
  */
 export class ModelController {
-  private pose: Pose = { ...DEFAULT_POSE };
-  private anim: { from: Pose; to: Pose; start: number } | null = null;
+  /** The house's orientation (a unit quaternion); the matrix is made once per frame. */
+  private q: Quat = Q_REST;
+  private anim: { from: Quat; to: Quat; start: number } | null = null;
   private vel = { ry: 0, rx: 0 };
   private autoOn = true;
   private hovered = false;
@@ -115,16 +115,16 @@ export class ModelController {
   private pointers = new Map<number, { x: number; y: number }>();
   private lastMove = 0;
   private frameMsSum = 0;
+  private frameMsMax = 0;
   private frameCount = 0;
   private frameStatAt = 0;
-  private pool: PoolSlot[] = [];
+  private classPools: PoolSlot[][] = [];
+  private classUsed = new Int32Array(FACE_CLASSES.length);
+  private desired: SVGPathElement[] = [];
   private dimNodes: { line: SVGPathElement; label: SVGGElement; text: SVGTextElement }[] = [];
-  private gizmoNodes: {
-    label: string;
-    line: SVGLineElement;
-    text: SVGTextElement;
-    anchor: string;
-  }[] = [];
+  /** The gizmo: one path for the three axis lines and a label each (positioned by one transform). */
+  private gizmoLines: SVGPathElement | null = null;
+  private gizmoLabels: { label: string; text: SVGTextElement; anchor: string }[] = [];
   private frames = 0;
   private autoSpin = false;
   /** How much of the house has been raised (the intro): 0 to 1. */
@@ -135,6 +135,11 @@ export class ModelController {
   private narrow = window.matchMedia(NARROW_QUERY).matches;
   private host: 'hero' | 'layer' = 'hero';
   private mixNow = -1;
+  private groundOpacity = '';
+  private plinthOpacity = '';
+  private idMode = false;
+  private remeasure: (() => void) | null = null;
+  private idPool: SVGPathElement[] = [];
   private resumeTimer = 0;
   private lodOn = false;
   private lodTimer = 0;
@@ -148,6 +153,49 @@ export class ModelController {
     this.built = opts.reducedMotion ? 1 : 0;
     this.buildStatic();
     this.bind();
+    this.render();
+    if (new URLSearchParams(window.location.search).has('hm-test')) this.installTestHook();
+  }
+
+  /**
+   * Test-only (`?hm-test`): hold the house still, hide the rest of the page and expose a hook to set
+   * the orientation, so tests can render the real SVG at any angle and compare it with a reference.
+   */
+  private installTestHook() {
+    this.built = 1;
+    this.autoOn = false;
+    const style = document.createElement('style');
+    style.textContent =
+      '.nav-bar,.hero-content,.hero-model-controls,.hero-model-hint,.hero-model-gizmo,.stage-backdrop,.loading-line,.skip-link{display:none !important}.hero-model-widget{animation:none !important}';
+    document.head.appendChild(style);
+    // The hidden controls change the stage's size: measure again now, not after a resize event
+    this.remeasure?.();
+    (window as unknown as { __hm: unknown }).__hm = {
+      setPose: (rx: number, ry: number, rz: number) => {
+        this.q = qFromEuler(rx, ry, rz);
+        this.anim = null;
+        this.vel = { ry: 0, rx: 0 };
+        this.render();
+      },
+      /** Draw each body piece in a unique colour (no edges, detail or anti-aliasing). */
+      idMode: (on: boolean) => {
+        this.idMode = on;
+        this.render();
+      },
+      /** The projection in use, so a test can render the same view with a reference renderer. */
+      state: () => {
+        const o = this.frameOptions(REST_INV_DISTANCE);
+        return {
+          cx: o.cx,
+          cy: o.cy,
+          scale: fitScale(HOUSE, o),
+          invDistance: REST_INV_DISTANCE,
+          centre: HOUSE.centre,
+          width: window.innerWidth,
+          height: window.innerHeight,
+        };
+      },
+    };
     this.render();
   }
 
@@ -170,23 +218,16 @@ export class ModelController {
   /** Rotate by one step about an axis, easing (or snapping under reduced motion). */
   step(axis: Axis, direction: 1 | -1) {
     this.interact();
-    const base = this.anim ? this.anim.to : this.pose;
-    const to: Pose = { ...base };
+    const base = this.anim ? this.anim.to : this.q;
     const d = direction * M.stepDeg;
-    if (axis === 'turn') to.ry = base.ry + d;
-    if (axis === 'tilt') to.rx = clampTilt(base.rx + d, M.tiltLimitDeg);
-    if (axis === 'roll') to.rz = base.rz + d;
-    this.moveTo(to);
+    if (axis === 'turn') this.moveTo(turnQ(base, d));
+    else if (axis === 'tilt') this.moveTo(tiltQ(base, d, M.tiltLimitDeg));
+    else this.moveTo(rollQ(base, d));
   }
 
   reset() {
     this.interact();
-    const base = this.currentBase();
-    this.moveTo({
-      rx: DEFAULT_POSE.rx,
-      ry: base.ry + wrapAngle(DEFAULT_POSE.ry - base.ry),
-      rz: base.rz + wrapAngle(DEFAULT_POSE.rz - base.rz),
-    });
+    this.moveTo(Q_REST);
   }
 
   toggleAuto(): boolean {
@@ -199,18 +240,14 @@ export class ModelController {
 
   // ----- internals -----------------------------------------------------------------------------
 
-  private currentBase(): Pose {
-    return { ...this.pose };
-  }
-
-  private moveTo(to: Pose) {
+  private moveTo(to: Quat) {
     if (this.opts.reducedMotion) {
-      this.pose = { ...to };
+      this.q = to;
       this.anim = null;
       this.render();
       return;
     }
-    this.anim = { from: this.currentBase(), to, start: performance.now() };
+    this.anim = { from: this.q, to, start: performance.now() };
     this.vel = { ry: 0, rx: 0 };
     this.request();
   }
@@ -272,19 +309,14 @@ export class ModelController {
     if (this.anim) {
       const t = Math.min(1, (now - this.anim.start) / (M.stepSeconds * 1000));
       const e = easeOutCubic(t);
-      this.pose = {
-        rx: lerp(this.anim.from.rx, this.anim.to.rx, e),
-        ry: lerp(this.anim.from.ry, this.anim.to.ry, e),
-        rz: lerp(this.anim.from.rz, this.anim.to.rz, e),
-      };
+      this.q = qSlerp(this.anim.from, this.anim.to, e);
       if (t >= 1) {
-        this.pose = { ...this.anim.to };
+        this.q = this.anim.to;
         this.anim = null;
       }
     } else if (!this.dragging && (this.vel.ry !== 0 || this.vel.rx !== 0)) {
       // Inertia after a drag
-      this.pose.ry += this.vel.ry * dt;
-      this.pose.rx = clampTilt(this.pose.rx + this.vel.rx * dt, M.tiltLimitDeg);
+      this.q = tiltQ(turnQ(this.q, this.vel.ry * dt), this.vel.rx * dt, M.tiltLimitDeg);
       const decay = Math.exp(-M.inertiaDecay * dt);
       this.vel.ry *= decay;
       this.vel.rx *= decay;
@@ -304,11 +336,11 @@ export class ModelController {
         this.bobAmp = 0;
         this.bobPhase = 0;
       }
-      this.pose.ry += (360 / M.autoSeconds) * dt;
+      this.q = turnQ(this.q, (360 / M.autoSeconds) * dt);
       this.bobAmp = Math.min(1, this.bobAmp + dt / M.bobRampSeconds);
       this.bobPhase += dt;
     } else if (this.wasAuto) {
-      this.pose.rx = clampTilt(this.pose.rx + this.bobOffset(), M.tiltLimitDeg);
+      this.q = tiltQ(this.q, this.bobOffset(), M.tiltLimitDeg);
       this.bobAmp = 0;
     }
     this.wasAuto = auto;
@@ -316,15 +348,16 @@ export class ModelController {
     this.updateLod(
       auto || this.dragging || this.anim !== null || this.vel.ry !== 0 || this.vel.rx !== 0,
     );
-    this.pose.ry = wrapAngle(this.pose.ry);
-    if (!this.anim) this.pose.rz = wrapAngle(this.pose.rz);
-
     this.render();
 
-    this.frameMsSum += performance.now() - started;
+    const spent = performance.now() - started;
+    this.frameMsSum += spent;
+    if (spent > this.frameMsMax) this.frameMsMax = spent;
     this.frameCount += 1;
     if (now - this.frameStatAt > 1000 && this.frameCount > 0) {
       this.el.root.dataset.frameMs = (this.frameMsSum / this.frameCount).toFixed(2);
+      this.el.root.dataset.frameMsMax = this.frameMsMax.toFixed(2);
+      this.frameMsMax = 0;
       this.frameMsSum = 0;
       this.frameCount = 0;
       this.frameStatAt = now;
@@ -369,18 +402,13 @@ export class ModelController {
     return this.opts.reducedMotion ? 0 : this.morph.m;
   }
 
-  /** The pose and perspective for this frame: the turning house eases to the front elevation. */
-  private displayPose(): { pose: Pose; invDistance: number } {
-    const rx = this.pose.rx + (this.wasAuto ? this.bobOffset() : 0);
+  /** The orientation and perspective for this frame: the turning house eases to the front elevation. */
+  private displayPose(): { q: Quat; invDistance: number } {
+    const q = this.wasAuto ? tiltQ(this.q, this.bobOffset(), M.tiltLimitDeg) : this.q;
     const e = easeInOut(clamp01(this.morphValue() / MO.frontEnd));
-    if (e === 0)
-      return { pose: { rx, ry: this.pose.ry, rz: this.pose.rz }, invDistance: REST_INV_DISTANCE };
+    if (e === 0) return { q, invDistance: REST_INV_DISTANCE };
     return {
-      pose: {
-        rx: lerp(rx, 0, e),
-        ry: lerp(wrapAngle(this.pose.ry), 0, e),
-        rz: lerp(wrapAngle(this.pose.rz), 0, e),
-      },
+      q: qSlerp(q, Q_IDENTITY, e),
       invDistance: lerp(REST_INV_DISTANCE, 0, e),
     };
   }
@@ -400,30 +428,24 @@ export class ModelController {
       build: this.built,
       dissolve: dissolveOf(m),
       lines: !this.lodOn,
+      quantum: FACE_QUANTUM,
     };
   }
 
   private buildStatic() {
     const { gizmo } = this.el;
-    // Gizmo: three axis lines with labels
+    this.el.faces.setAttribute('transform', `scale(${1 / FACE_QUANTUM})`);
+    // Gizmo: three axis lines (one path) with a label each
+    const lines = document.createElementNS(svgNs, 'path');
+    lines.setAttribute('class', 'hm-axis');
+    gizmo.appendChild(lines);
+    this.gizmoLines = lines;
     for (const label of ['x', 'y', 'z'] as const) {
-      const line = document.createElementNS(svgNs, 'line');
-      line.setAttribute('class', 'hm-axis');
-      line.setAttribute('x1', '0');
-      line.setAttribute('y1', '0');
       const text = document.createElementNS(svgNs, 'text');
       text.setAttribute('class', 'hm-axis-label');
       text.textContent = label;
-      gizmo.append(line, text);
-      this.gizmoNodes.push({ label, line, text, anchor: '' });
-    }
-  }
-
-  private ensureFacePool(n: number) {
-    while (this.pool.length < n) {
-      const path = document.createElementNS(svgNs, 'path');
-      this.el.faces.appendChild(path);
-      this.pool.push({ path, d: '', cls: '', opacity: 1, hidden: false });
+      gizmo.appendChild(text);
+      this.gizmoLabels.push({ label, text, anchor: '' });
     }
   }
 
@@ -471,26 +493,40 @@ export class ModelController {
   }
 
   private render() {
-    const { pose, invDistance } = this.displayPose();
+    const { q, invDistance } = this.displayPose();
+    const matrix = qToMat3(q);
     const m = this.morphValue();
     this.placeScene(m);
     this.applyMix(m);
-    const frame = buildFrame(pose, this.frameOptions(invDistance));
+    if (this.idMode) {
+      this.renderIds(matrix, this.frameOptions(invDistance));
+      return;
+    }
+    const frame = buildFrame(matrix, this.frameOptions(invDistance));
 
-    const runs = mergeRuns(frame.faces);
-    this.ensureFacePool(runs.length);
-    const pool = this.pool;
-    for (let i = 0; i < runs.length; i++) {
-      const f = runs[i] as (typeof runs)[number];
-      const slot = pool[i] as PoolSlot;
+    // One path element per run, taken from a pool for its appearance class, so a class never changes
+    // on an element (that would restyle it every frame); the elements are then put in paint order
+    // with the fewest moves
+    const used = this.classUsed;
+    used.fill(0);
+    const desired = this.desired;
+    desired.length = 0;
+    for (const f of frame.faces) {
+      let pool = this.classPools[f.cls];
+      if (!pool) pool = this.classPools[f.cls] = [];
+      const k = used[f.cls] as number;
+      used[f.cls] = k + 1;
+      let slot = pool[k];
+      if (!slot) {
+        const path = document.createElementNS(svgNs, 'path');
+        path.setAttribute('class', FACE_CLASSES[f.cls] as string);
+        this.el.faces.appendChild(path);
+        slot = { path, d: '', opacity: 1, hidden: false };
+        pool.push(slot);
+      }
       if (slot.d !== f.d) {
         slot.path.setAttribute('d', f.d);
         slot.d = f.d;
-      }
-      const cls = CLASSES[f.kind][f.tone];
-      if (slot.cls !== cls) {
-        slot.path.setAttribute('class', cls);
-        slot.cls = cls;
       }
       if (slot.opacity !== f.opacity) {
         if (f.opacity < 1) slot.path.setAttribute('opacity', String(f.opacity));
@@ -501,16 +537,30 @@ export class ModelController {
         slot.path.style.display = '';
         slot.hidden = false;
       }
+      desired.push(slot.path);
     }
-    for (let i = runs.length; i < pool.length; i++) {
-      const slot = pool[i] as PoolSlot;
-      if (!slot.hidden) {
-        slot.path.style.display = 'none';
-        slot.hidden = true;
+    for (let c = 0; c < this.classPools.length; c++) {
+      const pool = this.classPools[c];
+      if (!pool) continue;
+      for (let k = used[c] as number; k < pool.length; k++) {
+        const slot = pool[k] as PoolSlot;
+        if (!slot.hidden) {
+          slot.path.style.display = 'none';
+          slot.hidden = true;
+        }
       }
     }
+    let cursor: ChildNode | null = this.el.faces.firstChild;
+    for (const el of desired) {
+      if (el === cursor) cursor = cursor.nextSibling;
+      else this.el.faces.insertBefore(el, cursor);
+    }
     this.el.ground.setAttribute('d', frame.ground);
-    this.el.ground.setAttribute('opacity', (1 - clamp01(m / MO.groundFadeEnd)).toFixed(2));
+    const groundOpacity = (1 - clamp01(m / MO.groundFadeEnd)).toFixed(2);
+    if (groundOpacity !== this.groundOpacity) {
+      this.groundOpacity = groundOpacity;
+      this.el.ground.setAttribute('opacity', groundOpacity);
+    }
 
     // After the dissolve only the plinth is left; it fades as the pit is dug where it stood, and the
     // drawing is hidden once nothing of the house remains (under reduced motion, once the hero has
@@ -518,7 +568,11 @@ export class ModelController {
     const plinth =
       m >= 1 ? 1 - clamp01(this.morph.beyond / (window.innerHeight * MO.plinthFadeViewport)) : 1;
     const gone = this.opts.reducedMotion ? this.morph.m >= 1 : plinth <= 0;
-    this.el.scene.setAttribute('opacity', plinth.toFixed(2));
+    const plinthText = plinth.toFixed(2);
+    if (plinthText !== this.plinthOpacity) {
+      this.plinthOpacity = plinthText;
+      this.el.scene.setAttribute('opacity', plinthText);
+    }
     const svg = this.host === 'layer' ? this.el.layerSvg : this.el.heroSvg;
     if (svg) {
       const display = gone ? 'none' : '';
@@ -540,33 +594,69 @@ export class ModelController {
       if (node.text.textContent !== d.label) node.text.textContent = d.label;
     });
 
-    for (const a of gizmoAxes(pose, M.gizmoLength, 0, 0)) {
-      const node = this.gizmoNodes.find((n) => n.label === a.label);
+    let axisPath = '';
+    // Always x, y, z in that order (not by depth), so a path always lists the same axis first
+    for (const a of gizmoAxes(matrix, M.gizmoLength, 0, 0).sort((p, q) =>
+      p.label < q.label ? -1 : 1,
+    )) {
+      axisPath += `M0 0L${a.x.toFixed(1)} ${a.y.toFixed(1)}`;
+      const node = this.gizmoLabels.find((n) => n.label === a.label);
       if (!node) continue;
-      node.line.setAttribute('x2', a.x.toFixed(1));
-      node.line.setAttribute('y2', a.y.toFixed(1));
-      node.text.setAttribute('x', (a.x + (a.x >= 0 ? 6 : -6)).toFixed(1));
-      node.text.setAttribute('y', (a.y + 4).toFixed(1));
+      node.text.setAttribute(
+        'transform',
+        `translate(${(a.x + (a.x >= 0 ? 6 : -6)).toFixed(1)} ${(a.y + 4).toFixed(1)})`,
+      );
       const anchor = a.x >= 0 ? 'start' : 'end';
       if (node.anchor !== anchor) {
         node.text.setAttribute('text-anchor', anchor);
         node.anchor = anchor;
       }
     }
+    this.gizmoLines?.setAttribute('d', axisPath);
 
     // State for tests and styles; written every fourth frame while auto-rotating (cheaper)
     this.frames += 1;
     if (this.autoSpin && this.frames % 4 !== 0) return;
     const ds = this.el.root.dataset;
-    ds.rx = pose.rx.toFixed(2);
-    ds.ry = pose.ry.toFixed(2);
-    ds.rz = pose.rz.toFixed(2);
+    const euler = eulerOf(q);
+    ds.rx = euler.rx.toFixed(2);
+    ds.ry = euler.ry.toFixed(2);
+    ds.rz = euler.rz.toFixed(2);
     ds.auto = this.autoActive(performance.now()) ? 'true' : 'false';
     ds.autoRotate = this.autoOn ? 'on' : 'off';
     ds.built = this.built.toFixed(3);
     ds.dissolve = dissolveOf(m).toFixed(3);
     ds.host = this.host;
     ds.plinth = plinth.toFixed(2);
+  }
+
+  /** Test mode: each body piece in its own flat colour, in paint order, with no edges or detail. */
+  private renderIds(matrix: ReturnType<typeof qToMat3>, o: FrameOptions) {
+    const polys = buildIdPolygons(matrix, { ...o, scale: fitScale(HOUSE, o) });
+    this.el.faces.style.display = 'none';
+    this.el.ground.style.display = 'none';
+    this.el.dims.style.display = 'none';
+    while (this.idPool.length < polys.length) {
+      const path = document.createElementNS(svgNs, 'path');
+      path.setAttribute('shape-rendering', 'crispEdges');
+      path.setAttribute('stroke', 'none');
+      this.el.scene.appendChild(path);
+      this.idPool.push(path);
+    }
+    this.idPool.forEach((path, i) => {
+      const poly = polys[i];
+      if (!poly) {
+        path.style.display = 'none';
+        return;
+      }
+      path.style.display = '';
+      path.setAttribute(
+        'd',
+        `M${poly.pts.map((p) => `${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join('L')}Z`,
+      );
+      // Eight apart in each channel, so small compositing differences cannot change an id
+      path.style.fill = `rgb(${(poly.id % 32) * 8},${(Math.floor(poly.id / 32) % 32) * 8},200)`;
+    });
   }
 
   // ----- input ---------------------------------------------------------------------------------
@@ -634,20 +724,21 @@ export class ModelController {
           let delta = ((after - before) * 180) / Math.PI;
           if (delta > 180) delta -= 360;
           if (delta < -180) delta += 360;
-          this.pose.rz -= delta;
+          this.q = rollQ(this.q, -delta);
         }
       } else if (e.shiftKey && e.pointerType !== 'touch') {
-        this.pose.rz -= dx * M.rollDegPerPx;
+        this.q = rollQ(this.q, -dx * M.rollDegPerPx);
       } else {
-        this.pose.ry += dx * M.dragDegPerPx;
+        this.q = turnQ(this.q, dx * M.dragDegPerPx);
         if (e.pointerType !== 'touch') {
-          this.pose.rx = clampTilt(this.pose.rx + dy * M.dragDegPerPx, M.tiltLimitDeg);
+          this.q = tiltQ(this.q, dy * M.dragDegPerPx, M.tiltLimitDeg);
         }
         const secs = Math.max(0.001, (now - this.lastMove) / 1000);
         // Smoothed release velocity (deg/s)
-        this.vel.ry = lerp(this.vel.ry, (dx * M.dragDegPerPx) / secs, 0.5);
+        const cap = (v: number) => Math.max(-M.inertiaMaxSpeed, Math.min(M.inertiaMaxSpeed, v));
+        this.vel.ry = cap(lerp(this.vel.ry, (dx * M.dragDegPerPx) / secs, 0.5));
         this.vel.rx =
-          e.pointerType === 'touch' ? 0 : lerp(this.vel.rx, (dy * M.dragDegPerPx) / secs, 0.5);
+          e.pointerType === 'touch' ? 0 : cap(lerp(this.vel.rx, (dy * M.dragDegPerPx) / secs, 0.5));
       }
       this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       this.lastMove = now;
@@ -700,7 +791,7 @@ export class ModelController {
         ? { left: 0, top: nav, width: vw, height: vh - nav }
         : { left: r.left, top: r.top, width: r.width || 1, height: r.height || 1 };
       const halfSize = Math.min(area.width, area.height) / 2;
-      const fill = this.narrow ? M.overlayFill : 1.08;
+      const fill = this.narrow ? M.overlayFill : M.heroFill;
       const cx = area.left + area.width / 2;
       const cy = area.top + area.height * (this.narrow ? M.overlayCentreY : 0.5);
       this.view = {
@@ -723,6 +814,7 @@ export class ModelController {
       this.el.layerSvg?.setAttribute('viewBox', `0 0 ${vw} ${vh}`);
       this.render();
     };
+    this.remeasure = measure;
     const ro = new ResizeObserver(measure);
     ro.observe(this.el.stage);
     this.cleanups.push(() => ro.disconnect());
