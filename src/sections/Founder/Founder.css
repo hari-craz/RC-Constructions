@@ -169,6 +169,14 @@
   color: var(--color-ink-muted-light);
 }
 
+/* Wide screens: the portrait slot is no taller than the screen allows, so the whole frame is in view
+   beside the text (it keeps its 4:5 shape) */
+@media (width >= 1024px) {
+  .founder-portrait-frame {
+    max-width: min(440px, calc((100dvh - 26rem) * 0.8));
+  }
+}
+
 /* Responsive (< 1024px) */
 @media (width < 1024px) {
   .founder-grid {

@@ -11,11 +11,11 @@ import { MOTION } from '../../lib/motion';
  * Text rectangles are measured in document coordinates once (and again when the layout changes),
  * so each scroll frame is only arithmetic plus one bounding-box read per detail element.
  */
-/** Detail that is hidden under text (window frames and openings, panes, mullions, rails, strings, and the thin slab and beam strips, which read as highlight bars behind a line of text). */
+/** What is hidden under text: window frames, openings and panes, mullions, rails, strings, the thin slab and beam strips (they read as highlight bars behind a line of text) and the wall fills. */
 const DETAIL =
-  '.b-mullion, .b-frame, .b-pane, .b-rail, .b-stair, .b-string, .b-starter, .b-level, .b-datum, .b-opening, .b-door, .b-slab, .b-beam, .b-canopy, .b-ground-slab, .b-stub, .b-tie';
-/** Structure whose outline is hidden under text (the fill stays, so the building is still there). */
-const OUTLINE = '.b-wall, .b-col, .b-core, .b-parapet, .b-footing';
+  '.b-mullion, .b-frame, .b-pane, .b-rail, .b-stair, .b-string, .b-starter, .b-level, .b-datum, .b-opening, .b-door, .b-slab, .b-beam, .b-canopy, .b-ground-slab, .b-stub, .b-tie, .b-wall, .b-parapet';
+/** Structure that keeps its fill under text but loses its outline (columns, core, footings). */
+const OUTLINE = '.b-col, .b-core, .b-footing';
 const TEXT_SCOPE = '.sheet-stage :is(h1, h2, h3, p, li, span, td, dt, dd, a, strong)';
 
 interface Box {
