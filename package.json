@@ -1,7 +1,7 @@
 {
   "name": "rc-constructions",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Single-page scroll-driven architectural construction portfolio",
   "license": "UNLICENSED",
   "type": "module",
