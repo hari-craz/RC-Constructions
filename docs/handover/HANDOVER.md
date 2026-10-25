@@ -17,7 +17,7 @@ The demo address is `https://rc.unitaryx.org`. The page works without JavaScript
 
 Every company fact lives in **`src/content/company.ts`** and nowhere else. A value of `null` hides its element; nothing is ever invented to fill a gap.
 
-1. Open `src/content/company.ts`. Replace the sample contact block (`contact.*`), then set `contact.isSample` to `false` (this removes the "Sample contact details for this demo." line).
+1. Open `src/content/company.ts`. The contact block holds what the company supplied on its business card (two phone numbers, email, address). Add `whatsappRaw` and `workingHours` when the company gives them (a `null` value hides the row); `contact.isSample` is `false`.
 2. Add facts only when the company can prove them: `facts.*` (years, projects, area, on-time share), `founder.*`, `legalName`, `legal.*`.
 3. Words on the page are in `src/content/*.ts` (about, process, services, projects, completion, founder, contact, site). Tests reject banned wording (guarantee-style claims, exclamation marks); run `pnpm test`.
 4. The one canonical URL is `src/config/site.json`; meta tags, sitemap, robots, `security.txt` and structured data are generated from it.
@@ -32,6 +32,10 @@ The full list of what is still a placeholder, field by field, is **`docs/CONTENT
 ## What is still placeholder
 
 See `docs/CONTENT-STATUS.md`. In short: contact phone, WhatsApp, email, address and hours; the six projects; the privacy retention period; every `facts.*` number; the founder's surname, quote and portrait; the form ID; the final domain. The privacy and terms pages say "Draft, pending legal review." and need the company's adviser.
+
+## Logo and brand
+
+The mark is the company's own logo (a house outline with blocks marked R and C), redrawn as geometry in `src/components/Logo/markGeometry.ts`. The header shows it in one colour so it follows the page colours; the favicon, app icons and social card show it in the company's blue and grey. After changing it, run `pnpm generate:favicons` and `pnpm generate:og`. The logo's own line, "Build Your Hopes", is not on the page: the site's hero line is "We build homes, offices, factories and roads." Decide which the company wants.
 
 ## What has not been done on purpose
 

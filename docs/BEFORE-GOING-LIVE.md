@@ -2,21 +2,23 @@
 
 The checklist of what must be supplied or changed before launch. The questions to ask the company are in `docs/CONTENT-INTAKE.md`; the owner tasks for the form, domain and email are in `docs/FORM-AND-DOMAIN.md`.
 
-## 0. Made-up sample details that must be replaced first
+## 0. Contact details: supplied, with two gaps (checked 2026-10-25)
 
-The site currently shows **sample** contact details. They look real and are not. Replace them before anyone outside the project sees the site (`src/content/company.ts`, `contact` block; then set `contact.isSample` to `false`):
+The contact block in `src/content/company.ts` now holds what the company supplied on its business card ("Er. R.C. Gokul Kumar, B.E., Proprietor"). Each value was copied from the card; nothing was invented.
 
-| Sample shown                                            | Field                                                                   |
-| ------------------------------------------------------- | ----------------------------------------------------------------------- |
-| Phone `+91 (0) 44 2847 0000`                            | `contact.phoneDisplay`, `contact.phoneRaw`                              |
-| WhatsApp (same number)                                  | `contact.whatsappRaw` (`null` hides it)                                 |
-| Email `build@rcconstructions.com`                       | `contact.email` (also the security.txt contact and the privacy contact) |
-| Address `Survey Plot 104, Industrial Corridor, Chennai` | `contact.address`                                                       |
-| Hours `Monday to Saturday, 08:00 to 18:00 IST`          | `contact.workingHours`                                                  |
+| Shown                                                                               | Field                                                                                                    |
+| ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Phone `+91 99658 79171`, and a second phone `+91 97906 77767`                       | `contact.phoneDisplay`, `contact.phoneRaw`; `contact.phoneSecondaryDisplay`, `contact.phoneSecondaryRaw` |
+| Email `rcconstructions2016@gmail.com`                                               | `contact.email` (also the `security.txt` contact and the privacy contact)                                |
+| Address `6/161, Poomandanvalasu, Mangalapatti (Po.), Muthur Via, Tiruppur - 638105` | `contact.address`                                                                                        |
 
-The Contact section says "Sample contact details for this demo." while `contact.isSample` is `true`; setting it to `false` removes that line. The same values reach the page footer area, the Contact section, the no-JavaScript fallback, the privacy and terms pages, the error screen, and `security.txt`. They are no longer published as structured data.
+Still to ask the company (these rows are hidden until supplied, so nothing is shown in their place):
 
-Also sample: the **six projects** (labelled "Sample projects for this demo" on the page) and the **privacy retention period** (`legal.retentionPeriod`, flagged `retentionIsSample`).
+- **WhatsApp**: the card gives two phone numbers but does not say whether either is on WhatsApp. `contact.whatsappRaw` is `null`, so the WhatsApp channel is hidden. Give the number to use, or leave it hidden.
+- **Working hours**: not on the card. `contact.workingHours` is `null`, so the row is hidden.
+- **Which email address to publish**: the card's address is a personal-style Gmail address. It is also the `security.txt` and privacy contact. A company-domain address, once the domain is final, would be better.
+
+`contact.isSample` is `false`, so "Sample contact details for this demo." no longer appears. Still sample: the **six projects** (labelled "Sample projects for this demo" on the page) and the **privacy retention period** (`legal.retentionPeriod`, flagged `retentionIsSample`).
 
 ## 1. Form, domain, email
 

@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ScrollProvider } from '../../app/ScrollProvider';
+import { COMPANY } from '../../content/company';
 import { Contact } from './Contact';
 
 const renderContact = () =>
@@ -29,9 +30,26 @@ describe('Contact form configuration', () => {
     expect(screen.getByRole('button', { name: 'Send enquiry' })).toBeEnabled();
   });
 
-  it('marks the contact details as samples while they are samples', () => {
+  it('marks the contact details as samples only while they are samples', () => {
     vi.stubEnv('VITE_FORMSPREE_ID', 'abcd1234');
     renderContact();
-    expect(screen.getByText('Sample contact details for this demo.')).toBeVisible();
+    const note = screen.queryByText('Sample contact details for this demo.');
+    if (COMPANY.contact.isSample) expect(note).toBeVisible();
+    else expect(note).not.toBeInTheDocument();
+  });
+
+  it('shows the supplied channels and hides the ones that were not supplied', () => {
+    vi.stubEnv('VITE_FORMSPREE_ID', 'abcd1234');
+    renderContact();
+    expect(screen.getByText(COMPANY.contact.phoneDisplay)).toBeVisible();
+    expect(screen.getByText(COMPANY.contact.email)).toBeVisible();
+    expect(screen.getByText(COMPANY.contact.address)).toBeVisible();
+    // A channel whose value is null is not drawn at all (no empty row, no placeholder)
+    if (COMPANY.contact.workingHours === null) {
+      expect(screen.queryByText('Working hours')).not.toBeInTheDocument();
+    }
+    if (COMPANY.contact.whatsappRaw === null) {
+      expect(screen.queryByText('WhatsApp')).not.toBeInTheDocument();
+    }
   });
 });

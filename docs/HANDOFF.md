@@ -35,11 +35,11 @@ To update company details or project data, open the relevant file in `src/conten
 
 ```typescript
 export const CONTACT_CONFIG = {
-  rawPhone: '+914428470000', // Update digits for tel: links
-  displayPhone: '+91 (0) 44 2847 0000', // Formatted visual representation
-  email: 'tenders@rcconstructions.com', // Direct mail link
-  address: 'Survey Plot 104, Industrial Corridor, Chennai', // Commercial office
-  workingHours: 'Monday to Saturday, 08:00 – 18:00 IST',
+  rawPhone: COMPANY.contact.phoneRaw, // Digits for the tel: link
+  displayPhone: COMPANY.contact.phoneDisplay, // Formatted visual representation
+  email: COMPANY.contact.email, // Direct mail link
+  address: COMPANY.contact.address, // The address as supplied
+  workingHours: COMPANY.contact.workingHours, // null hides the row
 } as const;
 ```
 

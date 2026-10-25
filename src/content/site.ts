@@ -11,11 +11,6 @@ interface SiteConfig {
     readonly href: string;
   };
   readonly nav: readonly NavItem[];
-  readonly contact: {
-    readonly email: string;
-    readonly phone: string;
-    readonly address: string;
-  };
 }
 
 export const SITE: SiteConfig = {
@@ -35,12 +30,4 @@ export const SITE: SiteConfig = {
       href: '#contact',
     },
   ],
-  contact: {
-    // PLACEHOLDER: Official inquiry email
-    email: 'build@rcconstructions.com',
-    // PLACEHOLDER: Office telephone number
-    phone: '+91 (0) 44 2847 0000',
-    // PLACEHOLDER: Physical office address
-    address: 'Survey Plot 104, Industrial Corridor, Chennai',
-  },
 } as const;

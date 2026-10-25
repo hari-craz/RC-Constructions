@@ -27,13 +27,15 @@ export interface ContactContent {
   };
 }
 
-/** Contact facts come from company.ts (currently SAMPLE values, see docs/BEFORE-GOING-LIVE.md). */
+/** Contact facts come from company.ts, the only source (see docs/CONTENT-STATUS.md). */
 export const CONTACT_CONFIG = {
   rawPhone: COMPANY.contact.phoneRaw,
   displayPhone: COMPANY.contact.phoneDisplay,
   email: COMPANY.contact.email,
   address: COMPANY.contact.address,
   workingHours: COMPANY.contact.workingHours,
+  secondaryPhoneDisplay: COMPANY.contact.phoneSecondaryDisplay,
+  secondaryPhoneRaw: COMPANY.contact.phoneSecondaryRaw,
 } as const;
 
 const whatsapp = COMPANY.contact.whatsappRaw;
@@ -50,6 +52,17 @@ export const CONTACT_CONTENT: ContactContent = {
       value: CONTACT_CONFIG.displayPhone,
       href: `tel:${CONTACT_CONFIG.rawPhone}`,
     },
+    ...(hasContent(CONTACT_CONFIG.secondaryPhoneDisplay) &&
+    hasContent(CONTACT_CONFIG.secondaryPhoneRaw)
+      ? [
+          {
+            id: 'phone-secondary',
+            label: 'Second phone',
+            value: CONTACT_CONFIG.secondaryPhoneDisplay,
+            href: `tel:${CONTACT_CONFIG.secondaryPhoneRaw}`,
+          },
+        ]
+      : []),
     ...(hasContent(whatsapp)
       ? [
           {
@@ -68,14 +81,12 @@ export const CONTACT_CONTENT: ContactContent = {
     },
     {
       id: 'address',
-      label: 'Office and yard',
+      label: 'Address',
       value: CONTACT_CONFIG.address,
     },
-    {
-      id: 'hours',
-      label: 'Working hours',
-      value: CONTACT_CONFIG.workingHours,
-    },
+    ...(hasContent(CONTACT_CONFIG.workingHours)
+      ? [{ id: 'hours', label: 'Working hours', value: CONTACT_CONFIG.workingHours }]
+      : []),
   ],
   privacyNotice: 'We use your details only to reply to this enquiry.',
   privacyLink: { label: 'Read the privacy notice', href: '/privacy' },

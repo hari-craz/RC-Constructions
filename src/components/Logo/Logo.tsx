@@ -1,3 +1,5 @@
+import { useId } from 'react';
+import { letterPath, MARK } from './markGeometry';
 import './Logo.css';
 
 export interface LogoProps {
@@ -5,7 +7,10 @@ export interface LogoProps {
   onClick?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
 }
 
+/** The mark in one colour (the colour of the text around it): the letters are cut out of their blocks. */
 export function Logo({ className = '', onClick }: LogoProps) {
+  const maskId = useId();
+  const { roof, chimney, walls, tiles, tileSize, letterStroke } = MARK;
   return (
     <a
       href="#hero"
@@ -15,18 +20,64 @@ export function Logo({ className = '', onClick }: LogoProps) {
     >
       <svg
         className="logo-mark"
-        viewBox="0 0 64 64"
-        width="32"
-        height="32"
+        viewBox={MARK.viewBox}
+        width="40"
+        height="40"
         role="img"
         aria-hidden="true"
         focusable="false"
       >
-        <path
-          d="M4 4h56v56H4zM16 16h14c6.6 0 11 3.8 11 9.5 0 4.2-2.4 7.2-6.2 8.7L42 48h-8.2l-6.2-12H23v12h-7zm7 15h6.5c3 0 5-1.6 5-4.5s-2-4.5-5-4.5H23z"
-          fill="currentColor"
-          fillRule="evenodd"
-        />
+        <mask id={maskId} maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64">
+          <rect width="64" height="64" fill="white" />
+          {tiles.map((t) =>
+            t.letter ? (
+              <path
+                key={`${t.x}-${t.y}`}
+                d={letterPath(t.letter, t.x, t.y)}
+                fill="none"
+                stroke="black"
+                strokeWidth={letterStroke}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            ) : null,
+          )}
+        </mask>
+        <path d={roof.d} fill="none" stroke="currentColor" strokeWidth={roof.strokeWidth} />
+        <rect {...chimney} fill="currentColor" />
+        {walls.map((w) => (
+          <rect key={`${w.x}-${w.y}`} {...w} fill="currentColor" />
+        ))}
+        <g mask={`url(#${maskId})`}>
+          {tiles.map((t) =>
+            t.letter ? (
+              <rect
+                key={`${t.x}-${t.y}`}
+                x={t.x}
+                y={t.y}
+                width={tileSize}
+                height={tileSize}
+                rx="2.6"
+                fill="currentColor"
+              />
+            ) : null,
+          )}
+        </g>
+        {tiles.map((t) =>
+          t.letter ? null : (
+            <rect
+              key={`${t.x}-${t.y}`}
+              x={t.x + 0.7}
+              y={t.y + 0.7}
+              width={tileSize - 1.4}
+              height={tileSize - 1.4}
+              rx="2"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+            />
+          ),
+        )}
       </svg>
       <span className="logo-wordmark">RC Constructions</span>
     </a>

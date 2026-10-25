@@ -50,7 +50,7 @@ test.describe('Phase 7C — Completion Stats and Founder Real Content', () => {
     // Verify Founder name and role
     const nameHeading = founder.locator('.founder-name');
     await expect(nameHeading).toBeVisible();
-    await expect(nameHeading).toHaveText('Gokul');
+    await expect(nameHeading).toHaveText('Gokul Kumar');
 
     const role = founder.locator('.founder-role');
     await expect(role).toBeVisible();

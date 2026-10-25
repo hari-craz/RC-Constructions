@@ -24,6 +24,7 @@ const pick = (key) => company.match(new RegExp(`${key}:\\s*'([^']*)'`))?.[1] ?? 
 const FACTS = {
   email: pick('email'),
   phoneRaw: pick('phoneRaw'),
+  phoneSecondaryRaw: pick('phoneSecondaryRaw'),
   whatsappRaw: pick('whatsappRaw'),
 };
 
@@ -77,7 +78,7 @@ for (const path of PAGES) {
       if (addr === FACTS.email) ok(label);
       else fail(`${label} (company.ts email is ${FACTS.email})`);
     } else if (href.startsWith('tel:')) {
-      if (href === `tel:${FACTS.phoneRaw}`) ok(label);
+      if (href === `tel:${FACTS.phoneRaw}` || href === `tel:${FACTS.phoneSecondaryRaw}`) ok(label);
       else fail(`${label} (company.ts phoneRaw is ${FACTS.phoneRaw})`);
     } else if (href.startsWith('https://wa.me/')) {
       const digits = (FACTS.whatsappRaw ?? '').replace(/\D/g, '');

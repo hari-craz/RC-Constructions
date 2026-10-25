@@ -1,5 +1,14 @@
+import fs from 'node:fs';
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+
+// The company facts live in src/content/company.ts (TypeScript that imports JSON), so read them as text
+const companySource = fs.readFileSync(
+  new URL('../src/content/company.ts', import.meta.url),
+  'utf8',
+);
+const fact = (key: string) => new RegExp(key + ": *'([^']*)'").exec(companySource)?.[1] ?? '';
+const COMPANY = { contact: { phoneDisplay: fact('phoneDisplay'), email: fact('email') } };
 
 test.describe('Phase 7D — Contact Section and Formspree Integration', () => {
   test('renders Contact section with headline, ruled channels, form fields, and footer', async ({
@@ -23,15 +32,20 @@ test.describe('Phase 7D — Contact Section and Formspree Integration', () => {
     await expect(page.locator('#contact-heading')).toBeVisible();
     await expect(page.locator('#contact-heading')).toHaveText(/tell us what you want to build/i);
 
-    // Verify ruled channels
+    // Verify ruled channels: phone, email and address, plus a second phone, WhatsApp and hours
+    // only when the company has supplied them (a missing fact hides its row)
+    const hasSecondPhone = fact('phoneSecondaryRaw') !== '';
+    const hasWhatsApp = fact('whatsappRaw') !== '';
+    const hasHours = fact('workingHours') !== '';
     const channels = contact.locator('.contact-channel-item');
-    await expect(channels).toHaveCount(5);
+    await expect(channels).toHaveCount(
+      3 + (hasSecondPhone ? 1 : 0) + (hasWhatsApp ? 1 : 0) + (hasHours ? 1 : 0),
+    );
 
     // Verify phone, email, WhatsApp links
-    const phoneLink = contact.locator('a[href^="tel:"]');
-    await expect(phoneLink).toBeVisible();
-    const waLink = contact.locator('a[href^="https://wa.me/"]');
-    await expect(waLink).toBeVisible();
+    await expect(contact.locator('a[href^="tel:"]')).toHaveCount(hasSecondPhone ? 2 : 1);
+    await expect(contact.locator('a[href^="tel:"]').first()).toBeVisible();
+    await expect(contact.locator('a[href^="https://wa.me/"]')).toHaveCount(hasWhatsApp ? 1 : 0);
     const emailLink = contact.locator('a[href^="mailto:"]');
     await expect(emailLink).toBeVisible();
 
@@ -148,8 +162,8 @@ test.describe('Phase 7D — Contact Section and Formspree Integration', () => {
     // Verify error banner is shown with fallback phone & email
     const errorBanner = contact.locator('.contact-status-error');
     await expect(errorBanner).toBeVisible();
-    await expect(errorBanner).toContainText('+91 (0) 44 2847 0000');
-    await expect(errorBanner).toContainText('build@rcconstructions.com');
+    await expect(errorBanner).toContainText(COMPANY.contact.phoneDisplay);
+    await expect(errorBanner).toContainText(COMPANY.contact.email);
 
     // Values must be preserved in form fields
     await expect(contact.locator('input[name="name"]')).toHaveValue(enteredName);

@@ -23,15 +23,19 @@ export const COMPANY = {
   name: 'RC Constructions',
   legalName: null as string | null, // e.g. "RC Constructions Private Limited"
 
-  // SAMPLE CONTACT DETAILS: replace before launch, then set isSample to false.
+  // Supplied by the company (business card, 2026-10-25). `isSample` is true only while any of these
+  // is a made-up sample.
   contact: {
-    isSample: true,
-    phoneDisplay: '+91 (0) 44 2847 0000',
-    phoneRaw: '+914428470000',
-    whatsappRaw: '+914428470000' as string | null, // null hides the WhatsApp channel
-    email: 'build@rcconstructions.com',
-    address: 'Survey Plot 104, Industrial Corridor, Chennai',
-    workingHours: 'Monday to Saturday, 08:00 to 18:00 IST',
+    isSample: false,
+    phoneDisplay: '+91 99658 79171',
+    phoneRaw: '+919965879171',
+    /** A second number from the card; null hides it. */
+    phoneSecondaryDisplay: '+91 97906 77767' as string | null,
+    phoneSecondaryRaw: '+919790677767' as string | null,
+    whatsappRaw: null as string | null, // null hides the WhatsApp channel (not supplied)
+    email: 'rcconstructions2016@gmail.com',
+    address: '6/161, Poomandanvalasu, Mangalapatti (Po.), Muthur Via, Tiruppur - 638105',
+    workingHours: null as string | null, // not supplied: the row is hidden
   },
 
   /** Facts about the business. null = not supplied; the page hides the element. */
@@ -46,7 +50,7 @@ export const COMPANY = {
 
   founder: {
     name: 'Gokul',
-    surname: null as string | null,
+    surname: 'Kumar' as string | null, // the card reads "Er. R.C. Gokul Kumar, B.E., Proprietor"
     role: 'Founder',
     quote: null as string | null, // a quote the founder has approved, or null
     experienceNote: null as string | null, // e.g. "Site practice since 2008"

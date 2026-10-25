@@ -1,6 +1,6 @@
 # Demo script: two minutes with the RC Constructions site
 
-For presenting the demo to NEXISARC. Use a laptop (1440 px wide or more) first, then show a phone for the last ten seconds. The site is a demo: say so once at the start. The phone number, address, email and the six projects are samples, and the page says so ("Sample contact details for this demo." under the contact channels; "Sample projects for this demo." under the Projects heading).
+For presenting the demo to NEXISARC. Use a laptop (1440 px wide or more) first, then show a phone for the last ten seconds. The site is a demo: say so once at the start. The phone numbers, email and address are the company's own (from its business card). The six projects are samples, and the page says so ("Sample projects for this demo." under the Projects heading).
 
 Before you start: open the site in a fresh tab and wait for the thin loading line at the top of the page to finish. Let the house turn once. Keep the mouse over the house and do not scroll yet. The header links are named Principles, Process, Track record, Services, Projects and Contact: they are the About, Construction process, Work delivered, Services, Projects and Contact sections.
 
@@ -32,9 +32,9 @@ The pictures that go with each step are in `docs/handover/screens/` (file names 
 
 ## 1:35 to 1:50, founder and contact (`07-founder`, `08-contact`)
 
-**Show:** scroll to the founder sheet, then Contact. Point at the sample-details line under the contact channels. Do not submit the form.
+**Show:** scroll to the founder sheet, then Contact. Point at the contact channels (two phone numbers, email, address). Do not submit the form.
 
-**Say:** "The founder has a short page with a place for a portrait. The enquiry form is ready; it sends by email once the form service is switched on for the live address. The contact details here are samples until the company gives us the real ones."
+**Say:** "The founder has a short page with a place for a portrait. The enquiry form is ready; it sends by email once the form service is switched on for the live address. The contact details are the company's own. Working hours and WhatsApp are left out until the company gives them to us."
 
 ## 1:50 to 2:00, the phone
 
